@@ -141,7 +141,7 @@ router.post("/login-admin", loginAdmin);
  *               email:
  *                 type: string
  *                 format: email
- *                 example: "admin32@gmail.com"
+ *                 example: "admin17@gmail.com"
  *     responses:
  *       200:
  *         description: Email found successfully, verification token set in cookies
