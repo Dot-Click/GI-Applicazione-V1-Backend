@@ -1,0 +1,1295 @@
+openapi: "3.0.0"
+info:
+  title: "GI-Costruzioni API Documentation"
+  version: "1.0.0"
+  description: "API documentation using Swagger"
+
+servers:
+  [
+    { url: "http://localhost:4000", description: "Local server" },
+    {
+      url: "https://gi-applicazione-v1-backend-production.up.railway.app",
+      description: "Live server",
+    },
+  ]
+
+paths:
+  # Authentication
+  /api/auth/login-admin:
+    post:
+      summary: Admin login
+      description: Logs in an admin user and returns an authentication token.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "admin17@gmail.com"
+                password:
+                  type: string
+                  format: password
+                  example: "admin123417"
+      responses:
+        200:
+          description: Admin logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "logged in Successfully"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: b9fc47c2-8f4e-4b3d-9eff-cd5f444b3bff
+                      name:
+                        type: string
+                        example: admin1244
+                      email:
+                        type: string
+                        example: "admin@example.com"
+                      password:
+                        type: string
+                        example: $2b$10$kZkkGYV/WOW6F.Gkq8lMcOp1ImuvGH7GSFTLCHDsrsyS2eMiDdK3a
+                      role:
+                        type: string
+                        example: ADMIN
+                      createdAt:
+                        type: string
+                        example: 2025-02-13 18:41:47.357
+                      updatedAt:
+                        type: string
+                        example: 2025-02-13 18:41:47.357
+        400:
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example:
+                      - "L’indirizzo email inserito non è associato a GI Costruzioni"
+                      - "La password non è corretta. Riprova o reimposta la tua password se l'hai dimenticata"
+        401:
+          description: Missing fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Tutti i campi sono obbligatori"
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal Server Error"
+
+  # Verification
+  /api/auth/verify-email:
+    post:
+      summary: Verify if an email exists
+      description: Checks if an email exists in the database and generates a verification token if found.
+      tags:
+        - Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "admin17@gmail.com"
+      responses:
+        200:
+          description: Email found successfully, verification token set in cookies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ti abbiamo inviato un’e-mail per consentirti di reimpostare la password"
+                  status:
+                    type: boolean
+                    example: true
+        401:
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "L’indirizzo email inserito non è associato a GI Costruzioni"
+                  status:
+                    type: boolean
+                    example: false
+        400:
+          description: Missing email in the request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "L'e-mail è obbligatoria!"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal Server Error"
+
+  /api/auth/update-password:
+    patch:
+      summary: Update admin password
+      description: Updates the password for a user based on a valid verification token.
+      tags:
+        - Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - newPassword
+              properties:
+                token:
+                  type: string
+                  description: JWT token received during email verification.
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                newPassword:
+                  type: string
+                  format: password
+                  description: The new password to set.
+                  example: "NewSecurePass123!"
+      responses:
+        200:
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "password updated successfully"
+                  status:
+                    type: boolean
+                    example: true
+        401:
+          description: Missing or invalid token / Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Verification Expired"
+                  status:
+                    type: boolean
+                    example: false
+        400:
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Missing Required Fields"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal Server Error"
+
+  # order APIs
+  /api/order/create:
+    post:
+      summary: create order from admin
+      description: create an order by admin id having required fields
+      security:
+        - bearerAuth: []
+      tags:
+        - Order
+      parameters:
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+                - description
+                - startDate
+                - endDate
+                - nation
+                - province
+                - address
+                - common
+                - cap
+                - cig
+                - cup
+                - siteManager
+                - orderManager
+                - technicalManager
+                - cnceCode
+                - isPublic
+                - status
+                - workAmount
+                - advancePayment
+                - discountPercentage
+                - dipositRecovery
+                - iva
+                - withholdingAmount
+                - contractAttachment
+              properties:
+                code:
+                  type: string
+                  example: "ORD123456"
+                description:
+                  type: string
+                  example: "Order description here"
+                workAmount:
+                  type: number
+                  format: decimal
+                  example: 15000.00
+                advancePayment:
+                  type: number
+                  format: decimal
+                  example: 5000.00
+                startDate:
+                  type: string
+                  format: date-time
+                  example: "2025-02-18T10:00:00Z"
+                endDate:
+                  type: string
+                  format: date-time
+                  example: "2025-03-18T10:00:00Z"
+                country:
+                  type: string
+                  example: "USA"
+                province:
+                  type: string
+                  example: "California"
+                nation:
+                  type: string
+                  example: "United States"
+                address:
+                  type: string
+                  example: "123 Main Street"
+                city:
+                  type: string
+                  example: "Los Angeles"
+                common:
+                  type: string
+                  example: "1234"
+                orderManager:
+                  type: string
+                  example: "John Doe"
+                siteManager:
+                  type: string
+                  example: "Jane Smith"
+                technicalManager:
+                  type: string
+                  example: "Alex Brown"
+                cnceCode:
+                  type: string
+                  example: "CNCE-789"
+                cap:
+                  type: string
+                  example: "CAP-101"
+                cig:
+                  type: string
+                  example: "CIG-102"
+                cup:
+                  type: string
+                  example: "CUP-103"
+                iva:
+                  type: number
+                  example: 18.00
+                discountPercentage:
+                  type: number
+                  example: 5.00
+                dipositRecovery:
+                  type: number
+                  example: 100.00
+                vat:
+                  type: number
+                  example: 12.00
+                withholdingAmount:
+                  type: number
+                  example: 200.00
+                contractAttachment:
+                  type: string
+                  example: "path/to/contract.pdf"
+                isPublic:
+                  type: boolean
+                  example: true
+                status:
+                  type: string
+                  enum:
+                    - "IN_DEPARTURE"
+                    - "IN_PROGRESS"
+                    - "COMPLETED"
+                    - "CANCELLED"
+                  default: "IN_DEPARTURE"
+      responses:
+        200:
+          description: order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "order created successfully"
+                  data:
+                    type: object
+                    properties:
+                      order:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
+                          code:
+                            type: string
+                            example: ORD123456
+                          description:
+                            type: string
+                            example: "Order description here"
+                          workAmount:
+                            type: number
+                            format: decimal
+                            example: 15000.00
+                          advancePayment:
+                            type: number
+                            format: decimal
+                            example: 5000.00
+                          startDate:
+                            type: string
+                            format: date-time
+                            example: "2025-02-18T10:00:00Z"
+                          endDate:
+                            type: string
+                            format: date-time
+                            example: "2025-03-18T10:00:00Z"
+                          country:
+                            type: string
+                            example: "USA"
+                          province:
+                            type: string
+                            example: "California"
+                          nation:
+                            type: string
+                            example: "United States"
+                          address:
+                            type: string
+                            example: "123 Main Street"
+                          city:
+                            type: string
+                            example: "Los Angeles"
+                          common:
+                            type: string
+                            example: "1234"
+                          orderManager:
+                            type: string
+                            example: "John Doe"
+                          siteManager:
+                            type: string
+                            example: "Jane Smith"
+                          technicalManager:
+                            type: string
+                            example: "Alex Brown"
+                          cnceCode:
+                            type: string
+                            example: "CNCE-789"
+                          cap:
+                            type: string
+                            example: "CAP-101"
+                          cig:
+                            type: string
+                            example: "CIG-102"
+                          cup:
+                            type: string
+                            example: "CUP-103"
+                          iva:
+                            type: number
+                            example: 18.00
+                          discountPercentage:
+                            type: number
+                            example: 5.00
+                          dipositRecovery:
+                            type: number
+                            example: 100.00
+                          vat:
+                            type: number
+                            example: 12.00
+                          withholdingAmount:
+                            type: number
+                            example: 200.00
+                          contractAttachment:
+                            type: string
+                            example: "path/to/contract.pdf"
+                          isPublic:
+                            type: boolean
+                            example: true
+                          status:
+                            type: string
+                            enum:
+                              - "IN_DEPARTURE"
+                              - "IN_PROGRESS"
+                              - "COMPLETED"
+                              - "CANCELLED"
+                            default: "IN_DEPARTURE"
+                          createdAt:
+                            type: string
+                            example: "2025-02-12 18:14:47.456"
+                          updatedAt:
+                            type: string
+                            example: "2025-02-11 22:19:34.99"
+        401:
+          description: Missing or invalid token / Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Verification Expired"
+                  status:
+                    type: boolean
+                    example: false
+        403:
+          description: Forbidden. Only admins are allowed to update orders.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden: You do not have the required permissions"
+        400:
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Missing Required Fields"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal Server Error"
+
+  /api/order/:
+    get:
+      summary: Get all available orders up to 10
+      description: Retrieves a list of orders from the order table, filtered by the adminId of the authenticated user, with a limit of 10 orders per request.
+      tags:
+        - Order
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successfully fetched all orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "All orders fetched"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
+                        code:
+                          type: string
+                          example: ORD123456
+                        description:
+                          type: string
+                          example: "Order description here"
+                        workAmount:
+                          type: number
+                          format: decimal
+                          example: 15000.00
+                        advancePayment:
+                          type: number
+                          format: decimal
+                          example: 5000.00
+                        startDate:
+                          type: string
+                          format: date-time
+                          example: "2025-02-18T10:00:00Z"
+                        endDate:
+                          type: string
+                          format: date-time
+                          example: "2025-03-18T10:00:00Z"
+                        country:
+                          type: string
+                          example: "USA"
+                        province:
+                          type: string
+                          example: "California"
+                        nation:
+                          type: string
+                          example: "United States"
+                        address:
+                          type: string
+                          example: "123 Main Street"
+                        city:
+                          type: string
+                          example: "Los Angeles"
+                        common:
+                          type: string
+                          example: "1234"
+                        orderManager:
+                          type: string
+                          example: "John Doe"
+                        siteManager:
+                          type: string
+                          example: "Jane Smith"
+                        technicalManager:
+                          type: string
+                          example: "Alex Brown"
+                        cnceCode:
+                          type: string
+                          example: "CNCE-789"
+                        cap:
+                          type: string
+                          example: "CAP-101"
+                        cig:
+                          type: string
+                          example: "CIG-102"
+                        cup:
+                          type: string
+                          example: "CUP-103"
+                        iva:
+                          type: number
+                          example: 18.00
+                        discountPercentage:
+                          type: number
+                          example: 5.00
+                        dipositRecovery:
+                          type: number
+                          example: 100.00
+                        vat:
+                          type: number
+                          example: 12.00
+                        withholdingAmount:
+                          type: number
+                          example: 200.00
+                        contractAttachment:
+                          type: string
+                          example: "path/to/contract.pdf"
+                        isPublic:
+                          type: boolean
+                          example: true
+                        status:
+                          type: string
+                          enum:
+                            - "IN_DEPARTURE"
+                            - "IN_PROGRESS"
+                            - "COMPLETED"
+                            - "CANCELLED"
+                          default: "IN_DEPARTURE"
+                        createdAt:
+                          type: string
+                          example: "2025-02-12 18:14:47.456"
+                        updatedAt:
+                          type: string
+                          example: "2025-02-11 22:19:34.99"
+        403:
+          description: Forbidden. Only admins are allowed to update orders.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden: You do not have the required permissions"
+        404:
+          description: No orders available for the given admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No current orders"
+                  data:
+                    type: array
+                    items:
+                      type: object
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+      parameters:
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+
+  /api/order/{id}:
+    get:
+      summary: Get a specific order by ID
+      description: Retrieves a single order from the order table based on the provided order ID.
+      tags:
+        - Order
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the order to retrieve
+          required: true
+          schema:
+            type: string
+          example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      responses:
+        200:
+          description: Successfully fetched the order
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                    example: updated successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
+                      code:
+                        type: string
+                        example: ORD123456
+                      description:
+                        type: string
+                        example: "Order description here"
+                      workAmount:
+                        type: number
+                        format: decimal
+                        example: 15000.00
+                      advancePayment:
+                        type: number
+                        format: decimal
+                        example: 5000.00
+                      startDate:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T10:00:00Z"
+                      endDate:
+                        type: string
+                        format: date-time
+                        example: "2025-03-18T10:00:00Z"
+                      country:
+                        type: string
+                        example: "USA"
+                      province:
+                        type: string
+                        example: "California"
+                      nation:
+                        type: string
+                        example: "United States"
+                      address:
+                        type: string
+                        example: "123 Main Street"
+                      city:
+                        type: string
+                        example: "Los Angeles"
+                      common:
+                        type: string
+                        example: "1234"
+                      orderManager:
+                        type: string
+                        example: "John Doe"
+                      siteManager:
+                        type: string
+                        example: "Jane Smith"
+                      technicalManager:
+                        type: string
+                        example: "Alex Brown"
+                      cnceCode:
+                        type: string
+                        example: "CNCE-789"
+                      cap:
+                        type: string
+                        example: "CAP-101"
+                      cig:
+                        type: string
+                        example: "CIG-102"
+                      cup:
+                        type: string
+                        example: "CUP-103"
+                      iva:
+                        type: number
+                        example: 18.00
+                      discountPercentage:
+                        type: number
+                        example: 5.00
+                      dipositRecovery:
+                        type: number
+                        example: 100.00
+                      vat:
+                        type: number
+                        example: 12.00
+                      withholdingAmount:
+                        type: number
+                        example: 200.00
+                      contractAttachment:
+                        type: string
+                        example: "path/to/contract.pdf"
+                      isPublic:
+                        type: boolean
+                        example: true
+                      status:
+                        type: string
+                        enum:
+                          - "IN_DEPARTURE"
+                          - "IN_PROGRESS"
+                          - "COMPLETED"
+                          - "CANCELLED"
+                        default: "IN_DEPARTURE"
+                      createdAt:
+                        type: string
+                        example: "2025-02-12 18:14:47.456"
+                      updatedAt:
+                        type: string
+                        example: "2025-02-11 22:19:34.99"
+        403:
+          description: Forbidden. Only admins are allowed to update orders.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden: You do not have the required permissions"
+        404:
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Order not found"
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/order/update/{id}:
+    patch:
+      summary: Update a specific order by ID
+      description: Updates the details of an existing order by its ID. Only admins can update orders.
+      tags:
+        - Order
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the order to update
+          required: true
+          schema:
+            type: string
+          example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderDetails:
+                  type: string
+                  description: The updated details of the order
+                status:
+                  type: string
+                  description: The new status of the order (e.g., "pending", "completed")
+              example:
+                orderDetails: "Updated order details"
+                status: "completed"
+      responses:
+        200:
+          description: Successfully updated the order
+          content:
+            application/json:
+              schema:
+                properties:
+                  order:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
+                      code:
+                        type: string
+                        example: ORD123456
+                      description:
+                        type: string
+                        example: "Order description here"
+                      workAmount:
+                        type: number
+                        format: decimal
+                        example: 15000.00
+                      advancePayment:
+                        type: number
+                        format: decimal
+                        example: 5000.00
+                      startDate:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T10:00:00Z"
+                      endDate:
+                        type: string
+                        format: date-time
+                        example: "2025-03-18T10:00:00Z"
+                      country:
+                        type: string
+                        example: "USA"
+                      province:
+                        type: string
+                        example: "California"
+                      nation:
+                        type: string
+                        example: "United States"
+                      address:
+                        type: string
+                        example: "123 Main Street"
+                      city:
+                        type: string
+                        example: "Los Angeles"
+                      common:
+                        type: string
+                        example: "1234"
+                      orderManager:
+                        type: string
+                        example: "John Doe"
+                      siteManager:
+                        type: string
+                        example: "Jane Smith"
+                      technicalManager:
+                        type: string
+                        example: "Alex Brown"
+                      cnceCode:
+                        type: string
+                        example: "CNCE-789"
+                      cap:
+                        type: string
+                        example: "CAP-101"
+                      cig:
+                        type: string
+                        example: "CIG-102"
+                      cup:
+                        type: string
+                        example: "CUP-103"
+                      iva:
+                        type: number
+                        example: 18.00
+                      discountPercentage:
+                        type: number
+                        example: 5.00
+                      dipositRecovery:
+                        type: number
+                        example: 100.00
+                      vat:
+                        type: number
+                        example: 12.00
+                      withholdingAmount:
+                        type: number
+                        example: 200.00
+                      contractAttachment:
+                        type: string
+                        example: "path/to/contract.pdf"
+                      isPublic:
+                        type: boolean
+                        example: true
+                      status:
+                        type: string
+                        enum:
+                          - "IN_DEPARTURE"
+                          - "IN_PROGRESS"
+                          - "COMPLETED"
+                          - "CANCELLED"
+                        default: "IN_DEPARTURE"
+                      createdAt:
+                        type: string
+                        example: "2025-02-12 18:14:47.456"
+                      updatedAt:
+                        type: string
+                        example: "2025-02-11 22:19:34.99"
+                  message:
+                    type: string
+                    example: "Updated successfully"
+        400:
+          description: Invalid request or missing data in request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ID not found"
+        403:
+          description: Forbidden. Only admins are allowed to update orders.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden: You do not have the required permissions"
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/order/delete:
+    delete:
+      summary: delete order,orders from the database
+      description: delete an order or orders by authenticating admin id then find the ids from the req.body and perform query of deleteMany()
+      security:
+        - bearerAuth: []
+      tags:
+        - Order
+      parameters:
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    [
+                      "1161573e-bdf6-42cc-a7c1-4f6c84c99b21",
+                      "2234567e-bdf6-42cc-a7c1-4f6c84c99b22",
+                    ]
+
+      responses:
+        200:
+          description: Order deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Order deleted!"
+                  status:
+                    type: boolean
+                    example: true
+        400:
+          description: ids not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ids not found"
+        403:
+          description: Forbidden. Only admins are allowed to update orders.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden: You do not have the required permissions"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal Server Error"
+
+  /api/order/search:
+    get:
+      summary: Search for a specific order by code
+      description: Searches for an order using the order code. Only admins can search for orders.
+      tags:
+        - Order
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: code
+          in: query
+          description: The unique order code used to search for an order
+          required: true
+          schema:
+            type: string
+          example: "ORD12345"
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      responses:
+        200:
+          description: Successfully found the order
+          content:
+            application/json:
+              schema:
+                properties:
+                  order:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
+                      code:
+                        type: string
+                        example: ORD123456
+                      description:
+                        type: string
+                        example: "Order description here"
+                      workAmount:
+                        type: number
+                        format: decimal
+                        example: 15000.00
+                      advancePayment:
+                        type: number
+                        format: decimal
+                        example: 5000.00
+                      startDate:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T10:00:00Z"
+                      endDate:
+                        type: string
+                        format: date-time
+                        example: "2025-03-18T10:00:00Z"
+                      country:
+                        type: string
+                        example: "USA"
+                      province:
+                        type: string
+                        example: "California"
+                      nation:
+                        type: string
+                        example: "United States"
+                      address:
+                        type: string
+                        example: "123 Main Street"
+                      city:
+                        type: string
+                        example: "Los Angeles"
+                      common:
+                        type: string
+                        example: "1234"
+                      orderManager:
+                        type: string
+                        example: "John Doe"
+                      siteManager:
+                        type: string
+                        example: "Jane Smith"
+                      technicalManager:
+                        type: string
+                        example: "Alex Brown"
+                      cnceCode:
+                        type: string
+                        example: "CNCE-789"
+                      cap:
+                        type: string
+                        example: "CAP-101"
+                      cig:
+                        type: string
+                        example: "CIG-102"
+                      cup:
+                        type: string
+                        example: "CUP-103"
+                      iva:
+                        type: number
+                        example: 18.00
+                      discountPercentage:
+                        type: number
+                        example: 5.00
+                      dipositRecovery:
+                        type: number
+                        example: 100.00
+                      vat:
+                        type: number
+                        example: 12.00
+                      withholdingAmount:
+                        type: number
+                        example: 200.00
+                      contractAttachment:
+                        type: string
+                        example: "path/to/contract.pdf"
+                      isPublic:
+                        type: boolean
+                        example: true
+                      status:
+                        type: string
+                        enum:
+                          - "IN_DEPARTURE"
+                          - "IN_PROGRESS"
+                          - "COMPLETED"
+                          - "CANCELLED"
+                        default: "IN_DEPARTURE"
+                      createdAt:
+                        type: string
+                        example: "2025-02-12 18:14:47.456"
+                      updatedAt:
+                        type: string
+                        example: "2025-02-11 22:19:34.99"
+        404:
+          description: Order not found for the given code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Not found"
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"

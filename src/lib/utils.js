@@ -4,7 +4,7 @@ const { sign } = jwt;
 
 /**
  * This function is used to generate a JWT token and then saved it into the cookies of incoming res
- * 
+ *
  * @param user it is the user object
  * @param res  incoming res object from express-Response Object
  */
@@ -18,4 +18,8 @@ export const generateAndSaveToken = (user, res) => {
     }
   );
   res.cookie(`token`, `Bearer ${token}`, { httpOnly: false });
+};
+
+export const formatDate = (date) => {
+  return date.toLocaleDateString("en-GB").replace(/\//g, "/");
 };

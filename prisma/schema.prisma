@@ -14,72 +14,127 @@ datasource db {
 }
 
 model Admin {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
   name      String
   password  String
-  role      Role     @default(ADMIN)
-  clients   Client[] // one-to-many relations
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role       @default(ADMIN)
+  clients   Customer[] // one-to-many relations
+  orders    Order[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
-
-model Client {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  number    String?
-  address   String?
-  state     String?
-  role      Role     @default(USER)
-  admin     Admin?   @relation(fields: [adminId], references: [id])
-  adminId   String?
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Customer {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String?
+  password    String
+  companyName String
+  vat         String
+  taxId       String
+  ateco       String
+  nation      String
+  province    String
+  address     String
+  common      String
+  cap         String
+  pec         String
+  telephone   String
+  role        Role     @default(USER)
+  admin       Admin?   @relation(fields: [adminId], references: [id])
+  adminId     String?
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Order {
-  id                  String    @id @default(uuid())
-  jobDescription      String
-  projectManager      String
-  technicalManager    String
-  constructionManager String
-  address             String
-  state               State     @default(pending)
-  client              Client?   @relation(fields: [clientId], references: [id])
-  clientId            String?
-  supplier            Supplier? @relation(fields: [supplierId], references: [id])
-  supplierId          String?
-  lat                 Float?
-  lng                 Float?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  id                 String      @id @default(uuid())
+  code               String      @unique
+  description        String
+  workAmount         Decimal
+  advancePayment     Decimal
+  startDate          DateTime
+  endDate            DateTime
+  province           String
+  nation             String
+  address            String
+  common             String
+  orderManager       String
+  siteManager        String
+  technicalManager   String
+  admin              Admin?      @relation(fields: [adminId], references: [id])
+  adminId            String?
+  supplier           Supplier?   @relation(fields: [supplierId], references: [id])
+  supplierId         String?
+  cnceCode           String?
+  cap                String
+  cig                String
+  cup                String
+  iva                Float
+  discountPercentage Float
+  dipositRecovery    Float
+  vat                Float?
+  withholdingAmount  Float  
+  lat                Float?
+  lng                Float?
+  contractAttachment String
+  isPublic           Boolean     @default(false)
+  status             OrderStatus @default(IN_DEPARTURE)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  Customer           Customer?   @relation(fields: [customerId], references: [id])
+  customerId         String?
 }
 
 model Supplier {
   id          String   @id @default(uuid())
-  companyName String
-  VATNumber   String
   email       String   @unique
-  phone       String
+  name        String?
+  password    String
+  companyName String
+  vat         String
+  taxId       String
+  ateco       String
+  nation      String
+  province    String
   address     String
+  common      String
+  cap         String
+  pec         String
+  telephone   String
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model Employee {
-  id        String   @id @default(uuid())
-  name      String
-  number    String
-  email     String
-  address   String
-  role      EmpRole  @default(Training)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String   @id @default(uuid())
+  name                String
+  surname             String
+  taxId               String
+  nameAndSurname      String
+  contractorNo        String
+  sector              String
+  startDate           DateTime
+  endDate             DateTime
+  municipalityOfBirth String
+  level               String
+  Qualification       String
+  number              String
+  email               String
+  address             String
+  role                Role     @default(ADMIN)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+enum OrderStatus {
+  IN_DEPARTURE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
 
 enum State {

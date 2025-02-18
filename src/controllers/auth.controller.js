@@ -6,83 +6,6 @@ import { generateAndSaveToken } from "../lib/utils.js";
 
 const { sign, verify } = jwt;
 
-export const signup = async (req, res) => {
-  try {
-    const { id } = req.user;
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-    const exist = await prisma.client.findUnique({ where: { email: email } });
-    if (exist) {
-      return res.status(400).json({ error: "User already exists" });
-    }
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ error: "Password must be at least 6 characters" });
-    }
-    const hash = await bcrypt.hash(password, 10);
-    const user = await prisma.client.create({
-      data: {
-        name,
-        email,
-        adminId: id,
-        password: hash,
-      },
-    });
-    return res
-      .status(201)
-      .json({ message: "User created successfully", data: user });
-  } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-    const user = await prisma.client.findUnique({ where: { email: email } });
-    if (!user) return res.status(400).json({ message: "Invalid Email" });
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(400).json({ error: "Invalid Password" });
-    }
-    generateAndSaveToken(user, res);
-    return res.status(200).json({ message: "Login successful", data: user });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-export const logout = async (req, res) => {
-  try {
-    res.clearCookie("token");
-    res.status(200).json({ message: "logout sucessfull" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}; //optional
-
-
-
-export const getAllUsers = async (req, res) => {
-  try {
-    const { id } = req.user;
-    const users = await prisma.client.findMany({ where: { adminId: id } });
-    if (!users) {
-      return res.status(404).json({ message: "No user found", data: [] });
-    }
-    return res.status(200).json({ data: users, message: "All users fetched" });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-
 export const createAdmin = async (req, res) => {
   try {
     let count = Math.round(Math.random() * 100);
@@ -139,7 +62,7 @@ export const verifEmail = async (req, res) => {
       { role: verify.role, id: verify.id },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1m",
+        expiresIn: "3m",
       }
     );
     res.cookie("email-verf-token", verfToken, { httpOnly: false });
