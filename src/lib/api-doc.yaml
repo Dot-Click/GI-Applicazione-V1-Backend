@@ -319,9 +319,6 @@ paths:
                   type: string
                   format: date-time
                   example: "2025-03-18T10:00:00Z"
-                country:
-                  type: string
-                  example: "USA"
                 province:
                   type: string
                   example: "California"
@@ -331,9 +328,6 @@ paths:
                 address:
                   type: string
                   example: "123 Main Street"
-                city:
-                  type: string
-                  example: "Los Angeles"
                 common:
                   type: string
                   example: "1234"
@@ -429,9 +423,6 @@ paths:
                             type: string
                             format: date-time
                             example: "2025-03-18T10:00:00Z"
-                          country:
-                            type: string
-                            example: "USA"
                           province:
                             type: string
                             example: "California"
@@ -441,9 +432,6 @@ paths:
                           address:
                             type: string
                             example: "123 Main Street"
-                          city:
-                            type: string
-                            example: "Los Angeles"
                           common:
                             type: string
                             example: "1234"
@@ -596,9 +584,6 @@ paths:
                           type: string
                           format: date-time
                           example: "2025-03-18T10:00:00Z"
-                        country:
-                          type: string
-                          example: "USA"
                         province:
                           type: string
                           example: "California"
@@ -608,9 +593,6 @@ paths:
                         address:
                           type: string
                           example: "123 Main Street"
-                        city:
-                          type: string
-                          example: "Los Angeles"
                         common:
                           type: string
                           example: "1234"
@@ -774,9 +756,6 @@ paths:
                         type: string
                         format: date-time
                         example: "2025-03-18T10:00:00Z"
-                      country:
-                        type: string
-                        example: "USA"
                       province:
                         type: string
                         example: "California"
@@ -786,9 +765,6 @@ paths:
                       address:
                         type: string
                         example: "123 Main Street"
-                      city:
-                        type: string
-                        example: "Los Angeles"
                       common:
                         type: string
                         example: "1234"
@@ -953,9 +929,6 @@ paths:
                         type: string
                         format: date-time
                         example: "2025-03-18T10:00:00Z"
-                      country:
-                        type: string
-                        example: "USA"
                       province:
                         type: string
                         example: "California"
@@ -965,9 +938,6 @@ paths:
                       address:
                         type: string
                         example: "123 Main Street"
-                      city:
-                        type: string
-                        example: "Los Angeles"
                       common:
                         type: string
                         example: "1234"
@@ -1199,9 +1169,6 @@ paths:
                         type: string
                         format: date-time
                         example: "2025-03-18T10:00:00Z"
-                      country:
-                        type: string
-                        example: "USA"
                       province:
                         type: string
                         example: "California"
@@ -1211,9 +1178,6 @@ paths:
                       address:
                         type: string
                         example: "123 Main Street"
-                      city:
-                        type: string
-                        example: "Los Angeles"
                       common:
                         type: string
                         example: "1234"

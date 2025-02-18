@@ -29,7 +29,7 @@ model Customer {
   id          String   @id @default(uuid())
   email       String   @unique
   name        String?
-  password    String
+  password    String? 
   companyName String
   vat         String
   taxId       String
@@ -92,7 +92,7 @@ model Supplier {
   id          String   @id @default(uuid())
   email       String   @unique
   name        String?
-  password    String
+  password    String?
   companyName String
   vat         String
   taxId       String
