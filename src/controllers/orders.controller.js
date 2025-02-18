@@ -40,7 +40,6 @@ export const createOrder = async (req, res) => {
       "withholdingAmount",
       "contractAttachment",
     ];
-    console.log(requiredFields.length);
     for (let field of requiredFields) {
       if (!req.body[field]) {
         return res.status(404).json({
@@ -48,6 +47,11 @@ export const createOrder = async (req, res) => {
         });
       }
     }
+    const ifExist = await prisma.order.findUnique({
+      where: { code: req.body.code },
+    });
+    if (ifExist)
+      return res.status(400).json({ message: "Can't create duplicate orders" });
     const order = await prisma.order.create({
       data: {
         ...req.body,
@@ -103,7 +107,7 @@ export const getOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const order = await prisma.order.findUnique({ where: { id: id } });
-    if(!order) return res.status(404).json({message:"Order not found"})
+    if (!order) return res.status(404).json({ message: "Order not found" });
     return res.status(200).json(order);
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -113,6 +117,7 @@ export const getOrder = async (req, res) => {
 export const deleteOrder = async (req, res) => {
   try {
     const { ids } = req.body;
+    if (!ids) return res.status(400).json({ message: "Bad request" });
     const ord = await prisma.order.deleteMany({ where: { id: { in: ids } } });
     if (!ord.count) return res.status(404).json({ message: "ids not found" });
     return res.status(200).json({ message: "Order deleted!" });
