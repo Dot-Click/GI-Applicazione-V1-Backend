@@ -1,9 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { formatDate } from "../src/lib/utils.js";
 
-const prisma = new PrismaClient({
-  // log: ['query'],
-});
+const prisma = new PrismaClient({});
 
 prisma.$extends({
   name: "format-dates-extension",

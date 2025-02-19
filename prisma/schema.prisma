@@ -21,6 +21,7 @@ model Admin {
   role      Role       @default(ADMIN)
   clients   Customer[] // one-to-many relations
   orders    Order[]
+  suppliers Supplier[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
@@ -29,7 +30,7 @@ model Customer {
   id          String   @id @default(uuid())
   email       String   @unique
   name        String?
-  password    String? 
+  password    String?
   companyName String
   vat         String
   taxId       String
@@ -66,8 +67,8 @@ model Order {
   technicalManager   String
   admin              Admin?      @relation(fields: [adminId], references: [id])
   adminId            String?
-  supplier           Supplier?   @relation(fields: [supplierId], references: [id])
-  supplierId         String?
+  supplier           Supplier?   @relation(fields: [supplierEmail], references: [email])
+  supplierEmail      String?
   cnceCode           String?
   cap                String
   cig                String
@@ -76,7 +77,9 @@ model Order {
   discountPercentage Float
   dipositRecovery    Float
   vat                Float?
-  withholdingAmount  Float  
+  jobName            String?
+  typology           String?
+  withholdingAmount  Float
   lat                Float?
   lng                Float?
   contractAttachment String
@@ -90,7 +93,7 @@ model Order {
 
 model Supplier {
   id          String   @id @default(uuid())
-  email       String   @unique
+  email       String   @unique //ref to supplierName in order table
   name        String?
   password    String?
   companyName String
@@ -104,6 +107,8 @@ model Supplier {
   cap         String
   pec         String
   telephone   String
+  admin       Admin?   @relation(fields: [adminId], references: [id])
+  adminId     String?
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

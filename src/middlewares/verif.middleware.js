@@ -10,7 +10,7 @@ export const checkRole = (requiredRoles) => {
     try {
       let role = req.user?.role;
       if(!role){
-        role = "USER"  //agr role nhi ara or ye wala middlware req pr lga wa hai then role by default USER hojayega
+        role = "USER"  //agr role nhi ara or ye wala middlware req pr lga wa hai bagheir Auth middlware kay then role by default USER hojayega
       }
       // console.log(role)
       if (!requiredRoles.includes(role)) {
