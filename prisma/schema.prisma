@@ -93,7 +93,7 @@ model Order {
 
 model Supplier {
   id          String   @id @default(uuid())
-  email       String   @unique //ref to supplierName in order table
+  email       String   @unique //ref to supplierEmail in order table
   name        String?
   password    String?
   companyName String

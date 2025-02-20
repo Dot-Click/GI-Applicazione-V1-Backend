@@ -258,7 +258,7 @@ paths:
       tags:
         - Order
       parameters:
-        - name: Authorization
+        - name: token
           in: cookie
           description: Bearer token saved in the cookies for authentication
           required: true
@@ -687,7 +687,7 @@ paths:
                     type: string
                     example: "Internal server error"
       parameters:
-        - name: Authorization
+        - name: token
           in: cookie
           description: Bearer token saved in the cookies for authentication
           required: true
@@ -711,7 +711,7 @@ paths:
           schema:
             type: string
           example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
-        - name: Authorization
+        - name: token
           in: cookie
           description: Bearer token saved in the cookies for authentication
           required: true
@@ -871,7 +871,7 @@ paths:
           schema:
             type: string
           example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
-        - name: Authorization
+        - name: token
           in: cookie
           description: Bearer token saved in the cookies for authentication
           required: true
@@ -1040,7 +1040,7 @@ paths:
       tags:
         - Order
       parameters:
-        - name: Authorization
+        - name: token
           in: cookie
           description: Bearer token saved in the cookies for authentication
           required: true
@@ -1127,7 +1127,7 @@ paths:
           schema:
             type: string
           example: "ORD12345"
-        - name: Authorization
+        - name: token
           in: cookie
           description: Bearer token saved in the cookies for authentication
           required: true
@@ -1249,6 +1249,1423 @@ paths:
                     example: "Not found"
         500:
           description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  # customer APIs
+  /api/customer/create:
+    post:
+      summary: Create a customer from admin
+      description: Create a new customer using admin authentication. The request must contain all required fields.
+      security:
+        - bearerAuth: []
+      tags:
+        - Customer
+      parameters:
+        - name: token
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - companyName
+                - vat
+                - taxId
+                - ateco
+                - nation
+                - province
+                - address
+                - common
+                - cap
+                - pec
+                - email
+                - telephone
+              properties:
+                companyName:
+                  type: string
+                  example: "Tech Solutions"
+                vat:
+                  type: string
+                  example: "IT123456789"
+                taxId:
+                  type: string
+                  example: "TAX123456"
+                ateco:
+                  type: string
+                  example: "6201"
+                nation:
+                  type: string
+                  example: "Italy"
+                province:
+                  type: string
+                  example: "Lombardy"
+                address:
+                  type: string
+                  example: "Via Roma 123"
+                common:
+                  type: string
+                  example: "Milan"
+                cap:
+                  type: string
+                  example: "20100"
+                pec:
+                  type: string
+                  example: "customer@pec.it"
+                email:
+                  type: string
+                  format: email
+                  example: "customer@example.com"
+                telephone:
+                  type: string
+                  example: "+39 123 456 7890"
+      responses:
+        200:
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Customer created"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                      email:
+                        type: string
+                        example: "customer@example.com"
+                      companyName:
+                        type: string
+                        example: "Tech Solutions"
+                      vat:
+                        type: string
+                        example: "IT123456789"
+                      taxId:
+                        type: string
+                        example: "TAX123456"
+                      ateco:
+                        type: string
+                        example: "6201"
+                      nation:
+                        type: string
+                        example: "Italy"
+                      province:
+                        type: string
+                        example: "Lombardy"
+                      address:
+                        type: string
+                        example: "Via Roma 123"
+                      common:
+                        type: string
+                        example: "Milan"
+                      cap:
+                        type: string
+                        example: "20100"
+                      pec:
+                        type: string
+                        example: "customer@pec.it"
+                      telephone:
+                        type: string
+                        example: "+39 123 456 7890"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+        400:
+          description: Customer already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Customer already exists"
+        404:
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Missing required field: email"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/customer/:
+    get:
+      summary: Get all registered customers (up to 10)
+      description: Fetches up to 10 customers associated with the authenticated admin.
+      security:
+        - bearerAuth: []
+      tags:
+        - Customer
+      parameters:
+        - name: token
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      responses:
+        200:
+          description: Successfully fetched customers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "All users fetched"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                        email:
+                          type: string
+                          example: "customer@example.com"
+                        companyName:
+                          type: string
+                          example: "Tech Solutions"
+                        vat:
+                          type: string
+                          example: "IT123456789"
+                        taxId:
+                          type: string
+                          example: "TAX123456"
+                        ateco:
+                          type: string
+                          example: "6201"
+                        nation:
+                          type: string
+                          example: "Italy"
+                        province:
+                          type: string
+                          example: "Lombardy"
+                        address:
+                          type: string
+                          example: "Via Roma 123"
+                        common:
+                          type: string
+                          example: "Milan"
+                        cap:
+                          type: string
+                          example: "20100"
+                        pec:
+                          type: string
+                          example: "customer@pec.it"
+                        telephone:
+                          type: string
+                          example: "+39 123 456 7890"
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: "2025-02-18T12:34:56.789Z"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: "2025-02-18T12:34:56.789Z"
+        404:
+          description: No customers found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No user found"
+                  data:
+                    type: array
+                    example: []
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/customer/{id}:
+    get:
+      summary: Get a single customer by ID
+      description: Fetches a customer based on the provided ID. Only accessible to admins.
+      security:
+        - bearerAuth: []
+      tags:
+        - Customer
+      parameters:
+        - name: token
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+        - name: id
+          in: path
+          description: Unique ID of the customer
+          required: true
+          schema:
+            type: string
+            example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+      responses:
+        200:
+          description: Successfully fetched customer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "successfully get a user"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                      email:
+                        type: string
+                        example: "customer@example.com"
+                      companyName:
+                        type: string
+                        example: "Tech Solutions"
+                      vat:
+                        type: string
+                        example: "IT123456789"
+                      taxId:
+                        type: string
+                        example: "TAX123456"
+                      ateco:
+                        type: string
+                        example: "6201"
+                      nation:
+                        type: string
+                        example: "Italy"
+                      province:
+                        type: string
+                        example: "Lombardy"
+                      address:
+                        type: string
+                        example: "Via Roma 123"
+                      common:
+                        type: string
+                        example: "Milan"
+                      cap:
+                        type: string
+                        example: "20100"
+                      pec:
+                        type: string
+                        example: "customer@pec.it"
+                      telephone:
+                        type: string
+                        example: "+39 123 456 7890"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+        404:
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/customer/update/{id}:
+    patch:
+      summary: Update customer details
+      description: Updates an existing customer's details based on the provided ID. Only accessible to admins.
+      security:
+        - bearerAuth: []
+      tags:
+        - Customer
+      parameters:
+        - name: token
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+        - name: id
+          in: path
+          description: Unique ID of the customer
+          required: true
+          schema:
+            type: string
+            example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                companyName:
+                  type: string
+                  example: "Tech Solutions"
+                vat:
+                  type: string
+                  example: "IT123456789"
+                taxId:
+                  type: string
+                  example: "TAX123456"
+                ateco:
+                  type: string
+                  example: "6201"
+                nation:
+                  type: string
+                  example: "Italy"
+                province:
+                  type: string
+                  example: "Lombardy"
+                address:
+                  type: string
+                  example: "Via Roma 123"
+                common:
+                  type: string
+                  example: "Milan"
+                cap:
+                  type: string
+                  example: "20100"
+                pec:
+                  type: string
+                  example: "customer@pec.it"
+                telephone:
+                  type: string
+                  example: "+39 123 456 7890"
+                createdAt:
+                  type: string
+                  format: date-time
+                  example: "2025-02-18T12:34:56.789Z"
+                updatedAt:
+                  type: string
+                  format: date-time
+                  example: "2025-02-18T12:34:56.789Z"
+      responses:
+        200:
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "updated successfully"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                      email:
+                        type: string
+                        example: "customer@example.com"
+                      companyName:
+                        type: string
+                        example: "Tech Solutions"
+                      vat:
+                        type: string
+                        example: "IT123456789"
+                      taxId:
+                        type: string
+                        example: "TAX123456"
+                      ateco:
+                        type: string
+                        example: "6201"
+                      nation:
+                        type: string
+                        example: "Italy"
+                      province:
+                        type: string
+                        example: "Lombardy"
+                      address:
+                        type: string
+                        example: "Via Roma 123"
+                      common:
+                        type: string
+                        example: "Milan"
+                      cap:
+                        type: string
+                        example: "20100"
+                      pec:
+                        type: string
+                        example: "customer@pec.it"
+                      telephone:
+                        type: string
+                        example: "+39 123 456 7890"
+        404:
+          description: Customer ID not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "id not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/customer/delete:
+    delete:
+      summary: Delete multiple customers
+      description: Deletes multiple customers based on the provided IDs. Only accessible to admins.
+      security:
+        - bearerAuth: []
+      tags:
+        - Customer
+      parameters:
+        - name: token
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                    - "223e4567-e89b-12d3-a456-426614174000"
+      responses:
+        200:
+          description: Customers deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Customer deleted!"
+        400:
+          description: Bad request (missing IDs in body)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Bad request"
+        404:
+          description: IDs not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ids not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/customer/search:
+    get:
+      summary: Search customers by company name
+      description: This endpoint allows searching for customers by their company name. Only accessible to admins.
+      security:
+        - bearerAuth: []
+      tags:
+        - Customer
+      parameters:
+        - name: token
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+        - name: companyName
+          in: query
+          description: The company name of the customer to search for
+          required: true
+          schema:
+            type: string
+            example: "ABC Corp"
+      responses:
+        200:
+          description: Customer(s) found successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "customer found successfully"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                      email:
+                        type: string
+                        example: "customer@example.com"
+                      companyName:
+                        type: string
+                        example: "Tech Solutions"
+                      vat:
+                        type: string
+                        example: "IT123456789"
+                      taxId:
+                        type: string
+                        example: "TAX123456"
+                      ateco:
+                        type: string
+                        example: "6201"
+                      nation:
+                        type: string
+                        example: "Italy"
+                      province:
+                        type: string
+                        example: "Lombardy"
+                      address:
+                        type: string
+                        example: "Via Roma 123"
+                      common:
+                        type: string
+                        example: "Milan"
+                      cap:
+                        type: string
+                        example: "20100"
+                      pec:
+                        type: string
+                        example: "customer@pec.it"
+                      telephone:
+                        type: string
+                        example: "+39 123 456 7890"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+        400:
+          description: "Missing required query parameter: companyName"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "missing required query field: companyName"
+        404:
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "customer not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  # supplier routes
+  /api/supplier/create:
+    post:
+      summary: Create a new supplier from admin
+      description: This endpoint allows an admin to create a new supplier by providing the required details.
+      security:
+        - bearerAuth: []
+      tags:
+        - Supplier
+      parameters:
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - companyName
+                - vat
+                - taxId
+                - ateco
+                - nation
+                - province
+                - address
+                - common
+                - cap
+                - pec
+                - telephone
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "supplier@example.com"
+                companyName:
+                  type: string
+                  example: "ABC Suppliers Ltd."
+                vat:
+                  type: string
+                  example: "VAT123456"
+                taxId:
+                  type: string
+                  example: "TAX789012"
+                ateco:
+                  type: string
+                  example: "47.91.10"
+                nation:
+                  type: string
+                  example: "Italy"
+                province:
+                  type: string
+                  example: "Milan"
+                address:
+                  type: string
+                  example: "123 Supplier Street"
+                common:
+                  type: string
+                  example: "Milan"
+                cap:
+                  type: string
+                  example: "20100"
+                pec:
+                  type: string
+                  example: "supplier@pec.com"
+                telephone:
+                  type: string
+                  example: "+39 012 345 6789"
+
+      responses:
+        200:
+          description: Supplier created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "supplier created!"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                      email:
+                        type: string
+                        example: "supplier@example.com"
+                      companyName:
+                        type: string
+                        example: "ABC Suppliers Ltd."
+                      vat:
+                        type: string
+                        example: "VAT123456"
+                      taxId:
+                        type: string
+                        example: "TAX789012"
+                      ateco:
+                        type: string
+                        example: "47.91.10"
+                      nation:
+                        type: string
+                        example: "Italy"
+                      province:
+                        type: string
+                        example: "Milan"
+                      address:
+                        type: string
+                        example: "123 Supplier Street"
+                      common:
+                        type: string
+                        example: "Milan"
+                      cap:
+                        type: string
+                        example: "20100"
+                      pec:
+                        type: string
+                        example: "supplier@pec.com"
+                      telephone:
+                        type: string
+                        example: "+39 012 345 6789"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+        400:
+          description: Supplier already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "supplier already there"
+        404:
+          description: Missing required field(s)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Missing required field: companyName"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/supplier/:
+    get:
+      summary: Get all registered suppliers (up to 10)
+      description: Fetch a list of up to 10 suppliers.
+      security:
+        - bearerAuth: []
+      tags:
+        - Supplier
+      parameters:
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      responses:
+        200:
+          description: Successfully fetched all suppliers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "All supplier fetched"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                        email:
+                          type: string
+                          example: "supplier@example.com"
+                        companyName:
+                          type: string
+                          example: "ABC Suppliers Ltd."
+                        vat:
+                          type: string
+                          example: "VAT123456"
+                        taxId:
+                          type: string
+                          example: "TAX789012"
+                        ateco:
+                          type: string
+                          example: "47.91.10"
+                        nation:
+                          type: string
+                          example: "Italy"
+                        province:
+                          type: string
+                          example: "Milan"
+                        address:
+                          type: string
+                          example: "123 Supplier Street"
+                        common:
+                          type: string
+                          example: "Milan"
+                        cap:
+                          type: string
+                          example: "20100"
+                        pec:
+                          type: string
+                          example: "supplier@pec.com"
+                        telephone:
+                          type: string
+                          example: "+39 012 345 6789"
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: "2025-02-18T12:34:56.789Z"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: "2025-02-18T12:34:56.789Z"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/supplier/{id}:
+    get:
+      summary: Get a specific supplier by ID
+      description: Fetch supplier details using a unique supplier ID.
+      security:
+        - bearerAuth: []
+      tags:
+        - Supplier
+      parameters:
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in the cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+        - name: id
+          in: path
+          description: Unique ID of the supplier to retrieve
+          required: true
+          schema:
+            type: string
+            example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+      responses:
+        200:
+          description: Successfully retrieved supplier details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "supplier fetched"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                      email:
+                        type: string
+                        example: "supplier@example.com"
+                      companyName:
+                        type: string
+                        example: "ABC Suppliers Ltd."
+                      vat:
+                        type: string
+                        example: "VAT123456"
+                      taxId:
+                        type: string
+                        example: "TAX789012"
+                      ateco:
+                        type: string
+                        example: "47.91.10"
+                      nation:
+                        type: string
+                        example: "Italy"
+                      province:
+                        type: string
+                        example: "Milan"
+                      address:
+                        type: string
+                        example: "123 Supplier Street"
+                      common:
+                        type: string
+                        example: "Milan"
+                      cap:
+                        type: string
+                        example: "20100"
+                      pec:
+                        type: string
+                        example: "supplier@pec.com"
+                      telephone:
+                        type: string
+                        example: "+39 012 345 6789"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+        400:
+          description: Missing supplier ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "id not found"
+        404:
+          description: Supplier not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "supplier not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/supplier/update/{id}:
+    patch:
+      summary: Update supplier details
+      description: Updates supplier information based on the given ID.
+      security:
+        - bearerAuth: []
+      tags:
+        - Supplier
+      parameters:
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+        - name: id
+          in: path
+          description: Unique ID of the supplier to update
+          required: true
+          schema:
+            type: string
+            example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "newsupplier@example.com"
+                companyName:
+                  type: string
+                  example: "Updated ABC Suppliers Ltd."
+                vat:
+                  type: string
+                  example: "NEWVAT123456"
+                taxId:
+                  type: string
+                  example: "NEWTAX789012"
+                ateco:
+                  type: string
+                  example: "47.91.20"
+                nation:
+                  type: string
+                  example: "Italy"
+                province:
+                  type: string
+                  example: "Rome"
+                address:
+                  type: string
+                  example: "456 New Supplier Street"
+                common:
+                  type: string
+                  example: "Rome"
+                cap:
+                  type: string
+                  example: "00100"
+                pec:
+                  type: string
+                  example: "updatedsupplier@pec.com"
+                telephone:
+                  type: string
+                  example: "+39 098 765 4321"
+      responses:
+        200:
+          description: Supplier updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "supplier updated"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                      email:
+                        type: string
+                        example: "newsupplier@example.com"
+                      companyName:
+                        type: string
+                        example: "Updated ABC Suppliers Ltd."
+                      vat:
+                        type: string
+                        example: "NEWVAT123456"
+                      taxId:
+                        type: string
+                        example: "NEWTAX789012"
+                      ateco:
+                        type: string
+                        example: "47.91.20"
+                      nation:
+                        type: string
+                        example: "Italy"
+                      province:
+                        type: string
+                        example: "Rome"
+                      address:
+                        type: string
+                        example: "456 New Supplier Street"
+                      common:
+                        type: string
+                        example: "Rome"
+                      cap:
+                        type: string
+                        example: "00100"
+                      pec:
+                        type: string
+                        example: "updatedsupplier@pec.com"
+                      telephone:
+                        type: string
+                        example: "+39 098 765 4321"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+        400:
+          description: Bad request or invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid request data"
+        404:
+          description: Supplier not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "supplier not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/supplier/delete:
+    delete:
+      summary: Delete multiple suppliers
+      description: Deletes multiple suppliers based on their IDs.
+      security:
+        - bearerAuth: []
+      tags:
+        - Supplier
+      parameters:
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                    - "bb5e55e9-9336-45e3-a9c9-876de8f8902d"
+      responses:
+        200:
+          description: Suppliers deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "supplier deleted!"
+        400:
+          description: Bad request (e.g., missing or invalid IDs)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Bad request"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/supplier/search:
+    get:
+      summary: Search for suppliers by company name
+      description: Retrieves suppliers based on the provided company name.
+      security:
+        - bearerAuth: []
+      tags:
+        - Supplier
+      parameters:
+        - name: Authorization
+          in: cookie
+          description: Bearer token saved in cookies for authentication
+          required: true
+          schema:
+            type: string
+            example: "Bearer <token>"
+        - name: companyName
+          in: query
+          description: The name of the supplier's company to search for.
+          required: true
+          schema:
+            type: string
+            example: "Tech Solutions Ltd"
+      responses:
+        200:
+          description: Supplier(s) found successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "found"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "1161573e-bdf6-42cc-a7c1-4f6c84c99b21"
+                        email:
+                          type: string
+                          example: "supplier@example.com"
+                        companyName:
+                          type: string
+                          example: "ABC Suppliers Ltd."
+                        vat:
+                          type: string
+                          example: "VAT123456"
+                        taxId:
+                          type: string
+                          example: "TAX789012"
+                        ateco:
+                          type: string
+                          example: "47.91.10"
+                        nation:
+                          type: string
+                          example: "Italy"
+                        province:
+                          type: string
+                          example: "Milan"
+                        address:
+                          type: string
+                          example: "123 Supplier Street"
+                        common:
+                          type: string
+                          example: "Milan"
+                        cap:
+                          type: string
+                          example: "20100"
+                        pec:
+                          type: string
+                          example: "supplier@pec.com"
+                        telephone:
+                          type: string
+                          example: "+39 012 345 6789"
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: "2025-02-18T12:34:56.789Z"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: "2025-02-18T12:34:56.789Z"
+        400:
+          description: Missing query parameter `companyName`
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "query param 'companyName' is not found"
+        404:
+          description: No supplier found with the given company name
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "supplier not found"
+        500:
+          description: Internal server error
           content:
             application/json:
               schema:
