@@ -1,7 +1,9 @@
 import express from "express";
 import {
+  archieveOrder,
   createOrder,
   deleteOrder,
+  getArchivedOrders,
   getOrder,
   getOrders,
   searchOrder,
@@ -13,9 +15,11 @@ const router = express.Router();
 
 router.get("/search", Auth, checkRole(["ADMIN"]), searchOrder);
 router.get("/", Auth, checkRole(["ADMIN"]), getOrders);
+router.get("/archive", Auth, checkRole(["ADMIN"]), getArchivedOrders);
 router.get("/:id", Auth, checkRole(["ADMIN"]), getOrder);
 router.post("/create", Auth, checkRole(["ADMIN"]), createOrder);
 router.patch("/update/:id", Auth, checkRole(["ADMIN"]), updateOrder);
+router.patch("/archive/:id", Auth, checkRole(["ADMIN"]), archieveOrder);
 router.delete("/delete", Auth, checkRole(["ADMIN"]), deleteOrder);
 
 

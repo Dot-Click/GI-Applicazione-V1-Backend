@@ -17,7 +17,12 @@ export const generateAndSaveToken = (user, res) => {
       expiresIn: "7d",
     }
   );
-  res.cookie(`token`, `Bearer ${token}`, { httpOnly: false });
+  res.cookie(`token`, `Bearer ${token}`, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", 
+    sameSite: "strict",
+  });
+  return token
 };
 
 export const formatDate = (date) => {

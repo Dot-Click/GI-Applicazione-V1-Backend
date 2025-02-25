@@ -22,6 +22,7 @@ model Admin {
   clients   Customer[] // one-to-many relations
   orders    Order[]
   suppliers Supplier[]
+  employees Employee[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
@@ -34,13 +35,14 @@ model Customer {
   companyName String
   vat         String
   taxId       String
-  ateco       String
-  nation      String
-  province    String
+  // ateco       String
+  // nation      String
+  // province    String
   address     String
-  common      String
-  cap         String
+  // common      String
+  // cap         String
   pec         String
+  status      Status?  @default(active)
   telephone   String
   role        Role     @default(USER)
   admin       Admin?   @relation(fields: [adminId], references: [id])
@@ -51,44 +53,47 @@ model Customer {
 }
 
 model Order {
-  id                 String      @id @default(uuid())
-  code               String      @unique
-  description        String
-  workAmount         Decimal
-  advancePayment     Decimal
-  startDate          DateTime
-  endDate            DateTime
-  province           String
-  nation             String
-  address            String
-  common             String
-  orderManager       String
-  siteManager        String
-  technicalManager   String
-  admin              Admin?      @relation(fields: [adminId], references: [id])
-  adminId            String?
-  supplier           Supplier?   @relation(fields: [supplierEmail], references: [email])
-  supplierEmail      String?
-  cnceCode           String?
-  cap                String
-  cig                String
-  cup                String
-  iva                Float
-  discountPercentage Float
-  dipositRecovery    Float
-  vat                Float?
-  jobName            String?
-  typology           String?
-  withholdingAmount  Float
-  lat                Float?
-  lng                Float?
-  contractAttachment String
-  isPublic           Boolean     @default(false)
-  status             OrderStatus @default(IN_DEPARTURE)
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  Customer           Customer?   @relation(fields: [customerId], references: [id])
-  customerId         String?
+  id                String    @id @default(uuid())
+  code              String    @unique
+  description       String
+  workAmount        Decimal
+  advancePayment    Decimal
+  startDate         DateTime
+  endDate           DateTime
+  address           String
+  // province           String
+  // nation             String
+  // common             String
+  // cap                String
+  // contractAttachment String
+  // discountPercentage Float
+  state             OrderState? @default(IN_DEPARTURE)
+  cnceCode          String
+  orderManager      String
+  siteManager       String
+  technicalManager  String
+  admin             Admin?    @relation(fields: [adminId], references: [id])
+  adminId           String?
+  supplier          Supplier? @relation(fields: [supplierEmail], references: [email])
+  supplierEmail     String?
+  status            Status?   @default(active)
+  cig               String
+  cup               String
+  iva               Float
+  dipositRecovery   Float
+  vat               Float?
+  jobName           String?
+  projectName       String?
+  typology          String?
+  archieved         Boolean?   @default(false)
+  withholdingAmount Float
+  lat               Float?
+  lng               Float?
+  isPublic          Boolean?   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  Customer          Customer? @relation(fields: [customerId], references: [id])
+  customerId        String?
 }
 
 model Supplier {
@@ -99,13 +104,14 @@ model Supplier {
   companyName String
   vat         String
   taxId       String
-  ateco       String
-  nation      String
-  province    String
+  // ateco       String?
+  // nation      String?
+  // province    String?
   address     String
-  common      String
-  cap         String
+  // common      String?
+  // cap         String?
   pec         String
+  status      Status?  @default(active)
   telephone   String
   admin       Admin?   @relation(fields: [adminId], references: [id])
   adminId     String?
@@ -115,46 +121,56 @@ model Supplier {
 }
 
 model Employee {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   name                String
   surname             String
   taxId               String
-  nameAndSurname      String
+  // nameAndSurname      String
   contractorNo        String
   sector              String
-  startDate           DateTime
-  endDate             DateTime
+  startDate           String
+  endDate             String
   municipalityOfBirth String
   level               String
-  Qualification       String
+  qualification       String
   number              String
-  email               String
+  email               String    @unique
+  natureContract      String?
+  admin               Admin?    @relation(fields: [adminId], references: [id])
+  adminId             String?
+  dob                 DateTime?
   address             String
-  role                Role     @default(ADMIN)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  role                EmpRole   @default(Technical_Manager)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
 
-enum OrderStatus {
+enum OrderState {
   IN_DEPARTURE
   IN_PROGRESS
   COMPLETED
   CANCELLED
 }
 
-enum State {
+enum Status {
+  active
+  inactive
   pending
   ongoing
   completed
 }
 
 enum EmpRole {
-  Training
-  Unified_Labour_Notification
-  Fitness
+  Admin
+  Technical_Manager
+  Order_Manager
+  Contruction_Manager
 }
 
 enum Role {
   ADMIN
   USER
+  Visualizzatore
+  Editor
+  Ospite
 }

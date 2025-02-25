@@ -32,7 +32,6 @@ export const signup = async (req, res) => {
       .status(201)
       .json({ message: "User created successfully", data: user });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).json({ error: error.message });
   }
 };
@@ -51,12 +50,7 @@ export const createCust = async (req, res) => {
       "companyName",
       "vat",
       "taxId",
-      "ateco",
-      "nation",
-      "province",
       "address",
-      "common",
-      "cap",
       "pec",
       "email",
       "telephone",
@@ -74,6 +68,7 @@ export const createCust = async (req, res) => {
     }
     const customer = await prisma.customer.create({
       data: customerData,
+      omit: { password: true },
     });
 
     return res
@@ -91,6 +86,7 @@ export const updateCust = async (req, res) => {
     const cust = await prisma.customer.update({
       where: { id: id },
       data: { ...req.body },
+      omit: { password: true },
     });
     return res.status(200).json({ message: "updated sucessfully", data: cust });
   } catch (error) {
@@ -146,6 +142,7 @@ export const getAllCustomers = async (req, res) => {
     const users = await prisma.customer.findMany({
       where: { adminId: id },
       take: 10,
+      omit: { password: true },
     });
     if (!users) {
       return res.status(404).json({ message: "No user found", data: [] });
@@ -159,7 +156,10 @@ export const getAllCustomers = async (req, res) => {
 export const getCustomer = async (req, res) => {
   try {
     const { id } = req.params;
-    const cust = await prisma.customer.findUnique({ where: { id: id } });
+    const cust = await prisma.customer.findUnique({
+      where: { id: id },
+      omit: { password: true },
+    });
     if (!cust) return res.status(404).json({ message: "not found" });
     return res
       .status(200)
@@ -176,7 +176,10 @@ export const searchCustomer = async (req, res) => {
       return res
         .status(400)
         .json({ message: "missing required query field: companyName" });
-    const cust = await prisma.customer.findMany({ where: { companyName } });
+    const cust = await prisma.customer.findMany({
+      where: { companyName: { contains: companyName, mode: "insensitive" } },
+      omit: { password: true },
+    });
     if (!cust) return res.status(404).json({ message: "customer not found" });
     return res
       .status(200)

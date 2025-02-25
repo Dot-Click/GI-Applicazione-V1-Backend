@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createAdmin,
+  getAdminInfo,
   loginAdmin,
   updatePassword,
   verifEmail,
@@ -12,6 +13,7 @@ const router = express.Router();
 
 router.post("/register-admin", createAdmin);
 router.post("/login-admin", loginAdmin);
+router.get("/getAdmin",Auth, checkRole(["ADMIN"]), getAdminInfo)
 
 //forgot - password
 router.post("/verify-email", verifEmail);

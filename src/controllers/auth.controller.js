@@ -16,6 +16,7 @@ export const createAdmin = async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const admin = await prisma.admin.create({
       data: { email, name, password: hash },
+      omit: { password: true },
     });
     if (!admin) {
       return res.status(400).json({ message: "Admin not created" });
@@ -103,3 +104,96 @@ export const updatePassword = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const getAdminInfo = async (req, res) => {
+  try {
+    const admin = await prisma.admin.findUnique({
+      where: { id: req.user.id },
+      include: {
+        orders: true,
+        suppliers: true,
+        clients: true,
+        employees: true,
+      },
+    });
+    if (!admin) return res.status(404).json({ message: "admin not found" });
+
+    return res.status(200).json({ data: admin, message: "found" });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// export const apiController = async (req, res) => {
+//   try {
+//     const { method, endpoint, payload, authToken } = req.body;
+//     if (!method || !endpoint)
+//       return res.status(400).json({ message: "Missing required fields" });
+
+//     const validMethods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
+//     if (!validMethods.includes(method))
+//       return res.status(400).json({ message: "Invalid method" });
+
+//     if (!isValidURL(endpoint))
+//       return res.status(400).json({ message: "Invalid endpoint URL" });
+
+//     const makeApiCall = async (method, endpoint, payload, token) => {
+//       try {
+//         const config = {
+//           method,
+//           url: endpoint,
+//           data: payload,
+//           headers: {
+//             Authorization: token ? `Bearer ${token}` : "",
+//             "Content-Type": "application/json",
+//           },
+//           withCredentials: true,
+//         };
+//         const response = await axios(config);
+//         return { data: response.data, success: true };
+//       } catch (error) {
+//         return {
+//           error: error.message,
+//           errorCode: error.code,
+//           success: false,
+//         };
+//       }
+//     };
+
+//     const executeNestedCalls = async (payload) => {
+//       if (!Array.isArray(payload)) {
+//         return await makeApiCall(method, endpoint, payload, authToken);
+//       }
+
+//       const results = [];
+//       for (const request of payload) {
+//         const { method, endpoint, payload: nestedPayload } = request;
+//         if (!method || !endpoint) continue;
+//         const result = await makeApiCall(
+//           method,
+//           endpoint,
+//           nestedPayload,
+//           authToken
+//         );
+//         results.push(result);
+//       }
+//       return results;
+//     };
+
+//     const result = await executeNestedCalls(payload);
+//     return res.status(result.success ? 200 : 500).json(result);
+//   } catch (error) {
+//     console.error("API Error:", error);
+//     return res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
+// const isValidURL = (url) => {
+//   try {
+//     new URL(url);
+//     return true;
+//   } catch (e) {
+//     return false;
+//   }
+// };

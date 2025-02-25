@@ -3,6 +3,7 @@ import csv from "csv-parser";
 import fs from "fs";
 import { Parser } from "json2csv";
 import axios from "axios";
+import { error } from "console";
 
 export const createOrder = async (req, res) => {
   try {
@@ -19,11 +20,7 @@ export const createOrder = async (req, res) => {
       "description",
       "startDate",
       "endDate",
-      "nation",
-      "province",
       "address",
-      "common",
-      "cap",
       "cig",
       "cup",
       "siteManager",
@@ -31,14 +28,11 @@ export const createOrder = async (req, res) => {
       "technicalManager",
       "cnceCode",
       "isPublic",
-      "status",
       "workAmount",
       "advancePayment",
-      "discountPercentage",
       "dipositRecovery",
       "iva",
       "withholdingAmount",
-      "contractAttachment",
     ];
     for (let field of requiredFields) {
       if (!req.body[field]) {
@@ -51,7 +45,7 @@ export const createOrder = async (req, res) => {
       where: { code: req.body.code },
     });
     if (ifExist)
-      return res.status(400).json({ message: "Can't create duplicate orders" });
+      return res.status(400).json({ error: "Can't create duplicate orders" });
     const order = await prisma.order.create({
       data: {
         ...req.body,
@@ -88,7 +82,7 @@ export const getOrders = async (req, res) => {
   try {
     const { id } = req.user;
     const orders = await prisma.order.findMany({
-      where: { adminId: id },
+      where: { adminId: id, archieved: false },
       take: 10,
     });
     if (!orders) {
@@ -129,9 +123,39 @@ export const deleteOrder = async (req, res) => {
 export const searchOrder = async (req, res) => {
   try {
     const { code } = req.query;
-    const order = await prisma.order.findUnique({ where: { code: code } });
+    const order = await prisma.order.findMany({
+      where: { code: { contains: code, mode: "insensitive" } },
+    });
     if (!order) return res.status(404).json({ message: "not found" });
     return res.status(200).json(order);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const archieveOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Bad request" });
+    const ord = await prisma.order.update({
+      where: { id: id },
+      data: { archieved: true },
+    });
+    if (!ord) return res.status(404).json({ message: "Order not found" });
+    return res.status(200).json({ message: "Order archieved!" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getArchivedOrders = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const orders = await prisma.order.findMany({
+      where: { adminId: id, archieved: true },
+    });
+    if (!orders) return res.status(404).json({ message: "No archived orders" });
+    return res.status(200).json({ data: orders, message: "found" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

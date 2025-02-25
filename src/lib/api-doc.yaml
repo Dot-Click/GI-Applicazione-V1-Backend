@@ -107,6 +107,215 @@ paths:
                     type: string
                     example: "Internal Server Error"
 
+  /api/auth/getAdmin:
+    get:
+      summary: Get admin details
+      description: Retrieves the details of the authenticated admin user.
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Admin details fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin details fetched"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: b9fc47c2-8f4e-4b3d-9eff-cd5f444b3bff
+                      name:
+                        type: string
+                        example: admin1244
+                      email:
+                        type: string
+                        example: "admin60@gmail.com"
+                      role:
+                        type: string
+                        example: ADMIN
+                      createdAt:
+                        type: string
+                        example: 2025-02-13 18:41:47.357
+                      updatedAt:
+                        type: string
+                        example: 2025-02-13 18:41:47.357
+                      orders:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
+                            code:
+                              type: string
+                              example: ORD123456
+                            description:
+                              type: string
+                              example: "Order description here"
+                            workAmount:
+                              type: number
+                              format: decimal
+                              example: 15000.00
+                            advancePayment:
+                              type: number
+                              format: decimal
+                              example: 5000.00
+                            startDate:
+                              type: string
+                              format: date-time
+                              example: "2025-02-18T10:00:00Z"
+                            endDate:
+                              type: string
+                              format: date-time
+                              example: "2025-03-18T10:00:00Z"
+                            province:
+                              type: string
+                              example: "California"
+                            nation:
+                              type: string
+                              example: "United States"
+                            address:
+                              type: string
+                              example: "123 Main Street"
+                            common:
+                              type: string
+                              example: "1234"
+                            orderManager:
+                              type: string
+                              example: "John Doe"
+                            siteManager:
+                              type: string
+                              example: "Jane Smith"
+                            technicalManager:
+                              type: string
+                              example: "Alex Brown"
+                            cnceCode:
+                              type: string
+                              example: "CNCE-789"
+                            cap:
+                              type: string
+                              example: "CAP-101"
+                            cig:
+                              type: string
+                              example: "CIG-102"
+                            cup:
+                              type: string
+                              example: "CUP-103"
+                            iva:
+                              type: number
+                              example: 18.00
+                            discountPercentage:
+                              type: number
+                              example: 5.00
+                            dipositRecovery:
+                              type: number
+                              example: 100.00
+                            vat:
+                              type: number
+                              example: 12.00
+                            withholdingAmount:
+                              type: number
+                              example: 200.00
+                            contractAttachment:
+                              type: string
+                              example: "path/to/contract.pdf"
+                            isPublic:
+                              type: boolean
+                              example: true
+                            status:
+                              type: string
+                              enum:
+                                - "IN_DEPARTURE"
+                                - "IN_PROGRESS"
+                                - "COMPLETED"
+                                - "CANCELLED"
+                              default: "IN_DEPARTURE"
+                            createdAt:
+                              type: string
+                              example: "2025-02-12 18:14:47.456"
+                            updatedAt:
+                              type: string
+                              example: "2025-02-11 22:19:34.99"
+                      customers:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
+                            companyName:
+                              type: string
+                              example: "Tech Solutions Inc."
+                            email:
+                              type: string
+                              example: "John@doe.com"
+                            vat:
+                              type: string
+                              example: "1234567890"
+                            taxId:
+                              type: string
+                              example: "1234567890"
+                            address:
+                              type: string
+                              example: "123 Main Street"
+                            telephone:
+                              type: string
+                              example: "1234567890"
+                            pec:
+                              type: string
+                              example: "example@pecmail.com"
+                            createdAt:
+                              type: string
+                              example: "2025-02-12 18:14:47.456"
+                            updatedAt:
+                              type: string
+                              example: "2025-02-11 22:19:34.99"
+                      suppliers:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
+                            companyName:
+                              type: string
+                              example: "Tech Solutions Inc."
+                            email:
+                              type: string
+                              example: "John@doe.com"
+                            vat:
+                              type: string
+                              example: "1234567890"
+                            taxId:
+                              type: string
+                              example: "1234567890"
+                            address:
+                              type: string
+                              example: "123 Main Street"
+                            telephone:
+                              type: string
+                              example: "1234567890"
+                            pec:
+                              type: string
+                              example: "example@pecmail.com"
+                            createdAt:
+                              type: string
+                              example: "2025-02-12 18:14:47.456"
+                            updatedAt:
+                              type: string
+                              example: "2025-02-11 22:19:34.99"
+  
   # Verification
   /api/auth/verify-email:
     post:
@@ -258,13 +467,12 @@ paths:
       tags:
         - Order
       parameters:
-        - name: token
-          in: cookie
-          description: Bearer token saved in the cookies for authentication
+        - in: header
+          name: Authorization
           required: true
           schema:
             type: string
-            example: "Bearer <token>"
+          description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
       requestBody:
         required: true
         content:
@@ -276,11 +484,7 @@ paths:
                 - description
                 - startDate
                 - endDate
-                - nation
-                - province
                 - address
-                - common
-                - cap
                 - cig
                 - cup
                 - siteManager
@@ -288,14 +492,11 @@ paths:
                 - technicalManager
                 - cnceCode
                 - isPublic
-                - status
                 - workAmount
                 - advancePayment
-                - discountPercentage
                 - dipositRecovery
                 - iva
                 - withholdingAmount
-                - contractAttachment
               properties:
                 code:
                   type: string
@@ -1966,7 +2167,7 @@ paths:
                     type: string
                     example: "Internal server error"
 
-  # supplier routes
+  # supplier APIs
   /api/supplier/create:
     post:
       summary: Create a new supplier from admin
@@ -1976,13 +2177,12 @@ paths:
       tags:
         - Supplier
       parameters:
-        - name: Authorization
-          in: cookie
-          description: Bearer token saved in the cookies for authentication
+        - in: header
+          name: Authorization
           required: true
           schema:
             type: string
-            example: "Bearer <token>"
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
       requestBody:
         required: true
         content:

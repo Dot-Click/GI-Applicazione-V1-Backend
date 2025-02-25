@@ -37,12 +37,7 @@ export const createSupp = async (req, res) => {
       "companyName",
       "vat",
       "taxId",
-      "ateco",
-      "nation",
-      "province",
       "address",
-      "common",
-      "cap",
       "pec",
       "telephone",
     ];
@@ -53,7 +48,10 @@ export const createSupp = async (req, res) => {
         });
       }
     }
-    const supp = await prisma.supplier.create({ data: { ...req.body } });
+
+    const supp = await prisma.supplier.create({
+      data: { ...req.body, adminId: req.user?.id },
+    });
     return res.status(200).json({ data: supp, message: "supplier created!" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -92,7 +90,8 @@ export const searchSupp = async (req, res) => {
         .status(400)
         .json({ message: "query param 'companyName' is not found" });
     const supp = await prisma.supplier.findMany({
-      where: { companyName },
+      where: { companyName: { contains: companyName, mode: "insensitive" } },
+      omit: { password: true },
     });
     if (!supp) return res.status(404).json({ message: "supplier not found" });
     return res.status(200).json({ message: "found", data: supp });

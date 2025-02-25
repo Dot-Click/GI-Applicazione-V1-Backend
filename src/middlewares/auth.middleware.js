@@ -24,7 +24,6 @@ export const Auth = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    console.log(error.message);
     return res.status(500).json({ error: error.message });
   }
 };
