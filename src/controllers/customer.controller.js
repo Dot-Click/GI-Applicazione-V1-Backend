@@ -39,14 +39,14 @@ export const signup = async (req, res) => {
 export const createCust = async (req, res) => {
   try {
     const { id } = req.user;
-    const { email, password } = req.body;
-    const ifExist = await prisma.customer.findUnique({
-      where: { email: email },
-    });
+    const { email, password, ...customerData } = req.body;
+
+    const ifExist = await prisma.customer.findUnique({ where: { email } });
     if (ifExist) {
-      return res.status(400).json({ message: "Customer already exists" });
+      return res.status(409).json({ message: "Customer already exists" });
     }
-    const reqFields = [
+
+    const requiredFields = [
       "companyName",
       "vat",
       "taxId",
@@ -59,25 +59,30 @@ export const createCust = async (req, res) => {
       "email",
       "telephone",
     ];
-    for (let field of reqFields) {
-      if (!req.body[field]) {
-        return res.status(404).json({
-          message: `Missing required field: ${field}`,
-        });
-      }
+
+    const missingField = requiredFields.find((field) => !req.body[field]);
+    if (missingField) {
+      return res
+        .status(400)
+        .json({ message: `Missing required field: ${missingField}` });
     }
-    const customerData = { ...req.body, adminId: id };
+
     if (password) {
       customerData.password = await bcrypt.hash(password, 10);
     }
-    const customer = await prisma.customer.create({
-      data: customerData,
-      omit: { password: true },
-    });
+
+    customerData.adminId = id;
+    customerData.email = email
+    const customer = await prisma.customer.create({ data: customerData });
+
+    const { password: _, ...customerResponse } = customer;
 
     return res
-      .status(200)
-      .json({ message: "Customer created", data: customer });
+      .status(201)
+      .json({
+        message: "Customer created successfully",
+        data: customerResponse,
+      });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -86,13 +91,30 @@ export const createCust = async (req, res) => {
 export const updateCust = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!id) return res.status(404).json({ message: "id not found" });
-    const cust = await prisma.customer.update({
-      where: { id: id },
-      data: { ...req.body },
-      omit: { password: true },
+    if (!id) {
+      return res.status(400).json({ message: "Customer ID is required" });
+    }
+
+    const existingCust = await prisma.customer.findUnique({ where: { id } });
+    if (!existingCust) {
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    const { password, ...updateData } = req.body;
+
+    const updatedCust = await prisma.customer.update({
+      where: { id },
+      data: updateData,
     });
-    return res.status(200).json({ message: "updated sucessfully", data: cust });
+
+    const { password: _, ...customerResponse } = updatedCust;
+
+    return res
+      .status(200)
+      .json({
+        message: "Customer updated successfully",
+        data: customerResponse,
+      });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -143,9 +165,13 @@ export const logout = async (req, res) => {
 export const getAllCustomers = async (req, res) => {
   try {
     const { id } = req.user;
+    let { page } = req.query;
+    page = parseInt(page, 10);
+    if (isNaN(page) || page < 1) page = 1;
     const users = await prisma.customer.findMany({
       where: { adminId: id },
       take: 10,
+      skip: (page - 1) * 10,
       omit: { password: true },
     });
     if (!users) {

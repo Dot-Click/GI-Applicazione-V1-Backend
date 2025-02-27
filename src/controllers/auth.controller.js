@@ -34,12 +34,26 @@ export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(401).json({ message: "Tutti i campi sono obbligatori" });
+      return res
+        .status(401)
+        .json({ message: "Tutti i campi sono obbligatori" });
     }
     const user = await prisma.admin.findUnique({ where: { email: email } });
-    if (!user) return res.status(400).json({ message: "L’indirizzo email inserito non è associato a GI Costruzioni" });
+    if (!user)
+      return res
+        .status(400)
+        .json({
+          message:
+            "L’indirizzo email inserito non è associato a GI Costruzioni",
+        });
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "La password non è corretta. Riprova o reimposta la tua password se l'hai dimenticata" });
+    if (!isMatch)
+      return res
+        .status(400)
+        .json({
+          message:
+            "La password non è corretta. Riprova o reimposta la tua password se l'hai dimenticata",
+        });
     generateAndSaveToken(user, res);
     return res
       .status(200)
@@ -57,7 +71,11 @@ export const verifEmail = async (req, res) => {
     if (!verify) {
       return res
         .status(401)
-        .json({ message: "L’indirizzo email inserito non è associato a GI Costruzioni", status: false });
+        .json({
+          message:
+            "L’indirizzo email inserito non è associato a GI Costruzioni",
+          status: false,
+        });
     }
     const verfToken = sign(
       { role: verify.role, id: verify.id },
@@ -69,7 +87,11 @@ export const verifEmail = async (req, res) => {
     res.cookie("email-verf-token", verfToken, { httpOnly: false });
     return res
       .status(200)
-      .json({ message: "Ti abbiamo inviato un’e-mail per consentirti di reimpostare la password", status: true });
+      .json({
+        message:
+          "Ti abbiamo inviato un’e-mail per consentirti di reimpostare la password",
+        status: true,
+      });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -95,7 +117,10 @@ export const updatePassword = async (req, res) => {
       });
       return res
         .status(200)
-        .json({ message: "Ottimo! La tua password è stata cambiata con successo", status: true });
+        .json({
+          message: "Ottimo! La tua password è stata cambiata con successo",
+          status: true,
+        });
     }
     return res
       .status(401)
@@ -107,8 +132,9 @@ export const updatePassword = async (req, res) => {
 
 export const getAdminInfo = async (req, res) => {
   try {
+    const { id } = req.user;
     const admin = await prisma.admin.findUnique({
-      where: { id: req.user.id },
+      where: { id },
       include: {
         orders: true,
         suppliers: true,

@@ -1,20 +1,11 @@
 import prisma from "../../prisma/prisma.js";
-import csv from "csv-parser";
-import fs from "fs";
-import { Parser } from "json2csv";
 import axios from "axios";
-import { error } from "console";
 import { cloudinaryUploader } from "../lib/utils.js";
 
 export const createOrder = async (req, res) => {
   try {
     const { id } = req.user;
-    // const res = await axios.get(
-    //   `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-    //     req.body.address
-    //   )}&key=${process.env.GOOGLE_API_KEY}`
-    // );
-    // const location = geoResponse.data.results[0]?.geometry.location || null;
+    const { address, code, isPublic, ...orderData } = req.body;
 
     const requiredFields = [
       "code",
@@ -35,43 +26,65 @@ export const createOrder = async (req, res) => {
       "iva",
       "withholdingAmount",
     ];
-    for (let field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(404).json({
-          message: `Missing required field: ${field}`,
-        });
-      }
+
+    const missingField = requiredFields.find((field) => !req.body[field]);
+    if (missingField) {
+      return res
+        .status(400)
+        .json({ message: `Missing required field: ${missingField}` });
     }
-    const ifExist = await prisma.order.findUnique({
-      where: { code: req.body.code },
-    });
-    if (ifExist)
-      return res.status(400).json({ error: "Can't create duplicate orders" });
+
+    const existingOrder = await prisma.order.findUnique({ where: { code } });
+    if (existingOrder) {
+      return res
+        .status(400)
+        .json({ error: "Can't create duplicate orders" });
+    }
+
+    let location = null;
+    try {
+      const { data } = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json`,
+        { params: { address, key: process.env.GOOGLE_API_KEY } }
+      );
+      location = data.results[0]?.geometry?.location || null;
+    } catch (geoError) {
+      return res.status(500).json({ error: `Failed to fetch geolocation: ${geoError.message}` });
+    }
+
+    const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
     const uploadedFiles = {};
-    for (const field of ["contract", "permission_to_build", "psc", "pos"]) {
-      if (req.files[field] && req.files[field][0]) {
-        uploadedFiles[field] = await cloudinaryUploader(
-          req.files[field][0]?.path
-        );
-      }
-    }
+
+    await Promise.all(
+      uploadFields.map(async (field) => {
+        if (req.files[field]?.[0]) {
+          uploadedFiles[field] = await cloudinaryUploader(
+            req.files[field][0].path
+          );
+        }
+      })
+    );
+
     const order = await prisma.order.create({
       data: {
-        ...req.body,
-        isPublic: req.body.isPublic === "true",
-        contract: uploadedFiles.contract?.secure_url,
-        permission_to_build: uploadedFiles.permission_to_build?.secure_url,
-        psc: uploadedFiles.psc?.secure_url,
-        pos: uploadedFiles.pos?.secure_url,
+        ...orderData,
+        code,
+        address,
+        isPublic: isPublic === "true",
+        contract: uploadedFiles.contract?.secure_url || null,
+        permission_to_build:
+          uploadedFiles.permission_to_build?.secure_url || null,
+        psc: uploadedFiles.psc?.secure_url || null,
+        pos: uploadedFiles.pos?.secure_url || null,
         adminId: id,
-        // lat: location?.lat,
-        // lng: location?.lng,
+        lat: location?.lat || null,
+        lng: location?.lng || null,
       },
     });
-    return res.status(200).json({
-      data: order,
-      message: "order created successfully",
-    });
+
+    return res
+      .status(201)
+      .json({ data: order, message: "Order created successfully." });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -80,35 +93,40 @@ export const createOrder = async (req, res) => {
 export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!id) return res.status(401).json({ message: "id not found" });
+    if (!id) return res.status(400).json({ message: "Order ID is required." });
+
     const upd_data = { ...req.body };
+    const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
     const uploadedFiles = {};
-    for (const field of ["contract", "permission_to_build", "psc", "pos"]) {
-      if (req.files[field] && req.files[field][0]) {
-        uploadedFiles[field] = await cloudinaryUploader(
-          req.files[field][0]?.path
-        );
+
+    await Promise.all(
+      uploadFields.map(async (field) => {
+        if (req.files[field]?.[0]) {
+          uploadedFiles[field] = await cloudinaryUploader(
+            req.files[field][0].path
+          );
+        }
+      })
+    );
+
+    uploadFields.forEach((field) => {
+      if (uploadedFiles[field]) {
+        upd_data[field] = uploadedFiles[field]?.secure_url;
       }
-      return res.status(400).json({message:"Bad request"})
-    }
-    if (
-      uploadedFiles.contract ||
-      uploadedFiles.permission_to_build ||
-      uploadedFiles.pos ||
-      uploadedFiles.psc
-    ) {
-      upd_data.contract = uploadedFiles.contract?.secure_url;
-      upd_data.permission_to_build = uploadedFiles.permission_to_build?.secure_url;
-      upd_data.pos = uploadedFiles.pos?.secure_url;
-      upd_data.psc = uploadedFiles.psc?.secure_url;
-    }
-    const order = await prisma.order.update({
-      where: { id: id },
-      data: {...upd_data, isPublic: req.body?.isPublic === 'true'},
     });
+
+    if (req.body.hasOwnProperty("isPublic")) {
+      upd_data.isPublic = req.body.isPublic === "true";
+    }
+
+    const order = await prisma.order.update({
+      where: { id },
+      data: upd_data,
+    });
+
     return res
       .status(200)
-      .json({ data: order, message: "updated succesfully" });
+      .json({ data: order, message: "Order updated successfully." });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -117,8 +135,12 @@ export const updateOrder = async (req, res) => {
 export const getOrders = async (req, res) => {
   try {
     const { id } = req.user;
+    let { page } = req.query;
+    page = parseInt(page, 10);
+    if (isNaN(page) || page < 1) page = 1;
     const orders = await prisma.order.findMany({
       where: { adminId: id, archieved: false },
+      skip: (page - 1) * 10,
       take: 10,
     });
     if (!orders) {
@@ -187,8 +209,13 @@ export const archieveOrder = async (req, res) => {
 export const getArchivedOrders = async (req, res) => {
   try {
     const { id } = req.user;
+    let { page } = req.query;
+    page = parseInt(page, 10);
+    if (isNaN(page) || page < 1) page = 1;
     const orders = await prisma.order.findMany({
       where: { adminId: id, archieved: true },
+      skip: (page - 1) * 10,
+      take: 10,
     });
     if (!orders) return res.status(404).json({ message: "No archived orders" });
     return res.status(200).json({ data: orders, message: "found" });

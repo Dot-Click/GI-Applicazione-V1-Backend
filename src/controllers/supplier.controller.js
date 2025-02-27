@@ -2,8 +2,14 @@ import prisma from "../../prisma/prisma.js";
 
 export const getAllSuppliers = async (req, res) => {
   try {
+    const { id } = req.user;
+    let { page } = req.query;
+    page = parseInt(page, 10);
+    if (isNaN(page) || page < 1) page = 1;
     const supp = await prisma.supplier.findMany({
+      where: { adminId: id },
       take: 10,
+      skip: (page - 1) * 10,
     });
     return res
       .status(200)
@@ -27,12 +33,21 @@ export const getSupplier = async (req, res) => {
 
 export const createSupp = async (req, res) => {
   try {
-    const ifExist = await prisma.supplier.findUnique({
-      where: { email: req.body.email },
+    const { id } = req.user;
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const existingSupplier = await prisma.supplier.findUnique({
+      where: { email },
     });
-    if (ifExist)
-      return res.status(400).json({ message: "supplier already there" });
-    const reqFields = [
+    if (existingSupplier) {
+      return res.status(409).json({ message: "Supplier already exists" });
+    }
+
+    const requiredFields = [
       "companyName",
       "vat",
       "taxId",
@@ -45,18 +60,21 @@ export const createSupp = async (req, res) => {
       "email",
       "telephone",
     ];
-    for (let field of reqFields) {
-      if (!req.body[field]) {
-        return res.status(404).json({
-          message: `Missing required field: ${field}`,
-        });
-      }
+
+    if (!requiredFields.every((field) => req.body[field])) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const supp = await prisma.supplier.create({
-      data: { ...req.body, adminId: req.user?.id },
+    const newSupplier = await prisma.supplier.create({
+      data: {
+        ...req.body,
+        adminId: id,
+      },
     });
-    return res.status(200).json({ data: supp, message: "supplier created!" });
+
+    return res
+      .status(201)
+      .json({ message: "Supplier created successfully", data: newSupplier });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -65,11 +83,23 @@ export const createSupp = async (req, res) => {
 export const updateSupp = async (req, res) => {
   try {
     const { id } = req.params;
-    const supp = await prisma.supplier.update({
-      where: { id: id },
+    if (!id) {
+      return res.status(400).json({ message: "Supplier ID is required" });
+    }
+
+    const existingSupp = await prisma.supplier.findUnique({ where: { id } });
+    if (!existingSupp) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
+    const updatedSupp = await prisma.supplier.update({
+      where: { id },
       data: { ...req.body },
     });
-    return res.status(200).json({ message: "supplier updated", data: supp });
+
+    return res
+      .status(200)
+      .json({ message: "Supplier updated successfully", data: updatedSupp });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -78,7 +108,8 @@ export const updateSupp = async (req, res) => {
 export const deleteSupp = async (req, res) => {
   try {
     const { ids } = req.body;
-    if(!ids) return res.status(400).json({message:"missing required field ids"})
+    if (!ids)
+      return res.status(400).json({ message: "missing required field ids" });
     await prisma.supplier.deleteMany({ where: { id: { $in: ids } } });
     return res.status(200).json({ message: "supplier deleted!" });
   } catch (error) {
