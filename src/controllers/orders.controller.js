@@ -4,6 +4,7 @@ import fs from "fs";
 import { Parser } from "json2csv";
 import axios from "axios";
 import { error } from "console";
+import { cloudinaryUploader } from "../lib/utils.js";
 
 export const createOrder = async (req, res) => {
   try {
@@ -46,19 +47,33 @@ export const createOrder = async (req, res) => {
     });
     if (ifExist)
       return res.status(400).json({ error: "Can't create duplicate orders" });
+    const uploadedFiles = {};
+    for (const field of ["contract", "permission_to_build", "psc", "pos"]) {
+      if (req.files[field] && req.files[field][0]) {
+        uploadedFiles[field] = await cloudinaryUploader(
+          req.files[field][0]?.path
+        );
+      }
+    }
     const order = await prisma.order.create({
       data: {
         ...req.body,
+        isPublic: req.body.isPublic === "true",
+        contract: uploadedFiles.contract?.secure_url,
+        permission_to_build: uploadedFiles.permission_to_build?.secure_url,
+        psc: uploadedFiles.psc?.secure_url,
+        pos: uploadedFiles.pos?.secure_url,
         adminId: id,
         // lat: location?.lat,
         // lng: location?.lng,
       },
     });
-    return res
-      .status(200)
-      .json({ data: order, message: "order created successfully" });
+    return res.status(200).json({
+      data: order,
+      message: "order created successfully",
+    });
   } catch (error) {
-    return res.json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -66,9 +81,30 @@ export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(401).json({ message: "id not found" });
+    const upd_data = { ...req.body };
+    const uploadedFiles = {};
+    for (const field of ["contract", "permission_to_build", "psc", "pos"]) {
+      if (req.files[field] && req.files[field][0]) {
+        uploadedFiles[field] = await cloudinaryUploader(
+          req.files[field][0]?.path
+        );
+      }
+      return res.status(400).json({message:"Bad request"})
+    }
+    if (
+      uploadedFiles.contract ||
+      uploadedFiles.permission_to_build ||
+      uploadedFiles.pos ||
+      uploadedFiles.psc
+    ) {
+      upd_data.contract = uploadedFiles.contract?.secure_url;
+      upd_data.permission_to_build = uploadedFiles.permission_to_build?.secure_url;
+      upd_data.pos = uploadedFiles.pos?.secure_url;
+      upd_data.psc = uploadedFiles.psc?.secure_url;
+    }
     const order = await prisma.order.update({
       where: { id: id },
-      data: { ...req.body },
+      data: {...upd_data, isPublic: req.body?.isPublic === 'true'},
     });
     return res
       .status(200)

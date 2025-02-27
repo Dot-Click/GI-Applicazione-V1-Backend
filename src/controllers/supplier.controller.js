@@ -33,12 +33,16 @@ export const createSupp = async (req, res) => {
     if (ifExist)
       return res.status(400).json({ message: "supplier already there" });
     const reqFields = [
-      "email",
       "companyName",
       "vat",
       "taxId",
+      "nation",
+      "province",
+      "common",
+      "cap",
       "address",
       "pec",
+      "email",
       "telephone",
     ];
     for (let field of reqFields) {

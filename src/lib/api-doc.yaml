@@ -34,11 +34,11 @@ paths:
                 email:
                   type: string
                   format: email
-                  example: "admin17@gmail.com"
+                  example: "admin71@gmail.com"
                 password:
                   type: string
                   format: password
-                  example: "admin123417"
+                  example: "admin123471"
       responses:
         200:
           description: Admin logged in successfully
@@ -111,10 +111,17 @@ paths:
     get:
       summary: Get admin details
       description: Retrieves the details of the authenticated admin user.
-      tags:
-        - Authentication
       security:
         - bearerAuth: []
+      tags:
+        - Authentication
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+          description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
       responses:
         200:
           description: Admin details fetched successfully
@@ -177,18 +184,9 @@ paths:
                               type: string
                               format: date-time
                               example: "2025-03-18T10:00:00Z"
-                            province:
-                              type: string
-                              example: "California"
-                            nation:
-                              type: string
-                              example: "United States"
                             address:
                               type: string
                               example: "123 Main Street"
-                            common:
-                              type: string
-                              example: "1234"
                             orderManager:
                               type: string
                               example: "John Doe"
@@ -213,9 +211,6 @@ paths:
                             iva:
                               type: number
                               example: 18.00
-                            discountPercentage:
-                              type: number
-                              example: 5.00
                             dipositRecovery:
                               type: number
                               example: 100.00
@@ -225,20 +220,29 @@ paths:
                             withholdingAmount:
                               type: number
                               example: 200.00
-                            contractAttachment:
+                            contract:
                               type: string
                               example: "path/to/contract.pdf"
+                            permission_to_build:
+                              type: string
+                              example: "path/to/permission_to_build.pdf"
+                            psc:
+                              type: string
+                              example: "path/to/psc.pdf"
+                            pos:
+                              type: string
+                              example: "path/to/pos.pdf"
                             isPublic:
                               type: boolean
                               example: true
                             status:
                               type: string
                               enum:
-                                - "IN_DEPARTURE"
+                                - "ON_HOLD"
                                 - "IN_PROGRESS"
                                 - "COMPLETED"
                                 - "CANCELLED"
-                              default: "IN_DEPARTURE"
+                              default: "ON_HOLD"
                             createdAt:
                               type: string
                               example: "2025-02-12 18:14:47.456"
@@ -255,25 +259,41 @@ paths:
                               example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
                             companyName:
                               type: string
-                              example: "Tech Solutions Inc."
-                            email:
-                              type: string
-                              example: "John@doe.com"
+                              example: "Tech Solutions"
                             vat:
                               type: string
-                              example: "1234567890"
+                              example: "IT123456789"
                             taxId:
                               type: string
-                              example: "1234567890"
+                              example: "TAX123456"
+                            ateco:
+                              type: string
+                              example: "6201"
+                            nation:
+                              type: string
+                              example: "Italy"
+                            province:
+                              type: string
+                              example: "Lombardy"
                             address:
                               type: string
-                              example: "123 Main Street"
-                            telephone:
+                              example: "Via Roma 123"
+                            common:
                               type: string
-                              example: "1234567890"
+                              example: "Milan"
+                            cap:
+                              type: string
+                              example: "20100"
                             pec:
                               type: string
-                              example: "example@pecmail.com"
+                              example: "customer@pec.it"
+                            email:
+                              type: string
+                              format: email
+                              example: "customer@example.com"
+                            telephone:
+                              type: string
+                              example: "+39 123 456 7890"
                             createdAt:
                               type: string
                               example: "2025-02-12 18:14:47.456"
@@ -290,32 +310,48 @@ paths:
                               example: 1161573e-bdf6-42cc-a7c1-4f6c84c99b21
                             companyName:
                               type: string
-                              example: "Tech Solutions Inc."
-                            email:
-                              type: string
-                              example: "John@doe.com"
+                              example: "Tech Solutions"
                             vat:
                               type: string
-                              example: "1234567890"
+                              example: "IT123456789"
                             taxId:
                               type: string
-                              example: "1234567890"
+                              example: "TAX123456"
+                            ateco:
+                              type: string
+                              example: "6201"
+                            nation:
+                              type: string
+                              example: "Italy"
+                            province:
+                              type: string
+                              example: "Lombardy"
                             address:
                               type: string
-                              example: "123 Main Street"
-                            telephone:
+                              example: "Via Roma 123"
+                            common:
                               type: string
-                              example: "1234567890"
+                              example: "Milan"
+                            cap:
+                              type: string
+                              example: "20100"
                             pec:
                               type: string
-                              example: "example@pecmail.com"
+                              example: "customer@pec.it"
+                            email:
+                              type: string
+                              format: email
+                              example: "customer@example.com"
+                            telephone:
+                              type: string
+                              example: "+39 123 456 7890"
                             createdAt:
                               type: string
                               example: "2025-02-12 18:14:47.456"
                             updatedAt:
                               type: string
                               example: "2025-02-11 22:19:34.99"
-  
+
   # Verification
   /api/auth/verify-email:
     post:
@@ -484,10 +520,7 @@ paths:
                 - description
                 - startDate
                 - endDate
-                - nation
-                - province
                 - address
-                - common
                 - cap
                 - cig
                 - cup
@@ -496,14 +529,15 @@ paths:
                 - technicalManager
                 - cnceCode
                 - isPublic
-                - status
                 - workAmount
                 - advancePayment
-                - discountPercentage
                 - dipositRecovery
                 - iva
                 - withholdingAmount
-                - contractAttachment
+                - contract
+                - permission_to_build
+                - psc
+                - pos
               properties:
                 code:
                   type: string
@@ -512,11 +546,11 @@ paths:
                   type: string
                   example: "Order description here"
                 workAmount:
-                  type: number
+                  type: string
                   format: decimal
                   example: 15000.00
                 advancePayment:
-                  type: number
+                  type: string
                   format: decimal
                   example: 5000.00
                 startDate:
@@ -527,18 +561,9 @@ paths:
                   type: string
                   format: date-time
                   example: "2025-03-18T10:00:00Z"
-                province:
-                  type: string
-                  example: "California"
-                nation:
-                  type: string
-                  example: "United States"
                 address:
                   type: string
                   example: "123 Main Street"
-                common:
-                  type: string
-                  example: "1234"
                 orderManager:
                   type: string
                   example: "John Doe"
@@ -561,34 +586,32 @@ paths:
                   type: string
                   example: "CUP-103"
                 iva:
-                  type: number
+                  type: string
                   example: 18.00
-                discountPercentage:
-                  type: number
-                  example: 5.00
                 dipositRecovery:
-                  type: number
+                  type: string
                   example: 100.00
                 vat:
-                  type: number
+                  type: string
                   example: 12.00
                 withholdingAmount:
-                  type: number
+                  type: string
                   example: 200.00
-                contractAttachment:
+                contract:
                   type: string
                   example: "path/to/contract.pdf"
+                permission_to_build:
+                  type: string
+                  example: "path/to/permission_to_build.pdf"
+                psc:
+                  type: string
+                  example: "path/to/psc.pdf"
+                pos:
+                  type: string
+                  example: "path/to/pos.pdf"
                 isPublic:
                   type: boolean
                   example: true
-                status:
-                  type: string
-                  enum:
-                    - "IN_DEPARTURE"
-                    - "IN_PROGRESS"
-                    - "COMPLETED"
-                    - "CANCELLED"
-                  default: "IN_DEPARTURE"
       responses:
         200:
           description: order created successfully
@@ -679,20 +702,12 @@ paths:
                           withholdingAmount:
                             type: number
                             example: 200.00
-                          contractAttachment:
+                          attachment:
                             type: string
                             example: "path/to/contract.pdf"
                           isPublic:
                             type: boolean
                             example: true
-                          status:
-                            type: string
-                            enum:
-                              - "IN_DEPARTURE"
-                              - "IN_PROGRESS"
-                              - "COMPLETED"
-                              - "CANCELLED"
-                            default: "IN_DEPARTURE"
                           createdAt:
                             type: string
                             example: "2025-02-12 18:14:47.456"
@@ -840,7 +855,7 @@ paths:
                         withholdingAmount:
                           type: number
                           example: 200.00
-                        contractAttachment:
+                        attachment:
                           type: string
                           example: "path/to/contract.pdf"
                         isPublic:
@@ -1012,7 +1027,7 @@ paths:
                       withholdingAmount:
                         type: number
                         example: 200.00
-                      contractAttachment:
+                      attachment:
                         type: string
                         example: "path/to/contract.pdf"
                       isPublic:
@@ -1185,7 +1200,7 @@ paths:
                       withholdingAmount:
                         type: number
                         example: 200.00
-                      contractAttachment:
+                      attachment:
                         type: string
                         example: "path/to/contract.pdf"
                       isPublic:
@@ -1425,7 +1440,7 @@ paths:
                       withholdingAmount:
                         type: number
                         example: 200.00
-                      contractAttachment:
+                      attachment:
                         type: string
                         example: "path/to/contract.pdf"
                       isPublic:

@@ -7,6 +7,7 @@ import supplierRouter from "./src/routes/supplier.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import swaggerDocs from "./src/lib/swagger.js";
+import { cloudinaryConfig } from "./src/lib/utils.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -20,6 +21,8 @@ app.get("/", (req, res) => {
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+
+cloudinaryConfig()
 
 app.use("/api/auth", authRouter);
 app.use("/api/order", orderRouter);

@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Order" ALTER COLUMN "contratto" DROP NOT NULL,
+ALTER COLUMN "permesso_a_costruire" DROP NOT NULL,
+ALTER COLUMN "pos" DROP NOT NULL,
+ALTER COLUMN "psc" DROP NOT NULL;

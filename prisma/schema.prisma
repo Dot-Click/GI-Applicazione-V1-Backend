@@ -35,12 +35,12 @@ model Customer {
   companyName String
   vat         String
   taxId       String
-  // ateco       String
-  // nation      String
-  // province    String
+  ateco       String?
+  nation      String?
+  province    String?
   address     String
-  // common      String
-  // cap         String
+  common      String?
+  cap         String?
   pec         String
   status      Status?  @default(active)
   telephone   String
@@ -53,47 +53,51 @@ model Customer {
 }
 
 model Order {
-  id                String    @id @default(uuid())
-  code              String    @unique
-  description       String
-  workAmount        Decimal
-  advancePayment    Decimal
-  startDate         DateTime
-  endDate           DateTime
-  address           String
+  id                  String      @id @default(uuid())
+  code                String      @unique
+  description         String
+  workAmount          Decimal
+  advancePayment      Decimal
+  startDate           String
+  endDate             String
+  address             String
   // province           String
   // nation             String
   // common             String
   // cap                String
   // contractAttachment String
   // discountPercentage Float
-  state             OrderState? @default(IN_DEPARTURE)
-  cnceCode          String
-  orderManager      String
-  siteManager       String
-  technicalManager  String
-  admin             Admin?    @relation(fields: [adminId], references: [id])
-  adminId           String?
-  supplier          Supplier? @relation(fields: [supplierEmail], references: [email])
-  supplierEmail     String?
-  status            Status?   @default(active)
-  cig               String
-  cup               String
-  iva               Float
-  dipositRecovery   Float
-  vat               Float?
-  jobName           String?
-  projectName       String?
-  typology          String?
-  archieved         Boolean?   @default(false)
-  withholdingAmount Float
-  lat               Float?
-  lng               Float?
-  isPublic          Boolean?   @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  Customer          Customer? @relation(fields: [customerId], references: [id])
-  customerId        String?
+  state               OrderState? @default(ON_HOLD)
+  cnceCode            String
+  orderManager        String
+  siteManager         String
+  technicalManager    String
+  admin               Admin?      @relation(fields: [adminId], references: [id])
+  adminId             String?
+  supplier            Supplier?   @relation(fields: [supplierEmail], references: [email])
+  supplierEmail       String?
+  status              Status?     @default(active)
+  cig                 String
+  cup                 String
+  iva                 String
+  dipositRecovery     String
+  vat                 String?
+  jobName             String?
+  projectName         String?
+  typology            String?
+  archieved           Boolean?    @default(false)
+  contract            String?
+  permission_to_build String?
+  psc                 String?
+  pos                 String?
+  withholdingAmount   String
+  lat                 Float?      @default(37.7749)
+  lng                 Float?      @default(-122.4194)
+  isPublic            Boolean?    @default(false)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  Customer            Customer?   @relation(fields: [customerId], references: [id])
+  customerId          String?
 }
 
 model Supplier {
@@ -105,11 +109,11 @@ model Supplier {
   vat         String
   taxId       String
   // ateco       String?
-  // nation      String?
-  // province    String?
+  nation      String?
+  province    String?
   address     String
-  // common      String?
-  // cap         String?
+  common      String?
+  cap         String?
   pec         String
   status      Status?  @default(active)
   telephone   String
@@ -121,7 +125,7 @@ model Supplier {
 }
 
 model Employee {
-  id                  String    @id @default(uuid())
+  id                  String   @id @default(uuid())
   name                String
   surname             String
   taxId               String
@@ -134,21 +138,21 @@ model Employee {
   level               String
   qualification       String
   number              String
-  email               String    @unique
+  email               String   @unique
   natureContract      String?
-  admin               Admin?    @relation(fields: [adminId], references: [id])
+  admin               Admin?   @relation(fields: [adminId], references: [id])
   adminId             String?
-  dob                 DateTime?
+  dob                 String?
   address             String
-  role                EmpRole   @default(Technical_Manager)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  role                EmpRole  @default(Technical_Manager)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 enum OrderState {
-  IN_DEPARTURE
+  ON_HOLD
   IN_PROGRESS
-  COMPLETED
+  COMPLETATO
   CANCELLED
 }
 
