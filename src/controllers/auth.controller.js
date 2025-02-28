@@ -50,16 +50,9 @@ export const loginAdmin = async (req, res) => {
           "La password non è corretta. Riprova o reimposta la tua password se l'hai dimenticata",
       });
     generateAndSaveToken(user, res);
-    const token = sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
     return res
       .status(200)
-      .json({ message: "logged in Successfully", data: user, token: token });
+      .json({ message: "logged in Successfully", data: user });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

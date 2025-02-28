@@ -18,7 +18,7 @@ export const generateAndSaveToken = (user, res) => {
       expiresIn: "7d",
     }
   );
-  res.cookie(`connect.sid`, `s:${token}`, {
+  res.cookie(`token`, `Bearer ${token}`, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
