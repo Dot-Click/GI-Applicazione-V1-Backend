@@ -20,21 +20,18 @@ export const generateAndSaveToken = (user, res) => {
   );
 
   let cookieSetting = {
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+    maxAge: 1000 * 60 * 60 * 24 * 7,
     httpOnly: true,
     sameSite: "none",
     secure: false,
   };
-  console.log("process.env.NODE_ENV ",process.env.NODE_ENV)
-  if (process.env.NODE_ENV === 'production') {
-    cookieSetting.httpOnly = false
+  console.log("process.env.NODE_ENV ", process.env.NODE_ENV);
+  if (process.env.NODE_ENV === "production") {
+    cookieSetting.secure = true;
+    cookieSetting.httpOnly = true;
   }
 
-  res.cookie(
-    `token`,
-    `Bearer ${token}`,
-    cookieSetting
-  );
+  res.cookie(`token`, `Bearer ${token}`, cookieSetting);
 };
 
 /**
