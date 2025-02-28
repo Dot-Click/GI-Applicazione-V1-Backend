@@ -18,7 +18,7 @@ export const generateAndSaveToken = (user, res) => {
       expiresIn: "7d",
     }
   );
-  res.cookie(`token`, `Bearer ${token}`, {
+  res.cookie(`connect.sid`, `s:${token}`, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
@@ -45,15 +45,16 @@ const cloudinaryConfig = () =>
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
 
-  const cloudinaryUploader = async (filePath) => {
-    try {
-      const result = await cloudinary.uploader.upload(filePath, {
-        resource_type: "auto"
-      });
-      return result;
-    } catch (error) {
-      console.log("Cloudinary Upload Error:", error)
-    }
-  };
+const cloudinaryUploader = async (filePath) => {
+  try {
+    if (!filePath) return;
+    const result = await cloudinary.uploader.upload(filePath, {
+      resource_type: "auto",
+    });
+    return result;
+  } catch (error) {
+    console.log("Cloudinary Upload Error:", error);
+  }
+};
 
 export { cloudinaryConfig, cloudinaryUploader };
