@@ -22,7 +22,7 @@ export const generateAndSaveToken = (user, res) => {
   let cookieSetting = {
     maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     httpOnly: true,
-    sameSite: true,
+    sameSite: "none",
     secure: false,
   };
   console.log("process.env.NODE_ENV ",process.env.NODE_ENV)
