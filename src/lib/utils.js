@@ -18,11 +18,17 @@ export const generateAndSaveToken = (user, res) => {
       expiresIn: "7d",
     }
   );
-  res.cookie(`token`, `Bearer ${token}`, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  res.cookie(
+    `token`,
+    `Bearer ${token}`,
+    res.cookie("token", `Bearer ${token}`, {
+      httpOnly: false, 
+      secure: process.env.NODE_ENV === "production", // Secure only in production
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Allow cross-origin in prod
+      domain: process.env.NODE_ENV === "production" ? "gi-costruzioni-fe.vercel.app" : undefined, // Set domain only in production
+      path: "/", 
+    })
+  );
 };
 
 /**
