@@ -19,7 +19,7 @@ export const generateAndSaveToken = (user, res) => {
     }
   );
   res.cookie(`token`, `Bearer ${token}`, {
-    httpOnly: true,
+    httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
