@@ -12,9 +12,9 @@ import { cloudinaryConfig } from "./src/lib/utils.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
+app.set("trust proxy", 1);
 
 app.use(cors({ origin: ["http://localhost:5173","http://localhost:5174","https://gi-costruzioni-fe.vercel.app"], credentials: true }));
-app.set("trust proxy", 1);
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
