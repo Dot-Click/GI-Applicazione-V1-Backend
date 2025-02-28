@@ -40,24 +40,26 @@ export const loginAdmin = async (req, res) => {
     }
     const user = await prisma.admin.findUnique({ where: { email: email } });
     if (!user)
-      return res
-        .status(400)
-        .json({
-          message:
-            "L’indirizzo email inserito non è associato a GI Costruzioni",
-        });
+      return res.status(400).json({
+        message: "L’indirizzo email inserito non è associato a GI Costruzioni",
+      });
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return res
-        .status(400)
-        .json({
-          message:
-            "La password non è corretta. Riprova o reimposta la tua password se l'hai dimenticata",
-        });
+      return res.status(400).json({
+        message:
+          "La password non è corretta. Riprova o reimposta la tua password se l'hai dimenticata",
+      });
     generateAndSaveToken(user, res);
+    const token = sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
     return res
       .status(200)
-      .json({ message: "logged in Successfully", data: user });
+      .json({ message: "logged in Successfully", data: user, token: token });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -69,13 +71,10 @@ export const verifEmail = async (req, res) => {
     if (!email) throw new Error("L'e-mail è obbligatoria!");
     const verify = await prisma.admin.findUnique({ where: { email: email } });
     if (!verify) {
-      return res
-        .status(401)
-        .json({
-          message:
-            "L’indirizzo email inserito non è associato a GI Costruzioni",
-          status: false,
-        });
+      return res.status(401).json({
+        message: "L’indirizzo email inserito non è associato a GI Costruzioni",
+        status: false,
+      });
     }
     const verfToken = sign(
       { role: verify.role, id: verify.id },
@@ -85,13 +84,11 @@ export const verifEmail = async (req, res) => {
       }
     );
     res.cookie("email-verf-token", verfToken, { httpOnly: false });
-    return res
-      .status(200)
-      .json({
-        message:
-          "Ti abbiamo inviato un’e-mail per consentirti di reimpostare la password",
-        status: true,
-      });
+    return res.status(200).json({
+      message:
+        "Ti abbiamo inviato un’e-mail per consentirti di reimpostare la password",
+      status: true,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -115,12 +112,10 @@ export const updatePassword = async (req, res) => {
         where: { id: verf.id },
         data: { password: hash },
       });
-      return res
-        .status(200)
-        .json({
-          message: "Ottimo! La tua password è stata cambiata con successo",
-          status: true,
-        });
+      return res.status(200).json({
+        message: "Ottimo! La tua password è stata cambiata con successo",
+        status: true,
+      });
     }
     return res
       .status(401)
