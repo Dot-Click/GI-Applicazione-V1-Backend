@@ -76,15 +76,10 @@ export const verifEmail = async (req, res) => {
         expiresIn: "3m",
       }
     );
-    res.cookie("email-verf-token", verfToken, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 3 * 60 * 1000, // 3m validity
-      sameSite: "none",
-    });
     return res.status(200).json({
       message:
         "Ti abbiamo inviato un’e-mail per consentirti di reimpostare la password",
+      token: verfToken,
       status: true,
     });
   } catch (error) {
