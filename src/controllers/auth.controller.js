@@ -77,7 +77,7 @@ export const verifEmail = async (req, res) => {
       }
     );
     res.cookie("email-verf-token", verfToken, {
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       maxAge: 3 * 60 * 1000, // 3m validity
       sameSite: "none",
