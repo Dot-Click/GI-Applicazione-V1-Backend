@@ -10,27 +10,25 @@ const { sign } = jwt;
  * @param res  incoming res object from express-Response Object
  */
 
-export const generateAndSaveToken = (user, res) => {
+export const generateAndSaveToken = (user, res, isRemember) => {
   const token = sign(
     { id: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
     {
-      expiresIn: "7d",
+      expiresIn: isRemember ? "7d" : "1h",
     }
   );
 
   let cookieSetting = {
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-    httpOnly: true,
+    maxAge: isRemember ? 1000 * 60 * 60 * 24 * 7 : 60 * 60 * 1000,
+    httpOnly: false,
     sameSite: "none",
-    secure: false,
+    secure: true,
   };
-  console.log("process.env.NODE_ENV ", process.env.NODE_ENV);
   if (process.env.NODE_ENV === "production") {
     cookieSetting.secure = true;
     cookieSetting.httpOnly = true;
   }
-
   res.cookie(`token`, `Bearer ${token}`, cookieSetting);
 };
 

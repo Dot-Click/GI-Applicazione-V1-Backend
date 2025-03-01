@@ -9,14 +9,16 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import swaggerDocs from "./src/lib/swagger.js";
 import { cloudinaryConfig } from "./src/lib/utils.js";
+import { loggerMiddleware } from "./src/middlewares/logger.middleware.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
 app.set("trust proxy", 1);
+app.use(loggerMiddleware)
 
 app.use(cors({ origin: ["http://localhost:5173","http://localhost:5174","https://gi-costruzioni-fe.vercel.app"], credentials: true }));
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Ciao mondo!");
 });
 
 app.use(express.json());

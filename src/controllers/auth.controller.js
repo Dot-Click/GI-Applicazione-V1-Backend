@@ -32,7 +32,7 @@ export const createAdmin = async (req, res) => {
 
 export const loginAdmin = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, isRemember } = req.body;
     if (!email || !password) {
       return res
         .status(401)
@@ -49,7 +49,7 @@ export const loginAdmin = async (req, res) => {
         message:
           "La password non è corretta. Riprova o reimposta la tua password se l'hai dimenticata",
       });
-    generateAndSaveToken(user, res);
+    generateAndSaveToken(user, res, isRemember ?? false);
     return res
       .status(200)
       .json({ message: "logged in Successfully", data: user });
@@ -76,7 +76,12 @@ export const verifEmail = async (req, res) => {
         expiresIn: "3m",
       }
     );
-    res.cookie("email-verf-token", verfToken, { httpOnly: false });
+    res.cookie("email-verf-token", verfToken, {
+      httpOnly: false,
+      secure: true,
+      maxAge: 3 * 60 * 1000, // 3m validity
+      sameSite: "none",
+    });
     return res.status(200).json({
       message:
         "Ti abbiamo inviato un’e-mail per consentirti di reimpostare la password",
