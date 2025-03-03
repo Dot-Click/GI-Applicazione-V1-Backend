@@ -69,6 +69,9 @@ export const getEmployee = async (req, res) => {
     const emp = await prisma.employee.findUnique({
       where: { id },
     });
+    if (!emp) {
+      return res.status(200).json({ message: "employee not found" });
+    }
     return res.status(200).json({ message: "employee fetched", data: emp });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -120,7 +123,7 @@ export const searchEmp = async (req, res) => {
   }
 };
 
-
+// unilav
 export const createUnilav = async (req, res) => {
   try {
     const { id } = req.user;
@@ -155,8 +158,29 @@ export const updUnilav = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+export const getUnilav = async (req, res) => {
+  try {
+    // const { id } = req.user;
+    const data = await prisma.unilav.findMany({});
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+export const getUnilavById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await prisma.unilav.findUnique({ where: { id } });
+    if (!data) {
+      return res.status(404).json({ message: "unilav not found" });
+    }
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(200).json({ message: error.message });
+  }
+};
 
-
+// seritia
 export const createSeritia = async (req, res) => {
   try {
     const { id } = req.user;
@@ -191,8 +215,29 @@ export const updSeritia = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+export const getSeritia = async (req, res) => {
+  try {
+    // const { id } = req.user;
+    const data = await prisma.seritia.findMany({});
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+export const getSeritiaById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await prisma.seritia.findUnique({ where: { id } });
+    if (!data) {
+      return res.status(404).json({ message: "seritia not found" });
+    }
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(200).json({ message: error.message });
+  }
+};
 
-
+// formazone
 export const createFormazone = async (req, res) => {
   try {
     const { id } = req.user;
@@ -225,5 +270,26 @@ export const updateFormazone = async (req, res) => {
     return res.json(upd);
   } catch (error) {
     return res.status(500).json({ error: error.message });
+  }
+};
+export const getFormazone = async (req, res) => {
+  try {
+    // const { id } = req.user;
+    const data = await prisma.formazone.findMany({ });
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+export const getFormazoneById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await prisma.formazone.findUnique({ where: { id } });
+    if (!data) {
+      return res.status(404).json({ message: "formazone not found" });
+    }
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(200).json({ message: error.message });
   }
 };

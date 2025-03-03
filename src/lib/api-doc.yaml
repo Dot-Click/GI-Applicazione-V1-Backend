@@ -512,7 +512,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               required:
@@ -564,10 +564,10 @@ paths:
                 address:
                   type: string
                   example: "123 Main Street"
-                orderManager:
+                projectManager:
                   type: string
                   example: "John Doe"
-                siteManager:
+                constructionManager:
                   type: string
                   example: "Jane Smith"
                 technicalManager:
@@ -591,9 +591,6 @@ paths:
                 dipositRecovery:
                   type: string
                   example: 100.00
-                vat:
-                  type: string
-                  example: 12.00
                 withholdingAmount:
                   type: string
                   example: 200.00
@@ -3039,3 +3036,1362 @@ paths:
                   message:
                     type: string
                     example: "Internal server error"
+
+  # employee APIs
+  /api/employee/create:
+    post:
+      summary: Create a new employee
+      description: This endpoint allows an admin to create a new employee by providing the required details.
+      security:
+        - bearerAuth: []
+      tags:
+        - Employee
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - surname
+                - taxId
+                - contractorNo
+                - sector
+                - startDate
+                - endDate
+                - municipalityOfBirth
+                - level
+                - qualification
+                - number
+                - address
+                - role
+                - email
+              properties:
+                name:
+                  type: string
+                  example: "John"
+                surname:
+                  type: string
+                  example: "Doe"
+                taxId:
+                  type: string
+                  example: "123456789"
+                contractorNo:
+                  type: string
+                  example: "CON12345"
+                sector:
+                  type: string
+                  example: "IT"
+                startDate:
+                  type: string
+                  format: date
+                  example: "2025-02-01"
+                endDate:
+                  type: string
+                  format: date
+                  example: "2026-02-01"
+                municipalityOfBirth:
+                  type: string
+                  example: "New York"
+                level:
+                  type: string
+                  example: "Senior"
+                qualification:
+                  type: string
+                  example: "Bachelor's in Computer Science"
+                number:
+                  type: string
+                  example: "+1234567890"
+                address:
+                  type: string
+                  example: "123 Main St, New York, USA"
+                role:
+                  type: string
+                  example: "Technical_Manager"
+                email:
+                  type: string
+                  format: email
+                  example: "johndoe@example.com"
+
+      responses:
+        200:
+          description: Employee created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "employee created"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1a2b3c4d5e6f"
+                      name:
+                        type: string
+                        example: "John"
+                      surname:
+                        type: string
+                        example: "Doe"
+                      email:
+                        type: string
+                        example: "johndoe@example.com"
+        400:
+          description: Employee already exists or missing required field(s)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "employee already exists"
+        404:
+          description: Missing required field(s)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Missing required field: name"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/:
+    get:
+      summary: Get all employees
+      description: This endpoint allows an admin to retrieve a paginated list of employees.
+      security:
+        - bearerAuth: []
+      tags:
+        - Employee
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            example: 1
+          description: "Page number for pagination. Default is 1."
+
+      responses:
+        200:
+          description: Employees fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Employees fetched successfully"
+                  page:
+                    type: integer
+                    example: 1
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "46e7e276-f7ea-4bae-9550-86c63c75ea01"
+                        name:
+                          type: string
+                          example: "John"
+                        surname:
+                          type: string
+                          example: "Doe"
+                        email:
+                          type: string
+                          example: "johndoe@example.com"
+                        role:
+                          type: string
+                          example: "Admin"
+                        startDate:
+                          type: string
+                          format: date
+                          example: "2025-02-01"
+                        endDate:
+                          type: string
+                          format: date
+                          example: "2026-02-01"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/{id}:
+    get:
+      summary: Get an employee by ID
+      description: This endpoint allows an admin to fetch details of a specific employee using their unique ID.
+      security:
+        - bearerAuth: []
+      tags:
+        - Employee
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: "1a2b3c4d5e6f"
+          description: "The unique identifier of the employee."
+
+      responses:
+        200:
+          description: Employee fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "employee fetched"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "46e7e276-f7ea-4bae-9550-86c63c75ea01"
+                      name:
+                        type: string
+                        example: "John"
+                      surname:
+                        type: string
+                        example: "Doe"
+                      email:
+                        type: string
+                        example: "johndoe@example.com"
+                      role:
+                        type: string
+                        example: "Site_Manager"
+                      startDate:
+                        type: string
+                        format: date
+                        example: "2025-02-01"
+                      endDate:
+                        type: string
+                        format: date
+                        example: "2026-02-01"
+
+        400:
+          description: Missing ID field
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "missing id field"
+        404:
+          description: Employee not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "employee not found"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/update/{id}:
+    patch:
+      summary: Update an existing employee
+      description: This endpoint allows an admin to update an employee's details.
+      security:
+        - bearerAuth: []
+      tags:
+        - Employee
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: "46e7e276-f7ea-4bae-9550-86c63c75ea01"
+          description: "The unique identifier of the employee."
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "John"
+                surname:
+                  type: string
+                  example: "Doe"
+                taxId:
+                  type: string
+                  example: "TAX123456"
+                contractorNo:
+                  type: string
+                  example: "C987654"
+                sector:
+                  type: string
+                  example: "IT"
+                startDate:
+                  type: string
+                  format: date
+                  example: "2025-02-01"
+                endDate:
+                  type: string
+                  format: date
+                  example: "2026-02-01"
+                municipalityOfBirth:
+                  type: string
+                  example: "New York"
+                level:
+                  type: string
+                  example: "Senior"
+                qualification:
+                  type: string
+                  example: "Bachelor's in Computer Science"
+                number:
+                  type: string
+                  example: "+1 234 567 8901"
+                address:
+                  type: string
+                  example: "123 Main St, New York, NY"
+                role:
+                  type: string
+                  example: "Order_Manager"
+                email:
+                  type: string
+                  format: email
+                  example: "john.doe@example.com"
+
+      responses:
+        200:
+          description: Employee updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "updated!"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "46e7e276-f7ea-4bae-9550-86c63c75ea01"
+                      name:
+                        type: string
+                        example: "John"
+                      surname:
+                        type: string
+                        example: "Doe"
+                      email:
+                        type: string
+                        example: "john.doe@example.com"
+                      role:
+                        type: string
+                        example: "Admin"
+                      startDate:
+                        type: string
+                        format: date
+                        example: "2025-02-01"
+                      endDate:
+                        type: string
+                        format: date
+                        example: "2026-02-01"
+
+        404:
+          description: Employee not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "emp not found"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+                  description:
+                    type: string
+                    example: "Error details"
+
+  # unilav APIs
+  /api/employee/unilav:
+    get:
+      summary: Retrieve all Unilav records
+      description: This endpoint allows an admin to fetch all associated employee Unilav records.
+      security:
+        - bearerAuth: []
+      tags:
+        - employee/unilav
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+
+      responses:
+        200:
+          description: Successfully fetched all Unilav records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "abc123"
+                    name:
+                      type: string
+                      example: "Unilav Record 1"
+                    description:
+                      type: string
+                      example: "Details about the Unilav record"
+                    createdAt:
+                      type: string
+                      format: date-time
+                      example: "2025-02-18T12:34:56.789Z"
+                    updatedAt:
+                      type: string
+                      format: date-time
+                      example: "2025-02-18T12:34:56.789Z"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/unilav/{id}:
+    get:
+      summary: Retrieve a specific Unilav record by ID
+      description: This endpoint allows an admin to fetch details of a specific Unilav record.
+      security:
+        - bearerAuth: []
+      tags:
+        - employee/unilav
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            description: "ID of the Unilav record to fetch."
+            example: "abc123"
+
+      responses:
+        200:
+          description: Successfully fetched the Unilav record
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "abc123"
+                  name:
+                    type: string
+                    example: "Unilav Record 1"
+                  description:
+                    type: string
+                    example: "Details about the Unilav record"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-02-18T12:34:56.789Z"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: "2025-02-18T12:34:56.789Z"
+
+        404:
+          description: Unilav record not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "unilav not found"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/unilav/create:
+    post:
+      summary: Create a new Unilav record
+      description: This endpoint allows an admin to create a new Unilav record by providing the required details.
+      security:
+        - bearerAuth: []
+      tags:
+        - employee/unilav
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - healthEligibility
+                - expiryDate
+                - dataRilascio
+                - attachment
+              properties:
+                healthEligibility:
+                  type: string
+                  description: "Indicates if the employee is health eligible."
+                  example: "Eligible"
+                expiryDate:
+                  type: string
+                  format: date
+                  description: "Expiration date of the Unilav record."
+                  example: "2025-12-31"
+                dataRilascio:
+                  type: string
+                  format: date
+                  description: "Date of issuance."
+                  example: "2024-01-01"
+                attachment:
+                  type: string
+                  format: binary
+                  description: "File to upload (PDF, image, etc.). The frontend must send this as `unilav`"
+
+      responses:
+        200:
+          description: Successfully created a new Unilav record
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "created!"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "abc123"
+                      healthEligibility:
+                        type: string
+                        example: "Eligible"
+                      expiryDate:
+                        type: string
+                        format: date
+                        example: "2025-12-31"
+                      dataRilascio:
+                        type: string
+                        format: date
+                        example: "2024-01-01"
+                      attachment:
+                        type: string
+                        format: uri
+                        example: "https://cloudinary.com/sample.pdf"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-18T12:34:56.789Z"
+
+        400:
+          description: Missing required field(s)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Missing required field: healthEligibility"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/unilav/update/{id}:
+    patch:
+      summary: Update a Unilav record
+      description: Updates a Unilav record with new data, including an optional file upload.
+      tags:
+        - employee/unilav
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the Unilav record to update.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                unilav:
+                  type: string
+                  format: binary
+                  description: The file to upload (optional).
+                otherField1:
+                  type: string
+                  description: Other data fields to update.
+                otherField2:
+                  type: string
+                  description: Another field to update.
+      responses:
+        "200":
+          description: Successfully updated the Unilav record.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  attachment:
+                    type: string
+                    format: uri
+                    description: URL of the uploaded file (if any).
+                  otherField1:
+                    type: string
+                  otherField2:
+                    type: string
+        "400":
+          description: Missing required parameters or invalid request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  # seritia APIs
+  /api/employee/seritia/create:
+    post:
+      summary: Create a new Seritia record
+      description: Creates a new Seritia record with required fields and an optional file upload.
+      tags:
+        - employee/seritia
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - healthEligibility
+                - expiryDate
+                - dataRilascio
+                - attachment - with key value of `seritia`
+              properties:
+                seritia:
+                  type: string
+                  format: binary
+                  description: Optional file attachment.
+                healthEligibility:
+                  type: string
+                  description: Eligibility status for health.
+                expiryDate:
+                  type: string
+                  format: date
+                  description: Expiry date of the Seritia record.
+                dataRilascio:
+                  type: string
+                  format: date
+                  description: Issuance date of the Seritia record.
+                attachment:
+                  type: string
+                  format: file (.pdf, .docs, .csv) etc
+                  description: attachment - with key value of `seritia`
+      responses:
+        "200":
+          description: Successfully created the Seritia record.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "created!"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      healthEligibility:
+                        type: string
+                      expiryDate:
+                        type: string
+                        format: date
+                      dataRilascio:
+                        type: string
+                        format: date
+                      attachment:
+                        type: string
+                        format: uri
+                        description: URL of the uploaded file (if any).
+        "400":
+          description: Missing required field(s).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Missing required field: healthEligibility"
+        "401":
+          description: Unauthorized request (JWT required).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized access"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error."
+
+  /api/employee/seritia:
+    get:
+      summary: Retrieve all Seritia records
+      description: This endpoint allows an admin to fetch all associated employee Seritia records, associated with the logged in employee
+      security:
+        - bearerAuth: []
+      tags:
+        - employee/seritia
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+
+      responses:
+        200:
+          description: Successfully fetched all Unilav records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "abc123"
+                    name:
+                      type: string
+                      example: "Unilav Record 1"
+                    description:
+                      type: string
+                      example: "Details about the Unilav record"
+                    createdAt:
+                      type: string
+                      format: date-time
+                      example: "2025-02-18T12:34:56.789Z"
+                    updatedAt:
+                      type: string
+                      format: date-time
+                      example: "2025-02-18T12:34:56.789Z"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/seritia/{id}:
+    get:
+      summary: Retrieve a specific Seritia record by ID
+      description: This endpoint allows an admin to fetch details of a specific Seritia record.
+      security:
+        - bearerAuth: []
+      tags:
+        - employee/seritia
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            description: "ID of the Unilav record to fetch."
+            example: "abc123"
+
+      responses:
+        200:
+          description: Successfully fetched the Unilav record
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "abc123"
+                  name:
+                    type: string
+                    example: "Unilav Record 1"
+                  description:
+                    type: string
+                    example: "Details about the Unilav record"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-02-18T12:34:56.789Z"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: "2025-02-18T12:34:56.789Z"
+
+        404:
+          description: Unilav record not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "unilav not found"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/seritia/update/{id}:
+    patch:
+      summary: Update a Seritia record
+      description: Updates a Unilav record with new data, including an optional file upload.
+      tags:
+        - employee/seritia
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the Unilav record to update.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                unilav:
+                  type: string
+                  format: binary
+                  description: The file to upload (optional).
+                otherField1:
+                  type: string
+                  description: Other data fields to update.
+                otherField2:
+                  type: string
+                  description: Another field to update.
+      responses:
+        "200":
+          description: Successfully updated the Unilav record.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  attachment:
+                    type: string
+                    format: uri
+                    description: URL of the uploaded file (if any).
+                  otherField1:
+                    type: string
+                  otherField2:
+                    type: string
+        "400":
+          description: Missing required parameters or invalid request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  # formazone APIs
+  /api/employee/formazone/create:
+    post:
+      summary: Create a new Formazone record
+      description: Creates a new Formazone record with required fields and an optional file upload.
+      tags:
+        - employee/formazone
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - training
+                - expiryDate
+                - dataRilascio
+                - attachment - with key value of `formazone`
+              properties:
+                formazone:
+                  type: string
+                  format: binary
+                  description: Optional file attachment.
+                training:
+                  type: string
+                  description: The type of training for Formazone.
+                expiryDate:
+                  type: string
+                  format: date
+                  description: Expiry date of the Formazone record.
+                dataRilascio:
+                  type: string
+                  format: date
+                  description: Issuance date of the Formazone record.
+                attachment:
+                  type: string
+                  format: file (.pdf, .docs, .csv) etc
+                  description: attachment - with key value of `formazone`
+      responses:
+        "200":
+          description: Successfully created the Formazone record.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "created!"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      training:
+                        type: string
+                      expiryDate:
+                        type: string
+                        format: date
+                      dataRilascio:
+                        type: string
+                        format: date
+                      attachment:
+                        type: string
+                        format: uri
+                        description: URL of the uploaded file (if any).
+        "400":
+          description: Missing required field(s).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Missing required field: training"
+        "401":
+          description: Unauthorized request (JWT required).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized access"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error."
+
+  /api/employee/formazone/update/{id}:
+    patch:
+      summary: Update a Formazone record by ID
+      description: Updates a specific Formazone record identified by the ID, with optional file upload.
+      tags:
+        - employee/formazone
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the Formazone record to update.
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                formazone:
+                  type: string
+                  format: binary
+                  description: Optional file to upload.
+                training:
+                  type: string
+                  description: The type of training for Formazone.
+                expiryDate:
+                  type: string
+                  format: date
+                  description: Expiry date of the Formazone record.
+                dataRilascio:
+                  type: string
+                  format: date
+                  description: Issuance date of the Formazone record.
+                attachment:
+                  format: file (pdf, doc, csv)
+                  description: document to upload ahving key value as `formazone`.
+      responses:
+        "200":
+          description: Successfully updated the Formazone record.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  training:
+                    type: string
+                  expiryDate:
+                    type: string
+                    format: date
+                  dataRilascio:
+                    type: string
+                    format: date
+                  attachment:
+                    type: string
+                    format: uri
+                    description: URL of the uploaded file (if any).
+        "400":
+          description: Missing required ID or invalid request data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "id is required"
+        "401":
+          description: Unauthorized request (JWT required).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized access"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error."
+
+  /api/employee/formazone:
+    get:
+      summary: Get all Formazone records
+      description: Retrieves all Formazone records from the database, associated with the logged in employee
+      tags:
+        - employee/formazone
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully fetched the Formazone records.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    training:
+                      type: string
+                    expiryDate:
+                      type: string
+                      format: date
+                    dataRilascio:
+                      type: string
+                      format: date
+                    attachment:
+                      type: string
+                      format: uri
+                      description: URL of the uploaded file (if any).
+        "401":
+          description: Unauthorized request (JWT required).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized access"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error."
+
+  /api/employee/formazone/{id}:
+    get:
+      summary: Get a Formazone record by ID
+      description: Retrieves a specific Formazone record based on the provided ID.
+      tags:
+        - employee/formazone
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the Formazone record to retrieve.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully fetched the Formazone record.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  training:
+                    type: string
+                  expiryDate:
+                    type: string
+                    format: date
+                  dataRilascio:
+                    type: string
+                    format: date
+                  attachment:
+                    type: string
+                    format: uri
+                    description: URL of the uploaded file (if any).
+        "404":
+          description: Formazone record not found for the provided ID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "formazone not found"
+        "401":
+          description: Unauthorized request (JWT required).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized access"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error."
