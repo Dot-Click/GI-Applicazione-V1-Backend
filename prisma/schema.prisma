@@ -56,8 +56,8 @@ model Order {
   id                  String      @id @default(uuid())
   code                String      @unique
   description         String
-  workAmount          Decimal
-  advancePayment      Decimal
+  workAmount          String
+  advancePayment      String
   startDate           String
   endDate             String
   address             String
@@ -74,8 +74,8 @@ model Order {
   technicalManager    String
   admin               Admin?      @relation(fields: [adminId], references: [id])
   adminId             String?
-  supplier            Supplier?   @relation(fields: [supplierEmail], references: [email])
-  supplierEmail       String?
+  supplier            Supplier?   @relation(fields: [supplierId], references: [id])
+  supplierId          String?
   status              Status?     @default(active)
   cig                 String
   cup                 String
