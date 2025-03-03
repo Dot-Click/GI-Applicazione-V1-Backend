@@ -125,7 +125,8 @@ model Supplier {
 }
 
 model Employee {
-  id                  String   @id @default(uuid())
+  id                  String      @id @default(uuid())
+  email               String      @unique
   name                String
   surname             String
   taxId               String
@@ -137,15 +138,62 @@ model Employee {
   level               String
   qualification       String
   number              String
-  email               String   @unique
   natureContract      String?
-  admin               Admin?   @relation(fields: [adminId], references: [id])
+  admin               Admin?      @relation(fields: [adminId], references: [id])
+  unilavs             Unilav[]
+  seritias            Seritia[]
+  formazones          Formazone[]
   adminId             String?
   dob                 String?
   address             String
-  role                EmpRole  @default(Admin)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  role                EmpRole     @default(Admin)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+}
+
+model Unilav {
+  id                String    @id @default(uuid())
+  name              String?
+  status            Status?   @default(active)
+  attachment        String
+  healthEligibility String
+  expiryDate        String
+  dataRilascio      String
+  validityDays      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  Employee          Employee? @relation(fields: [employeeId], references: [id])
+  employeeId        String?
+}
+
+model Seritia {
+  id                String    @id @default(uuid())
+  name              String?
+  status            Status?   @default(active)
+  attachment        String
+  healthEligibility String
+  expiryDate        String
+  dataRilascio      String
+  Employee          Employee? @relation(fields: [employeeId], references: [id])
+  employeeId        String?
+  validityDays      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Formazone {
+  id           String    @id @default(uuid())
+  name         String?
+  status       Status?   @default(active)
+  attachment   String
+  training     String
+  expiryDate   String
+  dataRilascio String
+  Employee     Employee? @relation(fields: [employeeId], references: [id])
+  employeeId   String?
+  validityDays String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 enum OrderState {

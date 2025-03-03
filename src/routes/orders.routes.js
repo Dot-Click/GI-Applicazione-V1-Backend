@@ -11,7 +11,7 @@ import {
 } from "../controllers/orders.controller.js";
 import { Auth } from "../middlewares/auth.middleware.js";
 import { checkRole } from "../middlewares/verif.middleware.js";
-import upload from "../middlewares/multer.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
 const router = express.Router();
 
 router.get("/search", Auth, checkRole(["ADMIN"]), searchOrder);
