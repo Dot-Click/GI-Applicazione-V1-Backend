@@ -85,7 +85,7 @@ model Order {
   jobName             String?
   projectName         String?
   typology            String?
-  archieved           Boolean?    @default(false)
+  archieved           String?    @default("false")
   contract            String?
   permission_to_build String?
   psc                 String?
