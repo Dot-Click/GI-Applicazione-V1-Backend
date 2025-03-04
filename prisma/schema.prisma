@@ -199,7 +199,7 @@ model Formazone {
 
 enum OrderState {
   ON_HOLD     @map("On Hold")
-  IN_PROGRESS @map("n")
+  IN_PROGRESS @map("In Progress")
   COMPLETATO  @map("Completato")
   CANCELLED   @map("Cancelled")
 }
