@@ -139,6 +139,7 @@ model Employee {
   qualification       String
   number              String
   natureContract      String?
+  password            String?
   admin               Admin?      @relation(fields: [adminId], references: [id])
   unilavs             Unilav[]
   seritias            Seritia[]
@@ -197,10 +198,10 @@ model Formazone {
 }
 
 enum OrderState {
-  ON_HOLD
-  IN_PROGRESS
-  COMPLETATO
-  CANCELLED
+  ON_HOLD     @map("On Hold")
+  IN_PROGRESS @map("n")
+  COMPLETATO  @map("Completato")
+  CANCELLED   @map("Cancelled")
 }
 
 enum Status {

@@ -65,6 +65,12 @@ export const createOrder = async (req, res) => {
       })
     );
 
+    const orderStateMap = {
+      ON_HOLD: "On Hold",
+      IN_PROGRESS: "In Progress",
+      CANCELLED: "Cancelled",
+      COMPLETED: "Completed",
+    };
     const order = await prisma.order.create({
       data: {
         ...orderData,
@@ -84,7 +90,7 @@ export const createOrder = async (req, res) => {
 
     return res
       .status(201)
-      .json({ data: order, message: "Order created successfully." });
+      .json({ data: {...order, state: orderStateMap[order.state] || order.state}, message: "Order created successfully." });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
