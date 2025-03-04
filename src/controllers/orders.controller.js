@@ -101,7 +101,9 @@ export const updateOrder = async (req, res) => {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
-    const upd_data = { ...req.body };
+    let upd_data = { ...req.body };
+    upd_data.isPublic =
+      req.body.isPublic !== undefined ? req.body.isPublic : false;
     const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
     const uploadedFiles = {};
 
@@ -120,11 +122,6 @@ export const updateOrder = async (req, res) => {
         upd_data[field] = uploadedFiles[field]?.secure_url;
       }
     });
-
-    if (req.body.hasOwnProperty("isPublic")) {
-      upd_data.isPublic = req.body.isPublic === "true";
-    }
-
     const order = await prisma.order.update({
       where: { id },
       data: upd_data,
