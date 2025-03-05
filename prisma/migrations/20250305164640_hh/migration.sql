@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Order" ALTER COLUMN "isPublic" SET DEFAULT 'false',
+ALTER COLUMN "isPublic" SET DATA TYPE TEXT;

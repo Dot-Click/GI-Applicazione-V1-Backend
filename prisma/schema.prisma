@@ -85,15 +85,15 @@ model Order {
   jobName             String?
   projectName         String?
   typology            String?
-  archieved           String?    @default("false")
+  archieved           String?     @default("false")
   contract            String?
   permission_to_build String?
   psc                 String?
   pos                 String?
   withholdingAmount   String
-  lat                 String?      @default("37.7749")
-  lng                 String?      @default("-122.4194")
-  isPublic            Boolean?    @default(false)
+  lat                 String?     @default("37.7749")
+  lng                 String?     @default("-122.4194")
+  isPublic            String?     @default("false")
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
   Customer            Customer?   @relation(fields: [customerId], references: [id])
