@@ -85,14 +85,14 @@ model Order {
   jobName             String?
   projectName         String?
   typology            String?
-  archieved           Boolean?    @default(false)
+  archieved           String?    @default("false")
   contract            String?
   permission_to_build String?
   psc                 String?
   pos                 String?
   withholdingAmount   String
-  lat                 Float?      @default(37.7749)
-  lng                 Float?      @default(-122.4194)
+  lat                 String?      @default("37.7749")
+  lng                 String?      @default("-122.4194")
   isPublic            Boolean?    @default(false)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
