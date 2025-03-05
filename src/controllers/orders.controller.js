@@ -76,21 +76,21 @@ export const createOrder = async (req, res) => {
         ...orderData,
         code,
         address,
-        isPublic: isPublic === "true",
         contract: uploadedFiles.contract?.secure_url || null,
         permission_to_build:
           uploadedFiles.permission_to_build?.secure_url || null,
         psc: uploadedFiles.psc?.secure_url || null,
         pos: uploadedFiles.pos?.secure_url || null,
         adminId: id,
-        lat: location?.lat || null,
-        lng: location?.lng || null,
+        lat: String(location?.lat) || null,
+        lng: String(location?.lng) || null,
       },
     });
 
-    return res
-      .status(201)
-      .json({ data: {...order, state: orderStateMap[order.state] || order.state}, message: "Order created successfully." });
+    return res.status(201).json({
+      data: { ...order, state: orderStateMap[order.state] || order.state },
+      message: "Order created successfully.",
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -100,10 +100,11 @@ export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Order ID is required." });
+    console.log(typeof req.body.isPublic);
 
     let upd_data = { ...req.body };
     upd_data.isPublic =
-      req.body.isPublic !== undefined ? req.body.isPublic : false;
+      req.body.isPublic !== undefined ? req.body.isPublic : "false";
     const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
     const uploadedFiles = {};
 
@@ -194,16 +195,31 @@ export const searchOrder = async (req, res) => {
   }
 };
 
-export const archieveOrder = async (req, res) => {
+export const archieve = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Bad request" });
     const ord = await prisma.order.update({
       where: { id: id },
-      data: { archieved: true },
+      data: { archieved: "true" },
     });
     if (!ord) return res.status(404).json({ message: "Order not found" });
     return res.status(200).json({ message: "Order archieved!" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const unArchieve = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: "Bad request" });
+    const order = await prisma.order.update({
+      where: { id },
+      data: { archieved: "false" },
+    });
+    if (!order) return res.status(404).json({ error: "order not found" });
+    return res.status(200).json({ message: "unarchived successfully" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -216,7 +232,7 @@ export const getArchivedOrders = async (req, res) => {
     page = parseInt(page, 10);
     if (isNaN(page) || page < 1) page = 1;
     const orders = await prisma.order.findMany({
-      where: { adminId: id, archieved: true },
+      where: { adminId: id, archieved: "true" },
       skip: (page - 1) * 10,
       take: 10,
     });
