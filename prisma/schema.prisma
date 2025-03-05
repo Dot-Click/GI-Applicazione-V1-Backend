@@ -216,7 +216,7 @@ enum EmpRole {
   Admin
   Technical_Manager
   Order_Manager
-  Contruction_Manager
+  Construction_Manager
 }
 
 enum Role {

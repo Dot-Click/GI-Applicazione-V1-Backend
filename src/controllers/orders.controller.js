@@ -87,10 +87,9 @@ export const createOrder = async (req, res) => {
       },
     });
 
-    return res.status(201).json({
-      data: { ...order, state: orderStateMap[order.state] || order.state },
-      message: "Order created successfully.",
-    });
+    return res
+      .status(201)
+      .json({ data: {...order, state: orderStateMap[order.state] || order.state}, message: "Order created successfully." });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -100,7 +99,6 @@ export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Order ID is required." });
-    console.log(typeof req.body.isPublic);
 
     let upd_data = { ...req.body };
     upd_data.isPublic =
