@@ -38,7 +38,7 @@ export const loginAdmin = async (req, res) => {
         .status(401)
         .json({ message: "Tutti i campi sono obbligatori" });
     }
-    const user = await prisma.admin.findUnique({ where: { email: email } });
+    const user = await prisma.admin.findUnique({ where: { email } });
     if (!user)
       return res.status(400).json({
         message: "L’indirizzo email inserito non è associato a GI Costruzioni",
@@ -124,10 +124,26 @@ export const getAdminInfo = async (req, res) => {
     const admin = await prisma.admin.findUnique({
       where: { id },
       include: {
-        orders: true,
-        suppliers: true,
-        clients: true,
-        employees: true,
+        orders: {
+          orderBy: {
+            updatedAt: "desc",
+          },
+        },
+        suppliers: {
+          orderBy: {
+            updatedAt: "desc",
+          },
+        },
+        clients: {
+          orderBy: {
+            updatedAt: "desc",
+          },
+        },
+        employees: {
+          orderBy: {
+            updatedAt: "desc",
+          },
+        },
       },
     });
     if (!admin) return res.status(404).json({ message: "admin not found" });
