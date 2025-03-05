@@ -3487,6 +3487,67 @@ paths:
                     type: string
                     example: "Error details"
 
+  /api/employee/delete:
+    delete:
+      summary: Delete multiple employees
+      description: Deletes employees based on the provided list of IDs.
+      tags:
+        - Employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  example: ["12b4555b-e551-4262-849d-08d32a504e35", "ae1a2cc6-2a4c-42f3-914b-e1d1febdf35b"]
+              required:
+                - ids
+      responses:
+        200:
+          description: Employees deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "deleted successfully"
+        400:
+          description: Missing or invalid request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "missing ids"
+        404:
+          description: IDs not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ids not found"
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal Server Error"
   # unilav APIs
   /api/employee/unilav:
     get:
@@ -3810,10 +3871,6 @@ paths:
                 - dataRilascio
                 - attachment - with key value of `seritia`
               properties:
-                seritia:
-                  type: string
-                  format: binary
-                  description: Optional file attachment.
                 healthEligibility:
                   type: string
                   description: Eligibility status for health.
@@ -4104,10 +4161,6 @@ paths:
                 - dataRilascio
                 - attachment - with key value of `formazone`
               properties:
-                formazone:
-                  type: string
-                  format: binary
-                  description: Optional file attachment.
                 training:
                   type: string
                   description: The type of training for Formazone.

@@ -53,51 +53,55 @@ model Customer {
 }
 
 model Order {
-  id                  String      @id @default(uuid())
-  code                String      @unique
-  description         String
-  workAmount          String
-  advancePayment      String
-  startDate           String
-  endDate             String
-  address             String
+  id                       String      @id @default(uuid())
+  code                     String      @unique
+  description              String
+  workAmount               String
+  advancePayment           String
+  startDate                String
+  endDate                  String
+  address                  String
   // province           String
   // nation             String
   // common             String
   // cap                String
   // contractAttachment String
   // discountPercentage Float
-  state               OrderState? @default(ON_HOLD)
-  cnceCode            String
-  orderManager        String
-  siteManager         String
-  technicalManager    String
-  admin               Admin?      @relation(fields: [adminId], references: [id])
-  adminId             String?
-  supplier            Supplier?   @relation(fields: [supplierId], references: [id])
-  supplierId          String?
-  status              Status?     @default(active)
-  cig                 String
-  cup                 String
-  iva                 String
-  dipositRecovery     String
-  vat                 String?
-  jobName             String?
-  projectName         String?
-  typology            String?
-  archieved           String?     @default("false")
-  contract            String?
-  permission_to_build String?
-  psc                 String?
-  pos                 String?
-  withholdingAmount   String
-  lat                 String?     @default("37.7749")
-  lng                 String?     @default("-122.4194")
-  isPublic            String?     @default("false")
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
-  Customer            Customer?   @relation(fields: [customerId], references: [id])
-  customerId          String?
+  state                    OrderState? @default(ON_HOLD)
+  cnceCode                 String
+  orderManager             String
+  siteManager              String
+  technicalManager         String
+  admin                    Admin?      @relation(fields: [adminId], references: [id])
+  adminId                  String?
+  supplier                 Supplier?   @relation(fields: [supplierId], references: [id])
+  supplierId               String?
+  status                   Status?     @default(active)
+  cig                      String
+  cup                      String
+  iva                      String
+  dipositRecovery          String
+  vat                      String?
+  jobName                  String?
+  projectName              String?
+  typology                 String?
+  archieved                String?     @default("false")
+  contract                 String?
+  desc_contract            String?
+  permission_to_build      String?
+  desc_permission_to_build String?
+  psc                      String?
+  desc_psc                 String?
+  pos                      String?
+  desc_pos                 String?
+  withholdingAmount        String
+  lat                      String?     @default("37.7749")
+  lng                      String?     @default("-122.4194")
+  isPublic                 String?     @default("false")
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
+  Customer                 Customer?   @relation(fields: [customerId], references: [id])
+  customerId               String?
 }
 
 model Supplier {
