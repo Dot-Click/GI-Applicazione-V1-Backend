@@ -15,7 +15,7 @@ export const generateAndSaveToken = (user, res, isRemember) => {
     { id: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
     {
-      expiresIn: isRemember ? "7d" : "1hr",
+      expiresIn: isRemember ? "7d" : "15s",
     }
   );
 
@@ -28,7 +28,7 @@ export const generateAndSaveToken = (user, res, isRemember) => {
   );
 
   const cookieSetting = {
-    maxAge: isRemember ? 1000 * 60 * 60 * 24 * 7 : 60 * 60 * 1000,
+    maxAge: isRemember ? 1000 * 60 * 60 * 24 * 7 : 15 * 1000,
     httpOnly: false,
     sameSite: "none",
     secure: true,
