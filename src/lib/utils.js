@@ -15,11 +15,19 @@ export const generateAndSaveToken = (user, res, isRemember) => {
     { id: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
     {
-      expiresIn: isRemember ? "7d" : "1h",
+      expiresIn: isRemember ? "7d" : "1hr",
     }
   );
 
-  let cookieSetting = {
+  const refreshToken = sign(
+    { id: user.id, role: user.role },
+    process.env.JWT_REFRESH_SECRET,
+    {
+      expiresIn: "30d",
+    }
+  );
+
+  const cookieSetting = {
     maxAge: isRemember ? 1000 * 60 * 60 * 24 * 7 : 60 * 60 * 1000,
     httpOnly: false,
     sameSite: "none",
@@ -29,6 +37,9 @@ export const generateAndSaveToken = (user, res, isRemember) => {
     cookieSetting.secure = true;
     cookieSetting.httpOnly = true;
   }
+
+  res.cookie('refreshToken', refreshToken, {...cookieSetting, maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
+  
   res.cookie(`token`, `Bearer ${token}`, cookieSetting);
 };
 
