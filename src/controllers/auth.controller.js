@@ -143,7 +143,11 @@ export const getAdminInfo = async (req, res) => {
           orderBy: {
             updatedAt: "desc",
           },
-        },
+        }
+        // orderSeq: true,
+        // customerSeq: true,
+        // employeeSeq: true,
+        // supplierSeq: true
       },
     });
     if (!admin) return res.status(404).json({ message: "admin not found" });
@@ -154,6 +158,92 @@ export const getAdminInfo = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+// export const updateOrderSequence = async (req, res) => {
+//   try {
+//     const { id } = req.user;
+//     const { addedColArray, visibleColArray } = req.body;
+//     if (!addedColArray || !visibleColArray) {
+//       return res.status(400).json({ error: "missing required fields" });
+//     }
+//     if (!Array.isArray(addedColArray) || !Array.isArray(visibleColArray))
+//       return res.status(406).json({ error: "Invalid type" });
+//     const reqOrdval = [
+//       "state",
+//       "description",
+//       "technicalManager",
+//       "siteManager",
+//       "address",
+//       "orderManager",
+//       "code",
+//       "startDate",
+//       "endDate",
+//       "cnceCode",
+//       "withholdingAmount",
+//       "workAmount",
+//       "advancePayment",
+//       "dipositRecovery",
+//       "isPublic",
+//       "iva",
+//       "cup",
+//       "cig",
+//     ];
+//     const missingField = reqOrdval.find(
+//       (field) =>
+//         !addedColArray.includes(field) && !visibleColArray.includes(field)
+//     );
+
+//     if (missingField) {
+//       return res.status(422).json({ error: `Invalid field: ${missingField}` });
+//     }
+//     await prisma.ordSequence.upsert({
+//       where: { adminId: id },
+//       update: {
+//         added_col_array: addedColArray,
+//         visible_col_array: visibleColArray,
+//       },
+//       create: {
+//         added_col_array: addedColArray,
+//         visible_col_array: visibleColArray,
+//         adminId: id,
+//       },
+//     });
+//     return res.status(200).json({ message: "sequence updated!" });
+//   } catch (error) {
+//     return res.status(500).json({ error: error.message });
+//   }
+// };
+
+// export const getOrderSequence = async (req, res) => {
+//   try {
+//     const { id } = req.user;
+//     const seq = await prisma.ordSequence.findUnique({ where: { adminId: id } });
+//     if (!seq) {
+//       return res.status(404).json({ message: "sequence not found", seq });
+//     }
+//     return res.status(200).json(seq);
+//   } catch (error) {
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
+
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+    return res.status(200).json({ message: "logout successfull" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+}; //optional
 
 // export const apiController = async (req, res) => {
 //   try {
