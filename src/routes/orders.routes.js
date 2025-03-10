@@ -8,7 +8,6 @@ import {
   getOrders,
   getOrderSequence,
   searchOrder,
-  unArchieve,
   updateOrder,
   updateOrderSequence,
 } from "../controllers/orders.controller.js";
@@ -26,7 +25,6 @@ router.get("/:id", Auth, checkRole(["ADMIN"]), getOrder);
 router.post("/create", Auth, checkRole(["ADMIN"]), upload, createOrder);
 router.patch("/update/:id", Auth, checkRole(["ADMIN"]), upload, updateOrder);
 router.patch("/archive/:id", Auth, checkRole(["ADMIN"]), archieve);
-router.patch("/unarchive/:id", Auth, checkRole(["ADMIN"]), unArchieve);
 router.delete("/delete", Auth, checkRole(["ADMIN"]), deleteOrder);
 
 

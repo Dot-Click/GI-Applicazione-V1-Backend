@@ -49,7 +49,9 @@ export const createOrder = async (req, res) => {
       );
       location = data.results[0]?.geometry?.location || null;
     } catch (geoError) {
-      return res.status(500).json({ error: `Failed to fetch geolocation: ${geoError.message}` });
+      return res
+        .status(500)
+        .json({ error: `Failed to fetch geolocation: ${geoError.message}` });
     }
 
     const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
@@ -87,9 +89,10 @@ export const createOrder = async (req, res) => {
       },
     });
 
-    return res
-      .status(201)
-      .json({ data: {...order, state: orderStateMap[order.state] || order.state}, message: "Order created successfully." });
+    return res.status(201).json({
+      data: { ...order, state: orderStateMap[order.state] || order.state },
+      message: "Order created successfully.",
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -198,27 +201,24 @@ export const archieve = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Bad request" });
-    const ord = await prisma.order.update({
-      where: { id: id },
-      data: { archieved: "true" },
+
+    const ord = await prisma.order.findUnique({
+      where: { id },
     });
     if (!ord) return res.status(404).json({ message: "Order not found" });
-    return res.status(200).json({ message: "Order archieved!" });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-export const unArchieve = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!id) return res.status(400).json({ error: "Bad request" });
-    const order = await prisma.order.update({
+    if (ord.archieved === "true") {
+      await prisma.order.update({
+        where: { id },
+        data: { archieved: "false" },
+      });
+      return res.status(200).json({ message: "Order unarchieved!" });
+    }
+    
+    await prisma.order.update({
       where: { id },
-      data: { archieved: "false" },
+      data: { archieved: "true" },
     });
-    if (!order) return res.status(404).json({ error: "order not found" });
-    return res.status(200).json({ message: "unarchived successfully" });
+    return res.status(200).json({ message: "Order archieved!" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -275,12 +275,12 @@ export const updateOrderSequence = async (req, res) => {
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),
       ...visibleColArray.filter((field) => !reqOrdval.includes(field)),
     ];
-    
+
     if (invalidFields.length > 0) {
       return res
         .status(422)
         .json({ error: `Invalid fields found: ${invalidFields.join(", ")}` });
-    } 
+    }
     await prisma.ordSequence.upsert({
       where: { adminId: id },
       update: {
