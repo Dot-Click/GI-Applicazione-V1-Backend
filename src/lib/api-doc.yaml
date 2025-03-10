@@ -2416,6 +2416,95 @@ paths:
                     type: string
                     example: "Internal server error"
 
+  /api/customer/update/custSeq:
+    patch:
+      summary: Update customer sequence for an admin
+      description: Updates the customer sequence settings (added and visible columns) for the admin user.
+      tags:
+        - Customer
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - addedColArray
+                - visibleColArray
+              properties:
+                addedColArray:
+                  type: array
+                  items:
+                    type: string
+                  description: List of added column names.
+                  example: ["nation", "companyName", "vatNumber"]
+                visibleColArray:
+                  type: array
+                  items:
+                    type: string
+                  description: List of visible column names.
+                  example: ["phoneNumber", "emailAddress"]
+      responses:
+        200:
+          description: Customer sequence updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "sequence updated!"
+        400:
+          description: Missing required fields.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "missing required fields"
+        406:
+          description: Invalid input type.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid type"
+        422:
+          description: Invalid fields provided.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid fields found: invalidField1, invalidField2"
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+
   # supplier APIs
   /api/supplier/create:
     post:
@@ -3204,7 +3293,6 @@ paths:
                   message:
                     type: string
                     example: "Internal server error"
-
   # employee APIs
   /api/employee/create:
     post:
@@ -3718,6 +3806,87 @@ paths:
                 type: object
                 properties:
                   message:
+                    type: string
+                    example: "Internal Server Error"
+
+  /api/employee/update/empSeq:
+    patch:
+      summary: Update employee sequence
+      description: Allows an admin to update the employee sequence with a list of added and visible columns.
+      tags:
+        - Employee
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - addedColArray
+                - visibleColArray
+              properties:
+                addedColArray:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    ["firstName", "lastName", "birthPlace", "contractor", "homeAddress", "qualification", "role", "phoneNumber", "emailAddress", "startDate", "endDate", "level", "sector", "fiscalCode"]
+                visibleColArray:
+                  type: array
+                  items:
+                    type: string
+                  example: ["firstName", "lastName", "phoneNumber", "emailAddress"]
+      responses:
+        "200":
+          description: Sequence updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "sequence updated!"
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "missing required fields"
+        "406":
+          description: Invalid type provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid type"
+        "422":
+          description: Invalid fields found in the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid fields found: invalidField1, invalidField2"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
                     type: string
                     example: "Internal Server Error"
 
