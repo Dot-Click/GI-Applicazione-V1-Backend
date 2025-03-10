@@ -6,7 +6,7 @@ import {
   getCustomer,
   getCustSequence,
   login,
-  logout,
+  // logout,
   searchCustomer,
   signup,
   updateCust,
@@ -20,7 +20,7 @@ const router = express.Router();
 // client/user - authentication routes
 // router.post("/signup-client", Auth, checkRole(["ADMIN"]), signup);
 router.post("/login-client", checkRole(["USER"]), login);
-router.post("/logout-client", Auth, checkRole(["USER"]), logout); //optional
+// router.post("/logout-client", Auth, checkRole(["USER"]), logout); //optional
 
 router.patch("/update/custSeq", Auth, checkRole(["ADMIN"]), updateCustSequence)
 router.get("/get/custSeq", Auth, checkRole(["ADMIN"]), getCustSequence)
