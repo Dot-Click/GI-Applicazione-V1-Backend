@@ -14,17 +14,21 @@ datasource db {
 }
 
 model Admin {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  name      String
-  password  String
-  role      Role       @default(ADMIN)
-  clients   Customer[] // one-to-many relations
-  orders    Order[]
-  suppliers Supplier[]
-  employees Employee[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id          String        @id @default(uuid())
+  email       String        @unique
+  name        String
+  password    String
+  role        Role          @default(ADMIN)
+  clients     Customer[] // one-to-many relations
+  orders      Order[]
+  suppliers   Supplier[]
+  employees   Employee[]
+  orderSeq    ordSequence?
+  supplierSeq supSequence?
+  customerSeq custSequence?
+  employeeSeq empSequence?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 model Customer {
@@ -50,6 +54,14 @@ model Customer {
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model custSequence {
+  id                String   @id @default(uuid())
+  added_col_array   String[]
+  visible_col_array String[]
+  admin             Admin?   @relation(fields: [adminId], references: [id])
+  adminId           String?  @unique
 }
 
 model Order {
@@ -104,6 +116,14 @@ model Order {
   customerId               String?
 }
 
+model ordSequence {
+  id                String   @id @default(uuid())
+  added_col_array   String[]
+  visible_col_array String[]
+  admin             Admin?   @relation(fields: [adminId], references: [id])
+  adminId           String?  @unique
+}
+
 model Supplier {
   id          String   @id @default(uuid())
   email       String   @unique //ref to supplierEmail in order table
@@ -126,6 +146,14 @@ model Supplier {
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model supSequence {
+  id                String   @id @default(uuid())
+  added_col_array   String[]
+  visible_col_array String[]
+  admin             Admin?   @relation(fields: [adminId], references: [id])
+  adminId           String?  @unique
 }
 
 model Employee {
@@ -154,6 +182,14 @@ model Employee {
   role                EmpRole     @default(Admin)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
+}
+
+model empSequence {
+  id                String   @id @default(uuid())
+  added_col_array   String[]
+  visible_col_array String[]
+  admin             Admin?   @relation(fields: [adminId], references: [id])
+  adminId           String?  @unique
 }
 
 model Unilav {

@@ -1,7 +1,7 @@
 import "dotenv/config";
 import prisma from "../../prisma/prisma.js";
 import bcrypt from "bcrypt";
-import { generateAndSaveToken } from "../lib/utils.js";
+import jwt from "jsonwebtoken";
 
 export const signup = async (req, res) => {
   try {
@@ -79,7 +79,8 @@ export const createCust = async (req, res) => {
 
     return res.status(201).json({
       message: "Customer created successfully",
-      data: { ...customer, password: randomPass },
+      data: { ...customer },
+      login_crdentials: { password: randomPass, email: customer.email },
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -142,21 +143,40 @@ export const login = async (req, res) => {
     if (!match) {
       return res.status(400).json({ error: "Invalid Password" });
     }
-    generateAndSaveToken(user, res);
+    const token = jwt.sign(
+      { user: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "3h" }
+    );
+    res.cookie(`token`, `Bearer ${token}`, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 180 * 180 * 1000,
+    });
     return res.status(200).json({ message: "Login successful", data: user });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
 
-export const logout = async (req, res) => {
-  try {
-    res.clearCookie("token");
-    res.status(200).json({ message: "logout sucessfull" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}; //optional
+// export const logout = async (req, res) => {
+//   try {
+//     res.clearCookie("token", {
+//       httpOnly: true,
+//       secure: true,
+//       sameSite: "none",
+//     });
+//     res.clearCookie("refreshToken", {
+//       httpOnly: true,
+//       secure: true,
+//       sameSite: "none",
+//     });
+//     return res.status(200).json({ message: "logout successfull" });
+//   } catch (error) {
+//     return res.status(500).json({ error: error.message });
+//   }
+// }; //optional
 
 export const getAllCustomers = async (req, res) => {
   try {
@@ -176,6 +196,71 @@ export const getAllCustomers = async (req, res) => {
     return res.status(200).json({ data: users, message: "All users fetched" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateCustSequence = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { addedColArray, visibleColArray } = req.body;
+    if (!addedColArray || !visibleColArray) {
+      return res.status(400).json({ error: "missing required fields" });
+    }
+    if (!Array.isArray(addedColArray) || !Array.isArray(visibleColArray))
+      return res.status(406).json({ error: "Invalid type" });
+    const reqOrdval = [
+      "nation",
+      "companyName",
+      "vatNumber",
+      "fiscalCode",
+      "province",
+      "address",
+      "municipality",
+      "zipCode",
+      "pecAddress",
+      "phoneNumber",
+      "emailAddress",
+    ];
+    const invalidFields = [
+      ...addedColArray.filter((field) => !reqOrdval.includes(field)),
+      ...visibleColArray.filter((field) => !reqOrdval.includes(field)),
+    ];
+    
+    if (invalidFields.length > 0) {
+      return res
+        .status(422)
+        .json({ error: `Invalid fields found: ${invalidFields.join(", ")}` });
+    } 
+    await prisma.custSequence.upsert({
+      where: { adminId: id },
+      update: {
+        added_col_array: addedColArray,
+        visible_col_array: visibleColArray,
+      },
+      create: {
+        added_col_array: addedColArray,
+        visible_col_array: visibleColArray,
+        adminId: id,
+      },
+    });
+    return res.status(200).json({ message: "sequence updated!" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const getCustSequence = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const seq = await prisma.custSequence.findUnique({
+      where: { adminId: id },
+    });
+    if (!seq) {
+      return res.status(404).json({ message: "sequence not found" });
+    }
+    return res.status(200).json(seq);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -206,7 +291,9 @@ export const searchCustomer = async (req, res) => {
       where: { companyName: { contains: companyName, mode: "insensitive" } },
       omit: { password: true },
     });
-    if (!cust) return res.status(404).json({ message: "customer not found" });
+    if (!cust || !cust.length) {
+      return res.status(404).json({ message: "customer not found" });
+    }
     return res
       .status(200)
       .json({ message: "customer found successfully", data: cust });

@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prisma.js";
+import bcrypt from "bcrypt";
 
 export const getAllSuppliers = async (req, res) => {
   try {
@@ -10,6 +11,7 @@ export const getAllSuppliers = async (req, res) => {
       where: { adminId: id },
       take: 10,
       skip: (page - 1) * 10,
+      omit: { password: true },
     });
     return res
       .status(200)
@@ -23,7 +25,10 @@ export const getSupplier = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "id not found" });
-    const supp = await prisma.supplier.findUnique({ where: { id: id } });
+    const supp = await prisma.supplier.findUnique({
+      where: { id },
+      omit: { password: true },
+    });
     if (!supp) return res.status(404).json({ message: "supplier not found" });
     return res.status(200).json({ message: "supplier fetched", data: supp });
   } catch (error) {
@@ -64,17 +69,87 @@ export const createSupp = async (req, res) => {
     if (!requiredFields.every((field) => req.body[field])) {
       return res.status(400).json({ message: "Missing required fields" });
     }
-
+    let count = Math.round(Math.random() * 100);
+    const randomPass = `supplier${count}`;
+    const hash = await bcrypt.hash(randomPass, 10);
     const newSupplier = await prisma.supplier.create({
       data: {
         ...req.body,
         adminId: id,
+        email,
+        password: hash,
       },
+      omit: { password: true },
     });
 
-    return res
-      .status(201)
-      .json({ message: "Supplier created successfully", data: newSupplier });
+    return res.status(201).json({
+      message: "Supplier created successfully",
+      data: newSupplier,
+      login_crdentials: { password: randomPass, email: newSupplier.email },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateSuppSequence = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { addedColArray, visibleColArray } = req.body;
+    if (!addedColArray || !visibleColArray) {
+      return res.status(400).json({ error: "missing required fields" });
+    }
+    if (!Array.isArray(addedColArray) || !Array.isArray(visibleColArray))
+      return res.status(406).json({ error: "Invalid type" });
+    const reqOrdval = [
+      "nation",
+      "companyName",
+      "vatNumber",
+      "fiscalCode",
+      "province",
+      "address",
+      "municipality",
+      "zipCode",
+      "pecAddress",
+      "phoneNumber",
+      "emailAddress"
+    ];
+    const invalidFields = [
+      ...addedColArray.filter((field) => !reqOrdval.includes(field)),
+      ...visibleColArray.filter((field) => !reqOrdval.includes(field)),
+    ];
+    
+    if (invalidFields.length > 0) {
+      return res
+        .status(422)
+        .json({ error: `Invalid fields found: ${invalidFields.join(", ")}` });
+    } 
+    await prisma.supSequence.upsert({
+      where: { adminId: id },
+      update: {
+        added_col_array: addedColArray,
+        visible_col_array: visibleColArray,
+      },
+      create: {
+        added_col_array: addedColArray,
+        visible_col_array: visibleColArray,
+        adminId: id,
+      },
+    });
+    return res.status(200).json({ message: "sequence updated!" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const getSuppSequence = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const seq = await prisma.supSequence.findUnique({ where: { adminId: id } });
+    if (!seq) {
+      return res.status(404).json({ message: "sequence not found", seq });
+    }
+    return res.status(200).json(seq);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -95,6 +170,7 @@ export const updateSupp = async (req, res) => {
     const updatedSupp = await prisma.supplier.update({
       where: { id },
       data: { ...req.body },
+      omit: { password: true },
     });
 
     return res
@@ -110,7 +186,8 @@ export const deleteSupp = async (req, res) => {
     const { ids } = req.body;
     if (!ids)
       return res.status(400).json({ message: "missing required field ids" });
-    await prisma.supplier.deleteMany({ where: { id: { $in: ids } } });
+    const c = await prisma.supplier.deleteMany({ where: { id: { in: ids } } });
+    if (!c.count) return res.status(404).json({ message: "ids not found" });
     return res.status(200).json({ message: "supplier deleted!" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -128,7 +205,8 @@ export const searchSupp = async (req, res) => {
       where: { companyName: { contains: companyName, mode: "insensitive" } },
       omit: { password: true },
     });
-    if (!supp) return res.status(404).json({ message: "supplier not found" });
+    if (!supp || !supp.length)
+      return res.status(404).json({ message: "supplier not found" });
     return res.status(200).json({ message: "found", data: supp });
   } catch (error) {
     return res.status(500).json({ message: error.message });

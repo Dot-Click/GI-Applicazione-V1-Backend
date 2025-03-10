@@ -5,8 +5,12 @@ import {
   createSeritia,
   createUnilav,
   deleteEmp,
+  deleteFormazone,
+  deleteSeritia,
+  deleteUnilavs,
   getAllEmployee,
   getEmployee,
+  getEmpSequence,
   getFormazone,
   getFormazoneById,
   getSeritia,
@@ -15,19 +19,21 @@ import {
   getUnilavById,
   searchEmp,
   updateEmployee,
+  updateEmpSequence,
   updateFormazone,
   updSeritia,
   updUnilav,
 } from "../controllers/employee.controller.js";
 import { Auth } from "../middlewares/auth.middleware.js";
-import {
-  singleUpload,
-} from "../middlewares/multer.middleware.js";
+import { singleUpload } from "../middlewares/multer.middleware.js";
 const router = express.Router();
 
 router.post("/create", Auth, createEmployee);
 router.get("/search", Auth, searchEmp);
 router.get("/", Auth, getAllEmployee);
+
+router.patch("/update/empSeq", Auth, updateEmpSequence)
+router.get("/get/empSeq", Auth, getEmpSequence)
 
 router.get("/unilav", Auth, getUnilav);
 router.get("/unilav/:id", Auth, getUnilavById);
@@ -53,6 +59,7 @@ router.patch(
   singleUpload.single("unilav"),
   updUnilav
 );
+router.delete("/unilav/delete", Auth, deleteUnilavs);
 
 // seritia
 router.post(
@@ -67,6 +74,7 @@ router.patch(
   singleUpload.single("seritia"),
   updSeritia
 );
+router.delete("/seritia/delete", Auth, deleteSeritia);
 
 //formazone
 router.post(
@@ -81,5 +89,6 @@ router.patch(
   singleUpload.single("formazone"),
   updateFormazone
 );
+router.delete("/formazone/delete", Auth, deleteFormazone);
 
 export default router;

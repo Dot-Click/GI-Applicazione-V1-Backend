@@ -174,7 +174,8 @@ export const deleteOrder = async (req, res) => {
     if (!ids) return res.status(400).json({ message: "Bad request" });
     const ord = await prisma.order.deleteMany({ where: { id: { in: ids } } });
     if (!ord.count) return res.status(404).json({ message: "ids not found" });
-    return res.status(200).json({ message: "Order deleted!" });
+    if(ord.count === 1) return res.status(200).json({ message: "Order deleted!" });
+    return res.status(200).json({ message: "Orders deleted!" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -236,6 +237,76 @@ export const getArchivedOrders = async (req, res) => {
     });
     if (!orders) return res.status(404).json({ message: "No archived orders" });
     return res.status(200).json({ data: orders, message: "found" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateOrderSequence = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { addedColArray, visibleColArray } = req.body;
+    if (!addedColArray || !visibleColArray) {
+      return res.status(400).json({ error: "missing required fields" });
+    }
+    if (!Array.isArray(addedColArray) || !Array.isArray(visibleColArray))
+      return res.status(406).json({ error: "Invalid type" });
+    const reqOrdval = [
+      "state",
+      "description",
+      "technicalManager",
+      "siteManager",
+      "address",
+      "orderManager",
+      "code",
+      "startDate",
+      "endDate",
+      "cnceCode",
+      "withholdingAmount",
+      "workAmount",
+      "advancePayment",
+      "dipositRecovery",
+      "isPublic",
+      "iva",
+      "cup",
+      "cig",
+    ];
+    const invalidFields = [
+      ...addedColArray.filter((field) => !reqOrdval.includes(field)),
+      ...visibleColArray.filter((field) => !reqOrdval.includes(field)),
+    ];
+    
+    if (invalidFields.length > 0) {
+      return res
+        .status(422)
+        .json({ error: `Invalid fields found: ${invalidFields.join(", ")}` });
+    } 
+    await prisma.ordSequence.upsert({
+      where: { adminId: id },
+      update: {
+        added_col_array: addedColArray,
+        visible_col_array: visibleColArray,
+      },
+      create: {
+        added_col_array: addedColArray,
+        visible_col_array: visibleColArray,
+        adminId: id,
+      },
+    });
+    return res.status(200).json({ message: "sequence updated!" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const getOrderSequence = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const seq = await prisma.ordSequence.findUnique({ where: { adminId: id } });
+    if (!seq) {
+      return res.status(404).json({ message: "sequence not found" });
+    }
+    return res.status(200).json(seq);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

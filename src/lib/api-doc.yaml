@@ -1621,6 +1621,93 @@ paths:
                     type: string
                     example: "Internal Server Error"
 
+  /api/order/update/orderSeq:
+    patch:
+      summary: Update the order sequence
+      description: Allows an admin to update the order sequence with a list of added and visible columns.
+      tags:
+        - Order
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - addedColArray
+                - visibleColArray
+              properties:
+                addedColArray:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    [
+                      "state",
+                      "description",
+                      "technicalManager",
+                      "workAmount",
+                      "...",
+                    ]
+                visibleColArray:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    ["orderManager", "startDate", "endDate", "isPublic", "..."]
+      responses:
+        "200":
+          description: Sequence updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "sequence updated!"
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "missing required fields"
+        "406":
+          description: Invalid type provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid type"
+        "422":
+          description: Invalid fields found in the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid fields found: invalidField1, invalidField2"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
   # customer APIs
   /api/customer/create:
     post:
@@ -2494,6 +2581,87 @@ paths:
                   message:
                     type: string
                     example: "Internal server error"
+
+  /api/supplier/update/suppSeq:
+    patch:
+      summary: Update the supplier sequence
+      description: Allows an admin to update the supplier sequence with a list of added and visible columns.
+      tags:
+        - Supplier
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - addedColArray
+                - visibleColArray
+              properties:
+                addedColArray:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    ["nation", "companyName", "vatNumber", "fiscalCode", "..."]
+                visibleColArray:
+                  type: array
+                  items:
+                    type: string
+                  example: ["nation", "vatNumber", "fiscalCode", "..."]
+      responses:
+        "200":
+          description: Sequence updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "sequence updated!"
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "missing required fields"
+        "406":
+          description: Invalid type provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid type"
+        "422":
+          description: Invalid fields found in the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid fields found: invalidField1, invalidField2"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
 
   /api/supplier/:
     get:
@@ -3504,7 +3672,11 @@ paths:
                   type: array
                   items:
                     type: string
-                  example: ["12b4555b-e551-4262-849d-08d32a504e35", "ae1a2cc6-2a4c-42f3-914b-e1d1febdf35b"]
+                  example:
+                    [
+                      "12b4555b-e551-4262-849d-08d32a504e35",
+                      "ae1a2cc6-2a4c-42f3-914b-e1d1febdf35b",
+                    ]
               required:
                 - ids
       responses:
@@ -3548,6 +3720,7 @@ paths:
                   message:
                     type: string
                     example: "Internal Server Error"
+
   # unilav APIs
   /api/employee/unilav:
     get:
@@ -3805,14 +3978,17 @@ paths:
               properties:
                 unilav:
                   type: string
-                  format: binary
+                  format: file (pdf, doc, csv)
                   description: The file to upload (optional).
-                otherField1:
+                healthEligibility:
                   type: string
-                  description: Other data fields to update.
-                otherField2:
+                  description: health Eligibility.
+                dataRilascio:
                   type: string
-                  description: Another field to update.
+                  description: Release date.
+                expiryDate:
+                  type: string
+                  description: Expiry date
       responses:
         "200":
           description: Successfully updated the Unilav record.
@@ -4095,14 +4271,14 @@ paths:
               properties:
                 unilav:
                   type: string
-                  format: binary
+                  format: file (pdf, doc, csv)
                   description: The file to upload (optional).
-                otherField1:
+                healthEligibility:
                   type: string
-                  description: Other data fields to update.
-                otherField2:
+                expiryDate:
                   type: string
-                  description: Another field to update.
+                dataRilascio:
+                  type: string
       responses:
         "200":
           description: Successfully updated the Unilav record.
