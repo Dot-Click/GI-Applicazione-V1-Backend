@@ -143,11 +143,7 @@ export const getAdminInfo = async (req, res) => {
           orderBy: {
             updatedAt: "desc",
           },
-        },
-        orderSeq: true,
-        customerSeq: true,
-        employeeSeq: true,
-        supplierSeq: true,
+        }
       },
     });
     if (!admin) return res.status(404).json({ message: "admin not found" });

@@ -1708,6 +1708,55 @@ paths:
                   error:
                     type: string
                     example: "Internal Server Error"
+  
+  /api/order/get/orderSeq:
+    get:
+      summary: Get the order sequence for an admin
+      description: Fetches the order sequence for an admin based on their role.
+      tags:
+        - Order
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved order sequence
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    example: 
+                      - "description"
+                      - "siteManager"
+                      - "orderManager"
+                      - "cnceCode"
+                      - "...."
+                  message:
+                    type: string
+                    example: "found"
+        "404":
+          description: No order sequence found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No order sequence found"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error message"
+
   # customer APIs
   /api/customer/create:
     post:
@@ -2505,6 +2554,54 @@ paths:
                     type: string
                     example: "Internal server error"
 
+  /api/customer/get/custSeq:
+    get:
+      summary: Get the customer sequence for an admin
+      description: Fetches the customer sequence for an admin based on their role.
+      tags:
+        - Customer
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved customer sequence
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    example: 
+                      - "nation"
+                      - "companyName"
+                      - "province"
+                      - "zipCode"
+                      - "..."
+                  message:
+                    type: string
+                    example: "found"
+        "404":
+          description: No order sequence found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No order sequence found"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error message"
+
   # supplier APIs
   /api/supplier/create:
     post:
@@ -2751,6 +2848,53 @@ paths:
                   error:
                     type: string
                     example: "Internal Server Error"
+
+  /api/supplier/get/suppSeq:
+    get:
+      summary: Get the supplier sequence for an admin
+      description: Fetches the supplier sequence for an admin based on their role.
+      tags:
+        - Supplier
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved order sequence
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    example: 
+                      - "companyName"
+                      - "fiscalCode"
+                      - "province"
+                      - "pecAddress"
+                  message:
+                    type: string
+                    example: "found"
+        "404":
+          description: No order sequence found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No order sequence found"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error message"
 
   /api/supplier/:
     get:
@@ -3890,6 +4034,53 @@ paths:
                   error:
                     type: string
                     example: "Internal Server Error"
+
+  /api/employee/get/empSeq:
+    get:
+      summary: Get the employee sequence for an admin
+      description: Fetches the employee sequence for an admin based on their role.
+      tags:
+        - Employee
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved order sequence
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    example: 
+                      - "firstName"
+                      - "lastName"
+                      - "birthPlace"
+                      - "endDate"
+                  message:
+                    type: string
+                    example: "found"
+        "404":
+          description: No order sequence found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No order sequence found"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error message"
 
   # unilav APIs
   /api/employee/unilav:
