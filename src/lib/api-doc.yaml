@@ -2446,13 +2446,13 @@ paths:
                   items:
                     type: string
                   description: List of added column names.
-                  example: ["nation", "companyName", "vatNumber"]
+                  example: ["nation", "companyName", "vatNumber", "..."]
                 visibleColArray:
                   type: array
                   items:
                     type: string
                   description: List of visible column names.
-                  example: ["phoneNumber", "emailAddress"]
+                  example: ["phoneNumber", "emailAddress", "..."]
       responses:
         200:
           description: Customer sequence updated successfully.
@@ -3293,6 +3293,7 @@ paths:
                   message:
                     type: string
                     example: "Internal server error"
+  
   # employee APIs
   /api/employee/create:
     post:
@@ -3832,12 +3833,12 @@ paths:
                   items:
                     type: string
                   example:
-                    ["firstName", "lastName", "birthPlace", "contractor", "homeAddress", "qualification", "role", "phoneNumber", "emailAddress", "startDate", "endDate", "level", "sector", "fiscalCode"]
+                    ["firstName", "lastName", "birthPlace", "contractor", "homeAddress", "qualification", "..."]
                 visibleColArray:
                   type: array
                   items:
                     type: string
-                  example: ["firstName", "lastName", "phoneNumber", "emailAddress"]
+                  example: ["firstName", "lastName", "phoneNumber", "emailAddress", "..."]
       responses:
         "200":
           description: Sequence updated successfully
