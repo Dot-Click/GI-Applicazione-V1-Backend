@@ -1,4 +1,4 @@
-import prisma from "../../prisma/prisma.js";
+import prisma, { extendedPrisma } from "../../prisma/prisma.js";
 import axios from "axios";
 import { cloudinaryUploader } from "../lib/utils.js";
 
@@ -71,7 +71,7 @@ export const createOrder = async (req, res) => {
       CANCELLED: "Cancelled",
       COMPLETED: "Completed",
     };
-    const order = await prisma.order.create({
+    const order = await extendedPrisma.order.create({
       data: {
         ...orderData,
         code,
@@ -82,8 +82,8 @@ export const createOrder = async (req, res) => {
         psc: uploadedFiles.psc?.secure_url || null,
         pos: uploadedFiles.pos?.secure_url || null,
         adminId: id,
-        lat: String(location?.lat) || null,
-        lng: String(location?.lng) || null,
+        lat: location?.lat || null,
+        lng: location?.lng || null,
       },
     });
 
@@ -122,7 +122,7 @@ export const updateOrder = async (req, res) => {
         upd_data[field] = uploadedFiles[field]?.secure_url;
       }
     });
-    const order = await prisma.order.update({
+    const order = await extendedPrisma.order.update({
       where: { id },
       data: upd_data,
     });
