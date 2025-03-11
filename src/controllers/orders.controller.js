@@ -36,9 +36,7 @@ export const createOrder = async (req, res) => {
 
     const existingOrder = await prisma.order.findUnique({ where: { code } });
     if (existingOrder) {
-      return res
-        .status(400)
-        .json({ error: "Can't create duplicate orders" });
+      return res.status(400).json({ error: "Can't create duplicate orders" });
     }
 
     let location = null;
@@ -177,7 +175,8 @@ export const deleteOrder = async (req, res) => {
     if (!ids) return res.status(400).json({ message: "Bad request" });
     const ord = await prisma.order.deleteMany({ where: { id: { in: ids } } });
     if (!ord.count) return res.status(404).json({ message: "ids not found" });
-    if(ord.count === 1) return res.status(200).json({ message: "Order deleted!" });
+    if (ord.count === 1)
+      return res.status(200).json({ message: "Order deleted!" });
     return res.status(200).json({ message: "Orders deleted!" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
