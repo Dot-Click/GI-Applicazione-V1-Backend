@@ -94,8 +94,8 @@ export const createOrder = async (req, res) => {
       message: "Order created successfully.",
     });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+      return res.status(500).json({ error: error.message });
+    }
 };
 
 export const updateOrder = async (req, res) => {
@@ -213,7 +213,7 @@ export const archieve = async (req, res) => {
       });
       return res.status(200).json({ message: "Order unarchieved!" });
     }
-    
+
     await prisma.order.update({
       where: { id },
       data: { archieved: "true" },
@@ -270,6 +270,7 @@ export const updateOrderSequence = async (req, res) => {
       "iva",
       "cup",
       "cig",
+      "actions"
     ];
     const invalidFields = [
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),

@@ -112,7 +112,8 @@ export const updateSuppSequence = async (req, res) => {
       "zipCode",
       "pecAddress",
       "phoneNumber",
-      "emailAddress"
+      "emailAddress",
+      "actions"
     ];
     const invalidFields = [
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),
