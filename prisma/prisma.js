@@ -1,24 +1,124 @@
 import { PrismaClient } from "@prisma/client";
-import { formatDate } from "../src/lib/utils.js";
+import { createCustomer, createOrder, createSupplier } from "../src/zod/validation.schema.js";
+import { ZodError } from "zod";
 
 const prisma = new PrismaClient({});
 
-prisma.$extends({
-  name: "format-dates-extension",
-  result: {
-    $allModels: {
-      createdAt: {
-        needs: { createdAt: true },
-        compute(record) {
-          return formatDate(record.createdAt);
-        },
+export const validator = prisma.$extends({
+  query: {
+    order: {
+      create({ args, query }) {
+        try {
+          args.data = createOrder.parse(args.data);
+          return query(args);
+        } catch (error) {
+          if (error instanceof ZodError) {
+            throw new Error(
+              JSON.stringify(
+                error.errors.map((err) => ({
+                  field: err.path.join("."),
+                  message: err.message,
+                }))
+              )
+            );
+          }
+          throw error;
+        }
       },
-      updatedAt: {
-        needs: { updatedAt: true },
-        compute(record) {
-          return formatDate(record.updatedAt);
-        },
+      update({args,query}){
+        try {
+          args.data = createOrder.partial().parse(args.data);
+          return query(args);
+        } catch (error) {
+          if (error instanceof ZodError) {
+            throw new Error(
+              JSON.stringify(
+                error.errors.map((err) => ({
+                  field: err.path.join("."),
+                  message: err.message,
+                }))
+              )
+            );
+          }
+          throw error;
+        }
+      }
+    },
+    customer:{
+      create({ args, query }) {
+        try {
+          args.data = createCustomer.parse(args.data);
+          return query(args);
+        } catch (error) {
+          if (error instanceof ZodError) {
+            throw new Error(
+              JSON.stringify(
+                error.errors.map((err) => ({
+                  field: err.path.join("."),
+                  message: err.message,
+                }))
+              )
+            );
+          }
+          throw error;
+        }
       },
+      update({args,query}) {
+        try {
+          args.data = createCustomer.partial().parse(args.data);
+          return query(args);
+        } catch (error) {
+          if (error instanceof ZodError) {
+            throw new Error(
+              JSON.stringify(
+                error.errors.map((err) => ({
+                  field: err.path.join("."),
+                  message: err.message,
+                }))
+              )
+            );
+          }
+          throw error;
+        }
+      }
+    },
+    supplier:{
+      create({ args, query }) {
+        try {
+          args.data = createSupplier.parse(args.data);
+          return query(args);
+        } catch (error) {
+          if (error instanceof ZodError) {
+            throw new Error(
+              JSON.stringify(
+                error.errors.map((err) => ({
+                  field: err.path.join("."),
+                  message: err.message,
+                }))
+              )
+            );
+          }
+          throw error;
+        }
+      },
+      update({args,query}) {
+        try {
+          args.data = createSupplier.partial().parse(args.data);
+          return query(args);
+        } catch (error) {
+          if (error instanceof ZodError) {
+            throw new Error(
+              JSON.stringify(
+                error.errors.map((err) => ({
+                  field: err.path.join("."),
+                  message: err.message,
+                }))
+              )
+            );
+          }
+          throw error;
+        }
+      }
     },
   },
 });

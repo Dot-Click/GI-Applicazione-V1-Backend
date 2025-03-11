@@ -50,13 +50,13 @@ router.delete("/delete", Auth, deleteEmp);
 router.post(
   "/unilav/create",
   Auth,
-  singleUpload.single("unilav"),
+  singleUpload("unilav"),
   createUnilav
 );
 router.patch(
   "/unilav/update/:id",
   Auth,
-  singleUpload.single("unilav"),
+  singleUpload("unilav"),
   updUnilav
 );
 router.delete("/unilav/delete", Auth, deleteUnilavs);
@@ -65,13 +65,13 @@ router.delete("/unilav/delete", Auth, deleteUnilavs);
 router.post(
   "/seritia/create",
   Auth,
-  singleUpload.single("seritia"),
+  singleUpload("seritia"),
   createSeritia
 );
 router.patch(
   "/seritia/update/:id",
   Auth,
-  singleUpload.single("seritia"),
+  singleUpload("seritia"),
   updSeritia
 );
 router.delete("/seritia/delete", Auth, deleteSeritia);
@@ -80,13 +80,13 @@ router.delete("/seritia/delete", Auth, deleteSeritia);
 router.post(
   "/formazone/create",
   Auth,
-  singleUpload.single("formazone"),
+  singleUpload("formazone"),
   createFormazone
 );
 router.patch(
   "/formazone/update/:id",
   Auth,
-  singleUpload.single("formazone"),
+  singleUpload("formazone"),
   updateFormazone
 );
 router.delete("/formazone/delete", Auth, deleteFormazone);

@@ -97,7 +97,7 @@ model Order {
   jobName                  String?
   projectName              String?
   typology                 String?
-  archieved                String?     @default("false")
+  archieved                Boolean?    @default(false)
   contract                 String?
   desc_contract            String?
   permission_to_build      String?
@@ -107,9 +107,9 @@ model Order {
   pos                      String?
   desc_pos                 String?
   withholdingAmount        String
-  lat                      String?     @default("37.7749")
-  lng                      String?     @default("-122.4194")
-  isPublic                 String?     @default("false")
+  lat                      Float?      @default(37.7749)
+  lng                      Float?      @default(-122.4194)
+  isPublic                 Boolean?    @default(false)
   createdAt                DateTime    @default(now())
   updatedAt                DateTime    @updatedAt
   Customer                 Customer?   @relation(fields: [customerId], references: [id])
@@ -238,10 +238,10 @@ model Formazone {
 }
 
 enum OrderState {
-  ON_HOLD     @map("On Hold")
-  IN_PROGRESS @map("In Progress")
+  ON_HOLD     @map("In attesa")
+  IN_PROGRESS @map("In corso")
   COMPLETATO  @map("Completato")
-  CANCELLED   @map("Cancelled")
+  CANCELLED   @map("Cancellato")
 }
 
 enum Status {
