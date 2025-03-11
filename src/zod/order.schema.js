@@ -1,0 +1,35 @@
+import { z } from "zod";
+
+export const createOrder = z.object({
+  code: z.string().regex(/^COM-\d{6}$/, "Invalid format"),
+  description: z.string().max(255),
+  startDate: z.string().date(),
+  endDate: z.string().date(),
+  address: z.string().max(255),
+  cig: z.string(),
+  cup: z.string(),
+  siteManager: z.string(),
+  orderManager: z.string(),
+  technicalManager: z.string(),
+  cnceCode: z.string(),
+  workAmount: z.string(),
+  advancePayment: z.string(),
+  dipositRecovery: z.string(),
+  iva: z.string(),
+  withholdingAmount: z.string(),
+  archieve: z.boolean().optional(),
+  isPublic: z.boolean().optional(),
+  contract: z.any().optional(),
+  desc_contract: z.string().optional(),
+  permission_to_build: z.any().optional(),
+  desc_permission_to_build: z.string().optional(),
+  psc: z.any().optional(),
+  desc_psc: z.string().optional(),
+  pos: z.any().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  desc_pos: z.string().optional(),
+  state: z
+    .enum(["ON_HOLD", "IN_PROGRESS", "COMPLETATO", "CANCELLED"])
+    .optional(),
+});

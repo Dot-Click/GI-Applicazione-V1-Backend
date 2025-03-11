@@ -156,7 +156,8 @@ export const updateEmpSequence = async (req, res) => {
       "endDate",
       "level",
       "sector",
-      "fiscalCode"
+      "fiscalCode",
+      "actions"
     ];
     const invalidFields = [
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),

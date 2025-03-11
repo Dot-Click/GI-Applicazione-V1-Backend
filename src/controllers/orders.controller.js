@@ -1,4 +1,4 @@
-import prisma from "../../prisma/prisma.js";
+import prisma, { extendedPrisma } from "../../prisma/prisma.js";
 import axios from "axios";
 import { cloudinaryUploader } from "../lib/utils.js";
 
@@ -36,9 +36,7 @@ export const createOrder = async (req, res) => {
 
     const existingOrder = await prisma.order.findUnique({ where: { code } });
     if (existingOrder) {
-      return res
-        .status(400)
-        .json({ error: "Can't create duplicate orders" });
+      return res.status(400).json({ error: "Can't create duplicate orders" });
     }
 
     let location = null;
@@ -73,7 +71,7 @@ export const createOrder = async (req, res) => {
       CANCELLED: "Cancelled",
       COMPLETED: "Completed",
     };
-    const order = await prisma.order.create({
+    const order = await extendedPrisma.order.create({
       data: {
         ...orderData,
         code,
@@ -84,8 +82,8 @@ export const createOrder = async (req, res) => {
         psc: uploadedFiles.psc?.secure_url || null,
         pos: uploadedFiles.pos?.secure_url || null,
         adminId: id,
-        lat: String(location?.lat) || null,
-        lng: String(location?.lng) || null,
+        lat: location?.lat || null,
+        lng: location?.lng || null,
       },
     });
 
@@ -94,7 +92,17 @@ export const createOrder = async (req, res) => {
       message: "Order created successfully.",
     });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    try {
+      const parsedError = JSON.parse(error.message);
+      if (Array.isArray(parsedError)) {
+        return res.status(400).json({
+          error: "Validation failed",
+          details: parsedError,
+        });
+      }
+    } catch (jsonParseError) {
+      return res.status(500).json({ error: error.message });
+    }
   }
 };
 
@@ -124,7 +132,7 @@ export const updateOrder = async (req, res) => {
         upd_data[field] = uploadedFiles[field]?.secure_url;
       }
     });
-    const order = await prisma.order.update({
+    const order = await extendedPrisma.order.update({
       where: { id },
       data: upd_data,
     });
@@ -177,7 +185,8 @@ export const deleteOrder = async (req, res) => {
     if (!ids) return res.status(400).json({ message: "Bad request" });
     const ord = await prisma.order.deleteMany({ where: { id: { in: ids } } });
     if (!ord.count) return res.status(404).json({ message: "ids not found" });
-    if(ord.count === 1) return res.status(200).json({ message: "Order deleted!" });
+    if (ord.count === 1)
+      return res.status(200).json({ message: "Order deleted!" });
     return res.status(200).json({ message: "Orders deleted!" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -213,7 +222,7 @@ export const archieve = async (req, res) => {
       });
       return res.status(200).json({ message: "Order unarchieved!" });
     }
-    
+
     await prisma.order.update({
       where: { id },
       data: { archieved: "true" },
@@ -270,6 +279,7 @@ export const updateOrderSequence = async (req, res) => {
       "iva",
       "cup",
       "cig",
+      "actions"
     ];
     const invalidFields = [
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),
