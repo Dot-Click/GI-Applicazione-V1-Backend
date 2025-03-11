@@ -220,6 +220,7 @@ export const updateCustSequence = async (req, res) => {
       "pecAddress",
       "phoneNumber",
       "emailAddress",
+      "actions"
     ];
     const invalidFields = [
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),
