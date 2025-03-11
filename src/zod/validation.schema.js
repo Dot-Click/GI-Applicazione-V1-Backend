@@ -31,6 +31,7 @@ export const createOrder = z.object({
   desc_contract: z.string().optional(),
   psc: z.any().optional(),
   desc_psc: z.string().optional(),
+  adminId: z.string().optional(),
   pos: z.any().optional(),
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
