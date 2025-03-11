@@ -124,7 +124,7 @@ export const getAdminInfo = async (req, res) => {
     const admin = await prisma.admin.findUnique({
       where: { id },
       include: {
-        order: {
+        orders: {
           orderBy: {
             updatedAt: "desc",
           },
