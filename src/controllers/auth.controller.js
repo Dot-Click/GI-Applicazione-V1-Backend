@@ -135,6 +135,9 @@ export const getAdminInfo = async (req, res) => {
           orderBy: {
             updatedAt: "desc",
           },
+          where:{
+            archieved:"false"
+          }
         },
         suppliers: {
           orderBy: {
@@ -150,22 +153,16 @@ export const getAdminInfo = async (req, res) => {
           orderBy: {
             updatedAt: "desc",
           },
+          where:{
+            archieved:"false"
+          }
         },
       },
     });
 
     if (!admin) return res.status(404).json({ message: "Admin not found" });
-
-    const activeOrders = admin.orders
-      .filter((order) => order.archieved === "false")
-      .map((order) => ({
-        ...order,
-        state: orderStateMap[order.state] || order.state,
-      }));
-
-    const activeEmployees = admin.employees.filter((emp) => emp.archieved === "false")
     return res.status(200).json({
-      data: { ...admin, orders: activeOrders, employees: activeEmployees },
+      data: { ...admin },
       message: "Found",
     });
   } catch (error) {
