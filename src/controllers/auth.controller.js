@@ -159,10 +159,16 @@ export const getAdminInfo = async (req, res) => {
         },
       },
     });
-
+    const activeOrders = admin.orders
+       .map((order) => ({
+         ...order,
+         state: orderStateMap[order.state] || order.state,
+       }));
+    
     if (!admin) return res.status(404).json({ message: "Admin not found" });
+    
     return res.status(200).json({
-      data: { ...admin },
+      data: { ...admin, orders: activeOrders },
       message: "Found",
     });
   } catch (error) {
