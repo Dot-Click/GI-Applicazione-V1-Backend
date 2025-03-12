@@ -121,6 +121,13 @@ export const updatePassword = async (req, res) => {
 export const getAdminInfo = async (req, res) => {
   try {
     const { id } = req.user;
+    const orderStateMap = {
+      ON_HOLD: "In attesa",
+      IN_PROGRESS: "In corso",
+      CANCELLED: "Cancellato",
+      COMPLETED: "Completato",
+    };
+
     const admin = await prisma.admin.findUnique({
       where: { id },
       include: {
@@ -143,22 +150,36 @@ export const getAdminInfo = async (req, res) => {
           orderBy: {
             updatedAt: "desc",
           },
-        }
+        },
       },
     });
-    if (!admin) return res.status(404).json({ message: "admin not found" });
-    const archieveOrd = admin.orders.filter(
-      (order) => order.archieved === "true"
-    );
-    admin.orders = admin.orders.filter((order) => order.archieved === "false");
-    return res
-      .status(200)
-      .json({ data: { ...admin, archieveOrd }, message: "found" });
+
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+    const archivedOrders = admin.orders
+      .filter((order) => order.archieved === "true")
+      .map((order) => ({
+        ...order,
+        state: orderStateMap[order.state] || order.state,
+      }));
+
+    const activeOrders = admin.orders
+      .filter((order) => order.archieved === "false")
+      .map((order) => ({
+        ...order,
+        state: orderStateMap[order.state] || order.state,
+      }));
+
+    return res.status(200).json({
+      data: { ...admin, orders: activeOrders, archivedOrders },
+      message: "Found",
+    });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 export const logout = async (req, res) => {
   try {

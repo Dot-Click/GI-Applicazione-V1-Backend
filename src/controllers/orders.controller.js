@@ -162,7 +162,7 @@ export const getOrders = async (req, res) => {
     page = parseInt(page, 10);
     if (isNaN(page) || page < 1) page = 1;
     const orders = await prisma.order.findMany({
-      where: { adminId: id, archieved: false },
+      where: { adminId: id, archieved: "false" },
       skip: (page - 1) * 10,
       take: 10,
     });
