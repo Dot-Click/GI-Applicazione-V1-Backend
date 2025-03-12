@@ -1,4 +1,4 @@
-import prisma, { validator } from "../../prisma/prisma.js";
+import prisma from "../../prisma/prisma.js";
 import axios from "axios";
 import { cloudinaryUploader } from "../lib/utils.js";
 
@@ -19,7 +19,6 @@ export const createOrder = async (req, res) => {
       "orderManager",
       "technicalManager",
       "cnceCode",
-      "isPublic",
       "workAmount",
       "advancePayment",
       "dipositRecovery",
@@ -71,7 +70,7 @@ export const createOrder = async (req, res) => {
       CANCELLED: "Cancellato",
       COMPLETED: "Completato",
     };
-    const order = await validator.order.create({
+    const order = await prisma.order.create({
       data: {
         ...orderData,
         code,
@@ -82,8 +81,8 @@ export const createOrder = async (req, res) => {
         psc: uploadedFiles.psc?.secure_url || null,
         pos: uploadedFiles.pos?.secure_url || null,
         adminId: id,
-        lat: location?.lat || null,
-        lng: location?.lng || null,
+        lat: String(location?.lat) || null,
+        lng: String(location?.lng) || null,
       },
     });
 
@@ -92,18 +91,8 @@ export const createOrder = async (req, res) => {
       message: "Order created successfully.",
     });
   } catch (error) {
-      try {
-        const parsedError = JSON.parse(error.message);
-        if (Array.isArray(parsedError)) {
-          return res.status(400).json({
-            error: "Validation failed",
-            details: parsedError,
-          });
-        }
-      } catch (jsonParseError) {
-        return res.status(500).json({ error: error.message });
-      }
-    }
+    return res.status(500).json({ error: error.message });
+  }
 };
 
 export const updateOrder = async (req, res) => {
@@ -112,20 +101,29 @@ export const updateOrder = async (req, res) => {
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
     let location = null;
-    if(req.body.address){
-    try {
-      const { data } = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json`,
-        { params: { address: req.body.address, key: process.env.GOOGLE_API_KEY } }
-      );
-      location = data.results[0]?.geometry?.location || null;
-    } catch (geoError) {
-      return res
-        .status(500)
-        .json({ error: `Failed to fetch geolocation: ${geoError.message}` });
+    if (req.body.address) {
+      try {
+        const { data } = await axios.get(
+          `https://maps.googleapis.com/maps/api/geocode/json`,
+          {
+            params: {
+              address: req.body.address,
+              key: process.env.GOOGLE_API_KEY,
+            },
+          }
+        );
+        location = data.results[0]?.geometry?.location || null;
+      } catch (geoError) {
+        return res
+          .status(500)
+          .json({ error: `Failed to fetch geolocation: ${geoError.message}` });
+      }
     }
-  }
-    let upd_data = { ...req.body, lat: location?.lat || null, lng: location?.lng || null };
+    let upd_data = {
+      ...req.body,
+      lat: String(location?.lat) || null,
+      lng: String(location?.lng) || null,
+    };
     const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
     const uploadedFiles = {};
 
@@ -144,7 +142,7 @@ export const updateOrder = async (req, res) => {
         upd_data[field] = uploadedFiles[field]?.secure_url;
       }
     });
-    const order = await validator.order.update({
+    const order = await prisma.order.update({
       where: { id },
       data: upd_data,
     });
@@ -291,7 +289,7 @@ export const updateOrderSequence = async (req, res) => {
       "iva",
       "cup",
       "cig",
-      "actions"
+      "actions",
     ];
     const invalidFields = [
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),
