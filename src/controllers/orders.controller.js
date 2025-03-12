@@ -181,8 +181,18 @@ export const getOrders = async (req, res) => {
 export const getOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const order = await prisma.order.findUnique({ where: { id: id } });
+    const orderStateMap = {
+      ON_HOLD: "In attesa",
+      IN_PROGRESS: "In corso",
+      CANCELLED: "Cancellato",
+      COMPLETATO: "Completato",
+    }
+    let order = await prisma.order.findUnique({ where: { id } });
     if (!order) return res.status(404).json({ message: "Order not found" });
+    order = order.map((order) => ({
+      ...order,
+      state: orderStateMap[order.state] || order.state,
+    }))
     return res.status(200).json(order);
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -247,14 +257,25 @@ export const getArchivedOrders = async (req, res) => {
   try {
     const { id } = req.user;
     let { page } = req.query;
+    const orderStateMap = {
+      ON_HOLD: "In attesa",
+      IN_PROGRESS: "In corso",
+      CANCELLED: "Cancellato",
+      COMPLETATO: "Completato",
+    };
     page = parseInt(page, 10);
     if (isNaN(page) || page < 1) page = 1;
-    const orders = await prisma.order.findMany({
+    let orders = await prisma.order.findMany({
       where: { adminId: id, archieved: "true" },
       skip: (page - 1) * 10,
       take: 10,
     });
     if (!orders) return res.status(404).json({ message: "No archived orders" });
+    orders = orders
+       .map((order) => ({
+      ...order,
+      state: orderStateMap[order.state] || order.state,
+    }));
     return res.status(200).json({ data: orders, message: "found" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
