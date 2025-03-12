@@ -189,11 +189,8 @@ export const getOrder = async (req, res) => {
     }
     let order = await prisma.order.findUnique({ where: { id } });
     if (!order) return res.status(404).json({ message: "Order not found" });
-    order = order.map((order) => ({
-      ...order,
-      state: orderStateMap[order.state] || order.state,
-    }))
-    return res.status(200).json(order);
+    
+    return res.status(200).json({...order,state: orderStateMap[order.state] || order.state});
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
