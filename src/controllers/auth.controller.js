@@ -125,7 +125,7 @@ export const getAdminInfo = async (req, res) => {
       ON_HOLD: "In attesa",
       IN_PROGRESS: "In corso",
       CANCELLED: "Cancellato",
-      COMPLETED: "Completato",
+      COMPLETATO: "Completato",
     };
 
     const admin = await prisma.admin.findUnique({
