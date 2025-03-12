@@ -171,6 +171,7 @@ model Employee {
   qualification       String
   number              String
   natureContract      String?
+  archieved           String?     @default("false")
   password            String?
   admin               Admin?      @relation(fields: [adminId], references: [id])
   unilavs             Unilav[]

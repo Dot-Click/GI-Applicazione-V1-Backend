@@ -200,6 +200,50 @@ export const getEmpSequence = async (req, res) => {
   }
 };
 
+export const archieve = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Bad request" });
+
+    const ord = await prisma.employee.findUnique({
+      where: { id },
+    });
+    if (!ord) return res.status(404).json({ message: "Employee not found" });
+    if (ord.archieved === "true") {
+      await prisma.employee.update({
+        where: { id },
+        data: { archieved: "false" },
+      });
+      return res.status(200).json({ message: "Employee unarchieved!" });
+    }
+
+    await prisma.employee.update({
+      where: { id },
+      data: { archieved: "true" },
+    });
+    return res.status(200).json({ message: "Employee archieved!" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getArchivedEmployees = async (req, res) => {
+  try {
+    const { id } = req.user;
+    let { page } = req.query;
+    page = parseInt(page, 10);
+    if (isNaN(page) || page < 1) page = 1;
+    const employees = await prisma.employee.findMany({
+      where: { adminId: id, archieved: "true" },
+      skip: (page - 1) * 10,
+      take: 10,
+    });
+    if (!employees) return res.status(404).json({ message: "No archived employees" });
+    return res.status(200).json({ data: employees, message: "found" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
 // unilav
 export const createUnilav = async (req, res) => {
   try {

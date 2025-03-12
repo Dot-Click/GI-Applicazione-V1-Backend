@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  archieve,
   createEmployee,
   createFormazone,
   createSeritia,
@@ -9,6 +10,7 @@ import {
   deleteSeritia,
   deleteUnilavs,
   getAllEmployee,
+  getArchivedEmployees,
   getEmployee,
   getEmpSequence,
   getFormazone,
@@ -31,6 +33,9 @@ const router = express.Router();
 router.post("/create", Auth, createEmployee);
 router.get("/search", Auth, searchEmp);
 router.get("/", Auth, getAllEmployee);
+
+router.patch("/archieve/:id", Auth, archieve)
+router.get("/archieve", Auth, getArchivedEmployees)
 
 router.patch("/update/empSeq", Auth, updateEmpSequence)
 router.get("/get/empSeq", Auth, getEmpSequence)

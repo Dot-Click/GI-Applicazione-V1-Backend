@@ -156,13 +156,6 @@ export const getAdminInfo = async (req, res) => {
 
     if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-    const archivedOrders = admin.orders
-      .filter((order) => order.archieved === "true")
-      .map((order) => ({
-        ...order,
-        state: orderStateMap[order.state] || order.state,
-      }));
-
     const activeOrders = admin.orders
       .filter((order) => order.archieved === "false")
       .map((order) => ({
@@ -170,8 +163,9 @@ export const getAdminInfo = async (req, res) => {
         state: orderStateMap[order.state] || order.state,
       }));
 
+    const activeEmployees = admin.employees.filter((emp) => emp.archieved === "false")
     return res.status(200).json({
-      data: { ...admin, orders: activeOrders, archivedOrders },
+      data: { ...admin, orders: activeOrders, employees: activeEmployees },
       message: "Found",
     });
   } catch (error) {
