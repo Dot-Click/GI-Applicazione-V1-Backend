@@ -158,10 +158,16 @@ export const updateOrder = async (req, res) => {
 export const getOrders = async (req, res) => {
   try {
     const { id } = req.user;
+    const orderStateMap = {
+      ON_HOLD: "In attesa",
+      IN_PROGRESS: "In corso",
+      CANCELLED: "Cancellato",
+      COMPLETATO: "Completato",
+    };
     let { page } = req.query;
     page = parseInt(page, 10);
     if (isNaN(page) || page < 1) page = 1;
-    const orders = await prisma.order.findMany({
+    let orders = await prisma.order.findMany({
       where: { adminId: id, archieved: "false" },
       skip: (page - 1) * 10,
       take: 10,
@@ -169,6 +175,11 @@ export const getOrders = async (req, res) => {
     if (!orders) {
       return res.status(200).json({ message: "No current orders", data: [] });
     }
+    orders = orders
+       .map((order) => ({
+         ...order,
+         state: orderStateMap[order.state] || order.state,
+       }));
     return res.status(200).json({
       message: "All orders fetched",
       data: orders,
@@ -177,6 +188,39 @@ export const getOrders = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const recentOrders = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const orderStateMap = {
+      ON_HOLD: "In attesa",
+      IN_PROGRESS: "In corso",
+      CANCELLED: "Cancellato",
+      COMPLETATO: "Completato",
+    };
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    let RecentOrders = await prisma.order.findMany({
+      where: { adminId: id, archieved: "false", createdAt: { gte: startOfDay, lt: endOfDay } },
+      take: 10,
+    });
+    if (!RecentOrders) {
+      return res.status(400).json({ message: "No Recent Orders" });
+    }
+    RecentOrders = RecentOrders
+      .map((order) => ({
+         ...order,
+         state: orderStateMap[order.state] || order.state,
+       }));
+    return res.status(200).json({
+      message: "All Recent Orders fetched",
+      data: RecentOrders,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
 
 export const getOrder = async (req, res) => {
   try {
