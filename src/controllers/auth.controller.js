@@ -158,6 +158,7 @@ export const getAdminInfo = async (req, res) => {
           }
         },
       },
+      omit:{ password: true }
     });
     const activeOrders = admin.orders
        .map((order) => ({
