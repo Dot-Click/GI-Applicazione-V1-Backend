@@ -1,6 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { createCustomer, createOrder, createSupplier } from "../src/zod/validation.schema.js";
-import { ZodError } from "zod";
 
 const prisma = new PrismaClient({});
 
