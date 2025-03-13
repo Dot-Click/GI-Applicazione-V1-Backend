@@ -170,6 +170,7 @@ model Employee {
   level               String
   qualification       String
   number              String
+  nameAndsurname      String?
   natureContract      String?
   archieved           String?     @default("false")
   password            String?
@@ -196,7 +197,8 @@ model empSequence {
 model Unilav {
   id                String    @id @default(uuid())
   name              String?
-  status            Status?   @default(active)
+  status            Status?       @default(active)
+  state             SectionState? @default(Valido)
   attachment        String
   healthEligibility String
   expiryDate        String
@@ -212,6 +214,7 @@ model Seritia {
   id                String    @id @default(uuid())
   name              String?
   status            Status?   @default(active)
+  state             SectionState? @default(Valido)
   attachment        String
   healthEligibility String
   expiryDate        String
@@ -227,6 +230,7 @@ model Formazone {
   id           String    @id @default(uuid())
   name         String?
   status       Status?   @default(active)
+  state        SectionState? @default(Valido)
   attachment   String
   training     String
   expiryDate   String
@@ -258,6 +262,11 @@ enum EmpRole {
   Technical_Manager
   Order_Manager
   Construction_Manager
+}
+
+enum SectionState {
+  Valido
+  Scaduto
 }
 
 enum Role {
