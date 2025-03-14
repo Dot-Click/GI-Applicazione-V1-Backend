@@ -77,6 +77,11 @@ export const getEmployee = async (req, res) => {
     if (!id) return res.status(404).json({ message: "missing id field" });
     const emp = await prisma.employee.findUnique({
       where: { id },
+      include:{
+        unilavs: {take: 1},
+        seritias: {take: 1},
+        formazones: {take: 4}
+      }
     });
     if (!emp) {
       return res.status(200).json({ message: "employee not found" });
@@ -90,6 +95,8 @@ export const getEmployee = async (req, res) => {
 export const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
+    const already = await prisma.employee.findUnique({where:{email:req.body.email}})
+    if(already) return res.status(400).json({message:"Email is not available"})
     const emp = await prisma.employee.update({
       where: { id },
       data: { ...req.body },
@@ -247,7 +254,7 @@ export const getArchivedEmployees = async (req, res) => {
 // unilav
 export const createUnilav = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { eid } = req.params;
     const reqFields = ["healthEligibility", "expiryDate", "dataRilascio"];
     const missingField = reqFields.find((field) => !req.body[field]);
     if (missingField) {
@@ -258,7 +265,7 @@ export const createUnilav = async (req, res) => {
 
     const file = await cloudinaryUploader(req.file.path);
     const unilav = await prisma.unilav.create({
-      data: { ...req.body, attachment: file?.secure_url },
+      data: { ...req.body, attachment: file?.secure_url, employeeId:eid },
     });
     return res.status(200).json({ message: "created!", data: unilav });
   } catch (error) {
@@ -281,13 +288,14 @@ export const updUnilav = async (req, res) => {
 };
 export const getUnilav = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { eid } = req.params;
     let { page } = req.query;
     page = parseInt(page, 10);
     if (isNaN(page) || page < 1) page = 1;
     const data = await prisma.unilav.findMany({
-      skip: (page - 1) * 2,
-      take: 2,
+      skip: (page - 1) * 1,
+      take: 1,
+      where:{employeeId: eid}
     });
     return res.status(200).json(data);
   } catch (error) {
@@ -326,7 +334,7 @@ export const deleteUnilavs = async (req, res) => {
 // seritia
 export const createSeritia = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { eid } = req.params;
     const reqFields = ["healthEligibility", "expiryDate", "dataRilascio"];
     const missingField = reqFields.find((field) => !req.body[field]);
     if (missingField) {
@@ -337,7 +345,7 @@ export const createSeritia = async (req, res) => {
 
     const file = await cloudinaryUploader(req.file.path);
     const sertia = await prisma.seritia.create({
-      data: { ...req.body, attachment: file?.secure_url },
+      data: { ...req.body, attachment: file?.secure_url, employeeId:eid },
     });
     return res.status(200).json({ message: "created!", data: sertia });
   } catch (error) {
@@ -360,13 +368,14 @@ export const updSeritia = async (req, res) => {
 };
 export const getSeritia = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { eid } = req.params;
     let { page } = req.query;
     page = parseInt(page, 10);
     if (isNaN(page) || page < 1) page = 1;
     const data = await prisma.seritia.findMany({
-      skip: (page - 1) * 2,
-      take: 2,
+      skip: (page - 1) * 1,
+      take: 1,
+      where:{employeeId: eid}
     });
     return res.status(200).json(data);
   } catch (error) {
@@ -405,7 +414,8 @@ export const deleteSeritia = async (req, res) => {
 // formazone
 export const createFormazone = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { eid } = req.params;
+    if(!eid) return res.status(400).json({message:"Bad Request"})
     const reqFields = ["training", "expiryDate", "dataRilascio"];
     const missingField = reqFields.find((field) => !req.body[field]);
     if (missingField) {
@@ -416,7 +426,7 @@ export const createFormazone = async (req, res) => {
 
     const file = await cloudinaryUploader(req.file.path);
     const forma = await prisma.formazone.create({
-      data: { ...req.body, attachment: file?.secure_url },
+      data: { ...req.body, attachment: file?.secure_url, employeeId: eid },
     });
     return res.status(200).json({ message: "created!", data: forma });
   } catch (error) {
@@ -439,13 +449,14 @@ export const updateFormazone = async (req, res) => {
 };
 export const getFormazone = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { eid } = req.params;
     let { page } = req.query;
     page = parseInt(page, 10);
     if (isNaN(page) || page < 1) page = 1;
     const data = await prisma.formazone.findMany({
-      skip: (page - 1) * 3,
-      take: 3,
+      skip: (page - 1) * 4,
+      take: 4,
+      where:{employeeId: eid}
     });
     return res.status(200).json(data);
   } catch (error) {

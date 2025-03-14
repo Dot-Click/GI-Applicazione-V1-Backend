@@ -40,11 +40,11 @@ router.get("/archieve", Auth, getArchivedEmployees)
 router.patch("/update/empSeq", Auth, updateEmpSequence)
 router.get("/get/empSeq", Auth, getEmpSequence)
 
-router.get("/unilav", Auth, getUnilav);
+router.get("/unilav/:eid", Auth, getUnilav);
 router.get("/unilav/:id", Auth, getUnilavById);
-router.get("/seritia", Auth, getSeritia);
+router.get("/seritia/:eid", Auth, getSeritia);
 router.get("/seritia/:id", Auth, getSeritiaById);
-router.get("/formazone", Auth, getFormazone);
+router.get("/formazone/:eid", Auth, getFormazone);
 router.get("/formazone/:id", Auth, getFormazoneById);
 
 router.get("/:id", Auth, getEmployee);
@@ -53,7 +53,7 @@ router.delete("/delete", Auth, deleteEmp);
 
 // unilav
 router.post(
-  "/unilav/create",
+  "/unilav/create/:eid",
   Auth,
   singleUpload("unilav"),
   createUnilav
@@ -68,7 +68,7 @@ router.delete("/unilav/delete", Auth, deleteUnilavs);
 
 // seritia
 router.post(
-  "/seritia/create",
+  "/seritia/create/:eid",
   Auth,
   singleUpload("seritia"),
   createSeritia
@@ -83,7 +83,7 @@ router.delete("/seritia/delete", Auth, deleteSeritia);
 
 //formazone
 router.post(
-  "/formazone/create",
+  "/formazone/create/:eid",
   Auth,
   singleUpload("formazone"),
   createFormazone

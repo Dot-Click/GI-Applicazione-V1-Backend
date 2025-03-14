@@ -8,7 +8,7 @@ let alignColorsAndTime = winston.format.combine(
         label:'[LOGGER]'
     }),
     winston.format.printf(
-        info => ` ${info.label}  ${info.level} : ${info.message}: ${info.method} : ${info.url}`
+        info => `${info.label}  ${info.level} : ${info.message}: ${info.method} : ${info.url}`
     )
 );
 

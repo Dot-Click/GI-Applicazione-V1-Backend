@@ -73,14 +73,14 @@ export const verifEmail = async (req, res) => {
       { role: verify.role, id: verify.id },
       process.env.JWT_SECRET,
       {
-        expiresIn: "3m",
+        expiresIn: "25s",
       }
     );
     return res.status(200).json({
       message:
         "Ti abbiamo inviato un’e-mail per consentirti di reimpostare la password",
       token: verfToken,
-      expiresAt: new Date(Date.now() + 3*60 * 1000).toISOString(),
+      expiresAt: new Date(Date.now() + 25 * 1000).toISOString(),
       status: true,
     });
   } catch (error) {
