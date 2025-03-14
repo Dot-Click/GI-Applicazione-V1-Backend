@@ -420,7 +420,7 @@ paths:
                     type: string
                     example: "Internal Server Error"
 
-  /api/auth/update-password:
+  /api/auth/update-pass:
     patch:
       summary: Update admin password
       description: Updates the password for a user based on a valid verification token.
@@ -4211,7 +4211,7 @@ paths:
                     example: "Error message"
 
   # unilav APIs
-  /api/employee/unilav:
+  /api/employee/unilav/{eid}:
     get:
       summary: Retrieve all Unilav records
       description: This endpoint allows an admin to fetch all associated employee Unilav records.
@@ -4226,7 +4226,12 @@ paths:
           schema:
             type: string
             description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
-
+        - in: path
+          name: eid   
+          required: true
+          schema:
+            type: string
+            description: "dynamic employee id"
       responses:
         200:
           description: Successfully fetched all Unilav records
@@ -4337,7 +4342,7 @@ paths:
                     type: string
                     example: "Internal server error"
 
-  /api/employee/unilav/create:
+  /api/employee/unilav/create/{eid}:
     post:
       summary: Create a new Unilav record
       description: This endpoint allows an admin to create a new Unilav record by providing the required details.
@@ -4352,6 +4357,12 @@ paths:
           schema:
             type: string
             description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
+        - in: path
+          name: eid   
+          required: true
+          schema:
+            type: string
+            description: "dynamic employee id"
 
       requestBody:
         required: true
@@ -4516,12 +4527,19 @@ paths:
                     type: string
 
   # seritia APIs
-  /api/employee/seritia/create:
+  /api/employee/seritia/create/{eid}:
     post:
       summary: Create a new Seritia record
       description: Creates a new Seritia record with required fields and an optional file upload.
       tags:
         - employee/seritia
+      parameters:
+        - in: path
+          name: eid   
+          required: true
+          schema:
+            type: string
+            description: "dynamic employee id"
       security:
         - bearerAuth: []
       requestBody:
@@ -4610,7 +4628,7 @@ paths:
                     type: string
                     example: "Internal server error."
 
-  /api/employee/seritia:
+  /api/employee/seritia/{eid}:
     get:
       summary: Retrieve all Seritia records
       description: This endpoint allows an admin to fetch all associated employee Seritia records, associated with the logged in employee
@@ -4625,7 +4643,12 @@ paths:
           schema:
             type: string
             description: "Bearer token for authentication. Example: 'Bearer YOUR_TOKEN'"
-
+        - in: path
+          name: eid   
+          required: true
+          schema:
+            type: string
+            description: "dynamic employee id"
       responses:
         200:
           description: Successfully fetched all Unilav records
@@ -4806,7 +4829,7 @@ paths:
                     type: string
 
   # formazone APIs
-  /api/employee/formazone/create:
+  /api/employee/formazone/create/{eid}:
     post:
       summary: Create a new Formazone record
       description: Creates a new Formazone record with required fields and an optional file upload.
@@ -4814,6 +4837,13 @@ paths:
         - employee/formazone
       security:
         - bearerAuth: []
+      parameters:
+        - in: path
+          name: eid   
+          required: true
+          schema:
+            type: string
+            description: "dynamic employee id"  
       requestBody:
         required: true
         content:
@@ -4993,7 +5023,7 @@ paths:
                     type: string
                     example: "Internal server error."
 
-  /api/employee/formazone:
+  /api/employee/formazone/{eid}:
     get:
       summary: Get all Formazone records
       description: Retrieves all Formazone records from the database, associated with the logged in employee
@@ -5001,6 +5031,13 @@ paths:
         - employee/formazone
       security:
         - bearerAuth: []
+      parameters:
+        - in: path
+          name: eid   
+          required: true
+          schema:
+            type: string
+            description: "dynamic employee id"  
       responses:
         "200":
           description: Successfully fetched the Formazone records.
