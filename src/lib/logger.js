@@ -1,11 +1,21 @@
 import winston from "winston";
 
+let alignColorsAndTime = winston.format.combine(
+    winston.format.colorize({
+        all:true
+    }),
+    winston.format.label({
+        label:'[LOGGER]'
+    }),
+    winston.format.printf(
+        info => ` ${info.label}  ${info.level} : ${info.message}: ${info.method} : ${info.url}`
+    )
+);
+
 const logger = winston.createLogger({
-  level: "info",
-  format: winston.format.json(),
+  level: "debug",
   transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: "logs/requests.log" }),
+    new winston.transports.Console({format: winston.format.combine(winston.format.colorize(),alignColorsAndTime)})
   ],
 });
 
