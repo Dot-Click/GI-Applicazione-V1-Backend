@@ -80,6 +80,7 @@ export const verifEmail = async (req, res) => {
       message:
         "Ti abbiamo inviato un’e-mail per consentirti di reimpostare la password",
       token: verfToken,
+      expiresAt: new Date(Date.now() + 3*60 * 1000).toISOString(),
       status: true,
     });
   } catch (error) {
