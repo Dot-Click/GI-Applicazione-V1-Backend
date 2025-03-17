@@ -7,7 +7,9 @@ export const createEmployee = async (req, res) => {
     const reqFields = [
       "name",
       "surname",
+      "nameAndsurname",
       "taxId",
+      "telephone",
       "contractorNo",
       "sector",
       "startDate",
@@ -95,8 +97,8 @@ export const getEmployee = async (req, res) => {
 export const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const already = await prisma.employee.findUnique({where:{email:req.body.email}})
-    if(already) return res.status(400).json({message:"Email is not available"})
+    const {email} = req.body
+    if(email) return res.status(400).json({message:"Email is not editable"})
     const emp = await prisma.employee.update({
       where: { id },
       data: { ...req.body },

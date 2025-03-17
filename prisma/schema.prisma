@@ -180,6 +180,7 @@ model Employee {
   formazones          Formazone[]
   adminId             String?
   dob                 String?
+  telephone           String?
   address             String
   role                EmpRole     @default(Admin)
   createdAt           DateTime    @default(now())
