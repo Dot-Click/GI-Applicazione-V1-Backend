@@ -41,17 +41,6 @@ export const createSupp = async (req, res) => {
     const { id } = req.user;
     const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
-    }
-
-    const existingSupplier = await prisma.supplier.findUnique({
-      where: { email },
-    });
-    if (existingSupplier) {
-      return res.status(409).json({ message: "Supplier already exists" });
-    }
-
     const requiredFields = [
       "companyName",
       "vat",
@@ -65,9 +54,15 @@ export const createSupp = async (req, res) => {
       "email",
       "telephone",
     ];
-
+    
     if (!requiredFields.every((field) => req.body[field])) {
       return res.status(400).json({ message: "Missing required fields" });
+    }
+    const existingSupplier = await prisma.supplier.findUnique({
+      where: { email },
+    });
+    if (existingSupplier) {
+      return res.status(409).json({ message: "Supplier already exists" });
     }
     let count = Math.round(Math.random() * 100);
     const randomPass = `supplier${count}`;
@@ -167,7 +162,8 @@ export const updateSupp = async (req, res) => {
     if (!existingSupp) {
       return res.status(404).json({ message: "Supplier not found" });
     }
-
+    const {email} = req.body
+    if(email) return res.status(400).json({message:"email is non-editable"})
     const updatedSupp = await prisma.supplier.update({
       where: { id },
       data: { ...req.body },

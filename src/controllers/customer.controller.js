@@ -41,11 +41,6 @@ export const createCust = async (req, res) => {
     const { id } = req.user;
     const { email, ...customerData } = req.body;
 
-    const ifExist = await prisma.customer.findUnique({ where: { email } });
-    if (ifExist) {
-      return res.status(409).json({ message: "Customer already exists" });
-    }
-
     const requiredFields = [
       "companyName",
       "vat",
@@ -63,10 +58,14 @@ export const createCust = async (req, res) => {
     const missingField = requiredFields.find((field) => !req.body[field]);
     if (missingField) {
       return res
-        .status(400)
-        .json({ message: `Missing required field: ${missingField}` });
+      .status(400)
+      .json({ message: `Missing required field: ${missingField}` });
     }
-
+    const ifExist = await prisma.customer.findUnique({ where: { email } });
+    if (ifExist) {
+      return res.status(409).json({ message: "Customer already exists" });
+    }
+    
     let count = Math.round(Math.random() * 100);
     const randomPass = `customer${count}`;
     customerData.password = await bcrypt.hash(randomPass, 10);
@@ -99,8 +98,8 @@ export const updateCust = async (req, res) => {
       return res.status(404).json({ message: "Customer not found" });
     }
 
-    const { password, ...updateData } = req.body;
-
+    const { password,email, ...updateData } = req.body;
+    if(email) return res.status(400).json({message:"email is non-editable"})
     const updatedCust = await prisma.customer.update({
       where: { id },
       data: updateData,
