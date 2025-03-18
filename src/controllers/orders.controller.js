@@ -240,6 +240,45 @@ export const getOrder = async (req, res) => {
   }
 };
 
+export const createOrders = async (req,res) => {
+  try {
+    const { id } = req.user;
+    const {orders} = req.body
+    if(!orders) return res.status(400).json({message:"Bad Request"})
+    const requiredFields = [
+      "code",
+      "description",
+      "startDate",
+      "endDate",
+      "address",
+      "cig",
+      "cup",
+      "siteManager",
+      "orderManager",
+      "technicalManager",
+      "cnceCode",
+      "workAmount",
+      "advancePayment",
+      "dipositRecovery",
+      "iva",
+      "withholdingAmount",
+    ];
+     const invalidOrder = orders.find(order => 
+      requiredFields.some(field => !order[field])
+    );
+    if (invalidOrder) {
+      const missingFields = requiredFields.filter(field => !invalidOrder[field]);
+      return res.status(400).json({
+        message: `An order is missing required fields: ${missingFields.join(", ")}`,
+      });
+    }
+    const multipleOrder = await prisma.order.createMany({data: orders.map(order => ({ ...order, adminId: id })), skipDuplicates: true})
+    return res.status(200).json({message:`orders added: ${multipleOrder.count}`})
+  } catch (error) {
+    return res.status(500).json({message: error.message})
+  }
+}
+
 export const deleteOrder = async (req, res) => {
   try {
     const { ids } = req.body;

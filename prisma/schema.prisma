@@ -81,7 +81,7 @@ model Order {
   // discountPercentage Float
   state                    OrderState? @default(ON_HOLD)
   cnceCode                 String
-  orderManager             String
+  orderManager             String      
   siteManager              String
   technicalManager         String
   admin                    Admin?      @relation(fields: [adminId], references: [id])
@@ -93,6 +93,8 @@ model Order {
   cup                      String
   iva                      String
   dipositRecovery          String
+  employee                 Employee?    @relation(fields: [employeeId], references: [id])
+  employeeId               String?
   vat                      String?
   jobName                  String?
   projectName              String?
@@ -178,6 +180,7 @@ model Employee {
   unilavs             Unilav[]
   seritias            Seritia[]
   formazones          Formazone[]
+  orders              Order[]
   adminId             String?
   dob                 String?
   telephone           String?

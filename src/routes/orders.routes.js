@@ -2,6 +2,7 @@ import express from "express";
 import {
   archieve,
   createOrder,
+  createOrders,
   deleteOrder,
   getArchivedOrders,
   getOrder,
@@ -25,6 +26,7 @@ router.get("/get/orderSeq", Auth, checkRole(["ADMIN"]), getOrderSequence)
 router.get("/archive", Auth, checkRole(["ADMIN"]), getArchivedOrders);
 router.get("/:id", Auth, checkRole(["ADMIN"]), getOrder);
 router.post("/create", Auth, checkRole(["ADMIN"]), upload, createOrder);
+router.post("/createMany", Auth, checkRole(["ADMIN"]), createOrders)
 router.patch("/update/:id", Auth, checkRole(["ADMIN"]), upload, updateOrder);
 router.patch("/archive/:id", Auth, checkRole(["ADMIN"]), archieve);
 router.delete("/delete", Auth, checkRole(["ADMIN"]), deleteOrder);

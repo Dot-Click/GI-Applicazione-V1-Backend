@@ -154,9 +154,6 @@ export const getAdminInfo = async (req, res) => {
           orderBy: {
             updatedAt: "desc",
           },
-          where:{
-            archieved:"false"
-          }
         },
       },
       omit:{ password: true }
@@ -168,9 +165,13 @@ export const getAdminInfo = async (req, res) => {
        }));
     
     if (!admin) return res.status(404).json({ message: "Admin not found" });
-    
+  const transformedData = {
+    Technical_Manager: admin.employees.filter(emp => emp.role === "Technical_Manager"),
+    Construction_Manager: admin.employees.filter(emp => emp.role === "Construction_Manager"),
+    Order_Manager: admin.employees.filter(emp => emp.role === "Order_Manager"),
+  };
     return res.status(200).json({
-      data: { ...admin, orders: activeOrders },
+      data: { ...admin, orders: activeOrders, employees: transformedData },
       message: "Found",
     });
   } catch (error) {
@@ -178,7 +179,6 @@ export const getAdminInfo = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 export const logout = async (req, res) => {
   try {
