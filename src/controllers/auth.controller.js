@@ -169,6 +169,7 @@ export const getAdminInfo = async (req, res) => {
     Technical_Manager: admin.employees.filter(emp => emp.role === "Technical_Manager"),
     Construction_Manager: admin.employees.filter(emp => emp.role === "Construction_Manager"),
     Order_Manager: admin.employees.filter(emp => emp.role === "Order_Manager"),
+    active: admin.employees.filter(emp => emp.status === "active").length
   };
     return res.status(200).json({
       data: { ...admin, orders: activeOrders, employees: transformedData },

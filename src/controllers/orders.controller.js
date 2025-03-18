@@ -244,7 +244,7 @@ export const createOrders = async (req,res) => {
   try {
     const { id } = req.user;
     const {orders} = req.body
-    if(!orders) return res.status(400).json({message:"Bad Request"})
+    if(!orders) return res.status(404).json({message:"Bad Request"})
     const requiredFields = [
       "code",
       "description",
@@ -273,6 +273,7 @@ export const createOrders = async (req,res) => {
       });
     }
     const multipleOrder = await prisma.order.createMany({data: orders.map(order => ({ ...order, adminId: id })), skipDuplicates: true})
+    if(!multipleOrder.count) return res.status(400).json({message:"CSV contain duplicate orders"})
     return res.status(200).json({message:`orders added: ${multipleOrder.count}`})
   } catch (error) {
     return res.status(500).json({message: error.message})
