@@ -5,6 +5,7 @@ import {
   createOrders,
   deleteOrder,
   getArchivedOrders,
+  getAssociatedUsers,
   getOrder,
   getOrders,
   getOrderSequence,
@@ -20,6 +21,7 @@ const router = express.Router();
 
 router.get("/search", Auth, checkRole(["ADMIN"]), searchOrder);
 router.get("/", Auth, checkRole(["ADMIN"]), getOrders);
+router.get("/getUsers", Auth, checkRole(["ADMIN"]), getAssociatedUsers)
 router.get("/recentOrder", Auth, checkRole(["ADMIN"]), recentOrders)
 router.patch("/update/orderSeq", Auth, checkRole(["ADMIN"]), updateOrderSequence)
 router.get("/get/orderSeq", Auth, checkRole(["ADMIN"]), getOrderSequence)

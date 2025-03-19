@@ -268,7 +268,8 @@ export const getCustomer = async (req, res) => {
   try {
     const { id } = req.params;
     const cust = await prisma.customer.findUnique({
-      where: { id: id },
+      where: { id },
+      include:{orders: true},
       omit: { password: true },
     });
     if (!cust) return res.status(404).json({ message: "not found" });

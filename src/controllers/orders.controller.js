@@ -5,7 +5,7 @@ import { cloudinaryUploader } from "../lib/utils.js";
 export const createOrder = async (req, res) => {
   try {
     const { id } = req.user;
-    const { address, code, ...orderData } = req.body;
+    const { address, code,customerName, supplierName, ...orderData } = req.body;
 
     const requiredFields = [
       "code",
@@ -22,6 +22,8 @@ export const createOrder = async (req, res) => {
       "workAmount",
       "advancePayment",
       "dipositRecovery",
+      "customerName",
+      "supplierName",
       "iva",
       "withholdingAmount",
     ];
@@ -80,9 +82,17 @@ export const createOrder = async (req, res) => {
           uploadedFiles.permission_to_build?.secure_url || null,
         psc: uploadedFiles.psc?.secure_url || null,
         pos: uploadedFiles.pos?.secure_url || null,
-        adminId: id,
+        admin: {
+          connect: { id },
+        },
         lat: String(location?.lat) || null,
         lng: String(location?.lng) || null,
+        Customer: {
+          connect: { companyName: customerName },
+        },
+        supplier: {
+          connect: { companyName: supplierName },
+        },
       },
     });
 
@@ -177,9 +187,9 @@ export const getOrders = async (req, res) => {
     }
     orders = orders
        .map((order) => ({
-         ...order,
-         state: orderStateMap[order.state] || order.state,
-       }));
+      ...order,
+      state: orderStateMap[order.state] || order.state,
+    }));
     return res.status(200).json({
       message: "All orders fetched",
       data: orders,
@@ -210,9 +220,9 @@ export const recentOrders = async (req, res) => {
     }
     RecentOrders = RecentOrders
       .map((order) => ({
-         ...order,
-         state: orderStateMap[order.state] || order.state,
-       }));
+      ...order,
+      state: orderStateMap[order.state] || order.state,
+    }));
     return res.status(200).json({
       message: "All Recent Orders fetched",
       data: RecentOrders,
@@ -231,9 +241,9 @@ export const getOrder = async (req, res) => {
       CANCELLED: "Cancellato",
       COMPLETATO: "Completato",
     }
-    let order = await prisma.order.findUnique({ where: { id } });
+    let order = await prisma.order.findUnique({ where: { id },include:{Customer: true, supplier: true} });
     if (!order) return res.status(404).json({ message: "Order not found" });
-    
+
     return res.status(200).json({...order,state: orderStateMap[order.state] || order.state});
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -278,7 +288,49 @@ export const createOrders = async (req,res) => {
   } catch (error) {
     return res.status(500).json({message: error.message})
   }
-}
+};
+
+export const getAssociatedUsers = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const users = await prisma.admin.findUnique({
+      where: { id },
+      select: {
+        clients: {
+          select: {
+            companyName: true,
+          },
+        },
+        suppliers: {
+          select: {
+            companyName: true,
+          },
+        },
+        employees: {
+          select: {
+            name: true,
+            role: true,
+            surname: true
+          },
+        },
+      },
+    });
+    const transformedData = {
+      Technical_Manager: users.employees.filter(
+        (emp) => emp.role === "Technical_Manager"
+      ),
+      Construction_Manager: users.employees.filter(
+        (emp) => emp.role === "Construction_Manager"
+      ),
+      Order_Manager: users.employees.filter(
+        (emp) => emp.role === "Order_Manager"
+      ),
+    };
+    return res.status(200).json({ ...users, employees: transformedData });
+  } catch (error) {
+    return res.status(200).json({ error: error.message });
+  }
+};
 
 export const deleteOrder = async (req, res) => {
   try {

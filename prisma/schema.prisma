@@ -30,40 +30,6 @@ model Admin {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
-
-model Customer {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  name        String?
-  password    String?
-  companyName String
-  vat         String
-  taxId       String
-  ateco       String?
-  nation      String?
-  province    String?
-  address     String
-  common      String?
-  cap         String?
-  pec         String
-  status      Status?  @default(active)
-  telephone   String
-  role        Role     @default(USER)
-  admin       Admin?   @relation(fields: [adminId], references: [id])
-  adminId     String?
-  orders      Order[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model custSequence {
-  id                String   @id @default(uuid())
-  added_col_array   String[]
-  visible_col_array String[]
-  admin             Admin?   @relation(fields: [adminId], references: [id])
-  adminId           String?  @unique
-}
-
 model Order {
   id                       String      @id @default(uuid())
   code                     String      @unique
@@ -126,12 +92,45 @@ model ordSequence {
   adminId           String?  @unique
 }
 
+model Customer {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String?
+  password    String?
+  companyName String   @unique
+  vat         String
+  taxId       String
+  ateco       String?
+  nation      String?
+  province    String?
+  address     String
+  common      String?
+  cap         String?
+  pec         String
+  status      Status?  @default(active)
+  telephone   String
+  role        Role     @default(USER)
+  admin       Admin?   @relation(fields: [adminId], references: [id])
+  adminId     String?
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model custSequence {
+  id                String   @id @default(uuid())
+  added_col_array   String[]
+  visible_col_array String[]
+  admin             Admin?   @relation(fields: [adminId], references: [id])
+  adminId           String?  @unique
+}
+
 model Supplier {
   id          String   @id @default(uuid())
   email       String   @unique //ref to supplierEmail in order table
   name        String?
   password    String?
-  companyName String
+  companyName String    @unique
   vat         String
   taxId       String
   // ateco       String?

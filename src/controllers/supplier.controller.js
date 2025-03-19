@@ -27,6 +27,7 @@ export const getSupplier = async (req, res) => {
     if (!id) return res.status(400).json({ message: "id not found" });
     const supp = await prisma.supplier.findUnique({
       where: { id },
+      include: {orders: true},
       omit: { password: true },
     });
     if (!supp) return res.status(404).json({ message: "supplier not found" });
