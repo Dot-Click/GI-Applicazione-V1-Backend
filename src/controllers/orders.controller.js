@@ -107,7 +107,7 @@ export const createOrder = async (req, res) => {
 
 export const updateOrder = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params
     const { customerName, supplierName, address, ...rest } = req.body;
 
     if (!id) return res.status(400).json({ message: "Order ID is required." });
