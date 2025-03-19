@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createSupp,
+  createSupps,
   deleteSupp,
   getAllSuppliers,
   getSupplier,
@@ -20,6 +21,7 @@ router.get("/get/suppSeq", Auth, checkRole(["ADMIN"]), getSuppSequence)
 router.get("/", Auth, checkRole(["ADMIN"]), getAllSuppliers);
 router.get("/:id", Auth, checkRole(["ADMIN"]), getSupplier);
 router.post("/create", Auth, checkRole(["ADMIN"]), createSupp);
+router.post("/createMany", Auth, checkRole(["ADMIN"]), createSupps);
 router.patch("/update/:id", Auth, checkRole(["ADMIN"]), updateSupp);
 router.delete("/delete", Auth, checkRole(["ADMIN"]), deleteSupp);
 

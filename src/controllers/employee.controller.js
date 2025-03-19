@@ -2,6 +2,12 @@ import prisma from "../../prisma/prisma.js";
 import { cloudinaryUploader } from "../lib/utils.js";
 import bcrypt from "bcrypt";
 
+const EmpRoles= {
+  Technical_Manager : 'Technical_Manager',
+  Order_Manager : 'Order_Manager',
+  Construction_Manager : 'Construction_Manager',
+}
+
 export const createEmployee = async (req, res) => {
   try {
     const reqFields = [
@@ -37,6 +43,12 @@ export const createEmployee = async (req, res) => {
     let count = Math.round(Math.random() * 100);
     const randomPass = `employee${count}`;
     const hash = await bcrypt.hash(randomPass, 10);
+
+    if (!Object.values(EmpRoles).includes(req.body.role)) {
+      return res.status(400).json({
+        message: `Invalid role. Valid roles are: ${Object.values(EmpRoles).join(', ')}`,
+      });
+    }
     const emp = await prisma.employee.create({
       data: { ...req.body, adminId: id, password: hash },
       omit: { password: true },
@@ -91,6 +103,55 @@ export const getEmployee = async (req, res) => {
     return res.status(200).json({ message: "employee fetched", data: emp });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+export const createEmployees = async (req,res) => {
+  try {
+    const { id } = req.user;
+    const {employees} = req.body
+    if(!employees) return res.status(404).json({message:"Bad Request"})
+    const requiredFields = [
+      "name",
+      "surname",
+      "nameAndsurname",
+      "taxId",
+      "telephone",
+      "contractorNo",
+      "sector",
+      "startDate",
+      "endDate",
+      "municipalityOfBirth",
+      "level",
+      "qualification",
+      "number",
+      "address",
+      "role",
+      "email",
+    ];
+     const invalidemployee = employees.find(employee => 
+      requiredFields.some(field => !employee[field])
+    );
+    if (invalidemployee) {
+      const missingFields = requiredFields.filter(field => !invalidemployee[field]);
+      return res.status(400).json({
+        message: `An employee is missing required fields: ${missingFields.join(", ")}`,
+      });
+    }
+   
+    const invalidRoleEmployee = employees.find((employee) =>
+      !Object.values(EmpRoles).includes(employee.role)
+    );
+    if (invalidRoleEmployee) {
+      return res.status(400).json({
+        message: `Invalid role for employee: ${invalidRoleEmployee.nameAndsurname}. Valid roles are: ${Object.values(EmpRoles).join(', ')}`,
+      });
+    }
+    const multipleemployee = await prisma.employee.createMany({data: employees.map(employee => ({ ...employee, adminId: id })), skipDuplicates: true})
+    if(!multipleemployee.count) return res.status(400).json({message:"Can't create duplicate employees"})
+    return res.status(200).json({message:`employees added: ${multipleemployee.count}`})
+  } catch (error) {
+    return res.status(500).json({message: error.message})
   }
 };
 
@@ -154,6 +215,7 @@ export const updateEmpSequence = async (req, res) => {
     const reqOrdval = [
       "firstName",
       "lastName",
+      "fullName",
       "birthPlace",
       "contractor",
       "homeAddress",

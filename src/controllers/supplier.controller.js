@@ -37,6 +37,41 @@ export const getSupplier = async (req, res) => {
   }
 };
 
+export const createSupps = async (req,res) => {
+  try {
+    const { id } = req.user;
+    const {suppliers} = req.body
+    if(!suppliers) return res.status(404).json({message:"Bad Request"})
+    const requiredFields = [
+      "companyName",
+      "vat",
+      "taxId",
+      "nation",
+      "province",
+      "common",
+      "cap",
+      "address",
+      "pec",
+      "email",
+      "telephone",
+    ];
+     const invalidsupplier = suppliers.find(supplier => 
+      requiredFields.some(field => !supplier[field])
+    );
+    if (invalidsupplier) {
+      const missingFields = requiredFields.filter(field => !invalidsupplier[field]);
+      return res.status(400).json({
+        message: `An supplier is missing required fields: ${missingFields.join(", ")}`,
+      });
+    }
+    const multiplesupplier = await prisma.supplier.createMany({data: suppliers.map(supplier => ({ ...supplier, adminId: id })), skipDuplicates: true})
+    if(!multiplesupplier.count) return res.status(400).json({message:"Can't create duplicate suppliers"})
+    return res.status(200).json({message:`suppliers added: ${multiplesupplier.count}`})
+  } catch (error) {
+    return res.status(500).json({message: error.message})
+  }
+};
+
 export const createSupp = async (req, res) => {
   try {
     const { id } = req.user;

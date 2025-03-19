@@ -2,6 +2,7 @@ import express from "express";
 import {
   archieve,
   createEmployee,
+  createEmployees,
   createFormazone,
   createSeritia,
   createUnilav,
@@ -31,6 +32,7 @@ import { singleUpload } from "../middlewares/multer.middleware.js";
 const router = express.Router();
 
 router.post("/create", Auth, createEmployee);
+router.post("/createMany", Auth, createEmployees);
 router.get("/search", Auth, searchEmp);
 router.get("/", Auth, getAllEmployee);
 

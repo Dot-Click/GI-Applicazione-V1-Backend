@@ -116,6 +116,41 @@ export const updateCust = async (req, res) => {
   }
 };
 
+export const createCusts = async (req,res) => {
+  try {
+    const { id } = req.user;
+    const {customers} = req.body
+    if(!customers) return res.status(404).json({message:"Bad Request"})
+    const requiredFields = [
+      "companyName",
+      "vat",
+      "taxId",
+      "nation",
+      "province",
+      "common",
+      "cap",
+      "address",
+      "pec",
+      "email",
+      "telephone",
+    ];
+     const invalidcustomer = customers.find(customer => 
+      requiredFields.some(field => !customer[field])
+    );
+    if (invalidcustomer) {
+      const missingFields = requiredFields.filter(field => !invalidcustomer[field]);
+      return res.status(400).json({
+        message: `An customer is missing required fields: ${missingFields.join(", ")}`,
+      });
+    }
+    const multiplecustomer = await prisma.customer.createMany({data: customers.map(customer => ({ ...customer, adminId: id })), skipDuplicates: true})
+    if(!multiplecustomer.count) return res.status(400).json({message:"Can't create duplicate customers"})
+    return res.status(200).json({message:`customers added: ${multiplecustomer.count}`})
+  } catch (error) {
+    return res.status(500).json({message: error.message})
+  }
+};
+
 export const deleteCust = async (req, res) => {
   try {
     const { ids } = req.body;

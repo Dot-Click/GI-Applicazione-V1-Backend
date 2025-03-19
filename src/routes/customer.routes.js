@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createCust,
+  createCusts,
   deleteCust,
   getAllCustomers,
   getCustomer,
@@ -29,6 +30,7 @@ router.get("/search", Auth, checkRole(["ADMIN"]), searchCustomer);
 router.get("/", Auth, checkRole(["ADMIN"]), getAllCustomers);
 router.get("/:id", Auth, checkRole(["ADMIN"]), getCustomer);
 router.post("/create", Auth, checkRole(["ADMIN"]), createCust);
+router.post("/createMany", Auth, checkRole(["ADMIN"]), createCusts);
 router.patch("/update/:id", Auth, checkRole(["ADMIN"]), updateCust);
 router.delete("/delete", Auth, checkRole(["ADMIN"]), deleteCust);
 
