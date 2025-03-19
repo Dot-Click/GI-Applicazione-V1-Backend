@@ -433,12 +433,27 @@ export const getArchivedOrders = async (req, res) => {
 export const updateOrderSequence = async (req, res) => {
   try {
     const { id } = req.user;
-    const { addedColArray, visibleColArray } = req.body;
-    if (!addedColArray || !visibleColArray) {
-      return res.status(400).json({ error: "missing required fields" });
+    const { addedColArray, visibleColArray, archiveAddedColArray, archiveVisibleColArray } = req.body;
+
+    if (
+      (addedColArray && !visibleColArray) ||
+      (!addedColArray && visibleColArray)
+    ) {
+      return res.status(400).json({
+        error: "addedColArray and visibleColArray must be provided together.",
+      });
     }
-    if (!Array.isArray(addedColArray) || !Array.isArray(visibleColArray))
-      return res.status(406).json({ error: "Invalid type" });
+
+    if (
+      (archiveAddedColArray && !archiveVisibleColArray) ||
+      (!archiveAddedColArray && archiveVisibleColArray)
+    ) {
+      return res.status(400).json({
+        error:
+          "archiveAddedColArray and archiveVisibleColArray must be provided together.",
+      });
+    }
+
     const reqOrdval = [
       "state",
       "description",
@@ -454,10 +469,6 @@ export const updateOrderSequence = async (req, res) => {
       "workAmount",
       "advancePayment",
       "dipositRecovery",
-      "contract",
-      "permission",
-      "psc",
-      "pos",
       "isPublic",
       "iva",
       "cup",
@@ -465,8 +476,10 @@ export const updateOrderSequence = async (req, res) => {
       "actions",
     ];
     const invalidFields = [
-      ...addedColArray.filter((field) => !reqOrdval.includes(field)),
-      ...visibleColArray.filter((field) => !reqOrdval.includes(field)),
+      ...(addedColArray || []).filter((field) => !reqOrdval.includes(field)),
+      ...(visibleColArray || []).filter((field) => !reqOrdval.includes(field)),
+      ...(archiveAddedColArray || []).filter((field) => !reqOrdval.includes(field)),
+      ...(archiveVisibleColArray || []).filter((field) => !reqOrdval.includes(field)),
     ];
 
     if (invalidFields.length > 0) {
@@ -474,19 +487,36 @@ export const updateOrderSequence = async (req, res) => {
         .status(422)
         .json({ error: `Invalid fields found: ${invalidFields.join(", ")}` });
     }
+
+    const updateData = {};
+
+    if (addedColArray) {
+      updateData.added_col_array = addedColArray;
+    }
+    if (visibleColArray) {
+      updateData.visible_col_array = visibleColArray;
+    }
+    if (archiveAddedColArray) {
+      updateData.archive_added_col_array = archiveAddedColArray;
+    }
+    if (archiveVisibleColArray) {
+      updateData.archive_visible_col_array = archiveVisibleColArray;
+    }
+
+    
     await prisma.ordSequence.upsert({
       where: { adminId: id },
-      update: {
-        added_col_array: addedColArray,
-        visible_col_array: visibleColArray,
-      },
+      update: updateData, 
       create: {
-        added_col_array: addedColArray,
-        visible_col_array: visibleColArray,
+        added_col_array: addedColArray || [], 
+        visible_col_array: visibleColArray || [],
+        archive_added_col_array: archiveAddedColArray || [],
+        archive_visible_col_array: archiveVisibleColArray || [],
         adminId: id,
       },
     });
-    return res.status(200).json({ message: "sequence updated!" });
+
+    return res.status(200).json({ message: "Sequence updated!" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
