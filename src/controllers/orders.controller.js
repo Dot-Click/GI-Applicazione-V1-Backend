@@ -108,16 +108,18 @@ export const createOrder = async (req, res) => {
 export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
+    const { customerName, supplierName, address, ...rest } = req.body;
+
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
     let location = null;
-    if (req.body.address) {
+    if (address) {
       try {
         const { data } = await axios.get(
           `https://maps.googleapis.com/maps/api/geocode/json`,
           {
             params: {
-              address: req.body.address,
+              address: address,
               key: process.env.GOOGLE_API_KEY,
             },
           }
@@ -130,9 +132,8 @@ export const updateOrder = async (req, res) => {
       }
     }
     let upd_data = {
-      ...req.body,
-      lat: String(location?.lat) || null,
-      lng: String(location?.lng) || null,
+      ...rest,
+      ...(address && location && { lat: String(location.lat), lng: String(location.lng) }),
     };
     const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
     const uploadedFiles = {};
@@ -152,9 +153,23 @@ export const updateOrder = async (req, res) => {
         upd_data[field] = uploadedFiles[field]?.secure_url;
       }
     });
+
+    const updateData = {
+      ...upd_data,
+      ...(customerName && {
+        Customer: {
+          connect: { companyName: customerName },
+        },
+      }),
+      ...(supplierName && {
+        supplier: {
+          connect: { companyName: supplierName },
+        },
+      }),
+    };
     const order = await prisma.order.update({
       where: { id },
-      data: upd_data,
+      data: updateData,
     });
 
     return res
