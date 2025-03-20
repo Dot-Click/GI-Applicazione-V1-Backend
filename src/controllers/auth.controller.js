@@ -136,12 +136,12 @@ export const getAdminInfo = async (req, res) => {
           orderBy: {
             updatedAt: "desc",
           },
-          where:{
-            archieved:"false"
+          where: {
+            archieved: "false"
           },
-          include:{
-            Customer: {select:{companyName:true}},
-            supplier: {select:{companyName:true}},
+          include: {
+            Customer: { select: { companyName: true } },
+            supplier: { select: { companyName: true } },
           }
         },
         suppliers: {
@@ -158,21 +158,25 @@ export const getAdminInfo = async (req, res) => {
           orderBy: {
             updatedAt: "desc",
           },
-          where:{
+          where: {
             archieved: "false"
           }
         },
       },
-      omit:{ password: true }
+      omit: { password: true }
     });
-    const activeOrders = admin.orders
-       .map((order) => ({
-         ...order,
-         state: orderStateMap[order.state] || order.state,
-       }));
-    
+
     if (!admin) return res.status(404).json({ message: "Admin not found" });
-  
+
+    const activeOrders = admin.orders
+      .map((order) => ({
+        ...order,
+        state: orderStateMap[order.state] || order.state,
+        customerName: order.Customer?.companyName || null,
+        supplierName: order.supplier?.companyName || null,
+      }))
+      .map(({ Customer, supplier, ...rest }) => rest);
+
     return res.status(200).json({
       data: { ...admin, orders: activeOrders },
       message: "Found",
