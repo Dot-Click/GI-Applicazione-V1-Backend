@@ -110,53 +110,7 @@ export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const { customerName, supplierName, address, adminId, ...rest } = req.body;
-    const expectedFields = new Set([
-      "code",
-      "description",
-      "startDate",
-      "endDate",
-      "address",
-      "cig",
-      "cup",
-      "siteManager",
-      "orderManager",
-      "technicalManager",
-      "cnceCode",
-      "workAmount",
-      "advancePayment",
-      "dipositRecovery",
-      "customerName",
-      "supplierName",
-      "iva",
-      "withholdingAmount",
-      "id",
-      "state",
-      "adminId",
-      "supplierId",
-      "status",
-      "archieved",
-      "desc_contract",
-      "desc_permission_to_build",
-      "desc_psc", 
-      "desc_pos",
-      "lat",
-      "lng",
-      "createdAt",
-      "updatedAt",
-      "customerId",
-      "isPublic",
-      "archived",
-    ]);
-    const bodyFields = Object.keys(req.body);
-    const invalidFields = bodyFields.filter(
-      (field) => !expectedFields.has(field)
-    );
 
-    if (invalidFields.length > 0) {
-      return res.status(400).json({
-        message: `Invalid field(s) found: ${invalidFields.join(", ")}`,
-      });
-    }
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
     let location = null;
