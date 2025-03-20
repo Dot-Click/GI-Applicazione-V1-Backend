@@ -5,7 +5,8 @@ import { cloudinaryUploader } from "../lib/utils.js";
 export const createOrder = async (req, res) => {
   try {
     const { id } = req.user;
-    const { address, code,customerName, supplierName, ...orderData } = req.body;
+    const { address, code, customerName, supplierName, ...orderData } =
+      req.body;
 
     const requiredFields = [
       "code",
@@ -128,17 +129,33 @@ export const updateOrder = async (req, res) => {
       "supplierName",
       "iva",
       "withholdingAmount",
+      "id",
+      "state",
+      "adminId",
+      "supplierId",
+      "status",
+      "archieved",
+      "desc_contract",
+      "desc_permission_to_build",
+      "desc_psc, desc_pos",
+      "lat",
+      "lng",
+      "createdAt",
+      "updatedAt",
+      "customerId",
       "isPublic",
-      "archived"
+      "archived",
     ]);
     const bodyFields = Object.keys(req.body);
-  const invalidFields = bodyFields.filter(field => !expectedFields.has(field));
+    const invalidFields = bodyFields.filter(
+      (field) => !expectedFields.has(field)
+    );
 
-  if (invalidFields.length > 0) {
-    return res.status(400).json({
-      message: `Invalid field(s) found: ${invalidFields.join(", ")}`
-    });
-  }
+    if (invalidFields.length > 0) {
+      return res.status(400).json({
+        message: `Invalid field(s) found: ${invalidFields.join(", ")}`,
+      });
+    }
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
     let location = null;
@@ -163,7 +180,8 @@ export const updateOrder = async (req, res) => {
     let upd_data = {
       ...rest,
       address,
-      ...(address && location && { lat: String(location.lat), lng: String(location.lng) }),
+      ...(address &&
+        location && { lat: String(location.lat), lng: String(location.lng) }),
     };
     const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
     const uploadedFiles = {};
@@ -212,13 +230,10 @@ export const updateOrder = async (req, res) => {
       data: updateData,
     });
 
-    return res
-      .status(200)
-      .json({
-        data: { ...order, state: orderStateMap[order.state] || order.state },
-        message: "Order updated successfully.",
-      });
-
+    return res.status(200).json({
+      data: { ...order, state: orderStateMap[order.state] || order.state },
+      message: "Order updated successfully.",
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -244,8 +259,7 @@ export const getOrders = async (req, res) => {
     if (!orders) {
       return res.status(200).json({ message: "No current orders", data: [] });
     }
-    orders = orders
-       .map((order) => ({
+    orders = orders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
     }));
@@ -271,14 +285,17 @@ export const recentOrders = async (req, res) => {
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
     let RecentOrders = await prisma.order.findMany({
-      where: { adminId: id, archieved: "false", createdAt: { gte: startOfDay, lt: endOfDay } },
+      where: {
+        adminId: id,
+        archieved: "false",
+        createdAt: { gte: startOfDay, lt: endOfDay },
+      },
       take: 10,
     });
     if (!RecentOrders) {
       return res.status(400).json({ message: "No Recent Orders" });
     }
-    RecentOrders = RecentOrders
-      .map((order) => ({
+    RecentOrders = RecentOrders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
     }));
@@ -289,7 +306,7 @@ export const recentOrders = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-}
+};
 
 export const getOrder = async (req, res) => {
   try {
@@ -299,21 +316,26 @@ export const getOrder = async (req, res) => {
       IN_PROGRESS: "In corso",
       CANCELLED: "Cancellato",
       COMPLETATO: "Completato",
-    }
-    let order = await prisma.order.findUnique({ where: { id },include:{Customer: true, supplier: true} });
+    };
+    let order = await prisma.order.findUnique({
+      where: { id },
+      include: { Customer: true, supplier: true },
+    });
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    return res.status(200).json({...order,state: orderStateMap[order.state] || order.state});
+    return res
+      .status(200)
+      .json({ ...order, state: orderStateMap[order.state] || order.state });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
-export const createOrders = async (req,res) => {
+export const createOrders = async (req, res) => {
   try {
     const { id } = req.user;
-    const {orders} = req.body
-    if(!orders) return res.status(404).json({message:"Bad Request"})
+    const { orders } = req.body;
+    if (!orders) return res.status(404).json({ message: "Bad Request" });
     const requiredFields = [
       "code",
       "description",
@@ -334,20 +356,30 @@ export const createOrders = async (req,res) => {
       "iva",
       "withholdingAmount",
     ];
-     const invalidOrder = orders.find(order => 
-      requiredFields.some(field => !order[field])
+    const invalidOrder = orders.find((order) =>
+      requiredFields.some((field) => !order[field])
     );
     if (invalidOrder) {
-      const missingFields = requiredFields.filter(field => !invalidOrder[field]);
+      const missingFields = requiredFields.filter(
+        (field) => !invalidOrder[field]
+      );
       return res.status(400).json({
-        message: `An order is missing required fields: ${missingFields.join(", ")}`,
+        message: `An order is missing required fields: ${missingFields.join(
+          ", "
+        )}`,
       });
     }
-    const multipleOrder = await prisma.order.createMany({data: orders.map(order => ({ ...order, adminId: id })), skipDuplicates: true})
-    if(!multipleOrder.count) return res.status(400).json({message:"CSV contain duplicate orders"})
-    return res.status(200).json({message:`orders added: ${multipleOrder.count}`})
+    const multipleOrder = await prisma.order.createMany({
+      data: orders.map((order) => ({ ...order, adminId: id })),
+      skipDuplicates: true,
+    });
+    if (!multipleOrder.count)
+      return res.status(400).json({ message: "CSV contain duplicate orders" });
+    return res
+      .status(200)
+      .json({ message: `orders added: ${multipleOrder.count}` });
   } catch (error) {
-    return res.status(500).json({message: error.message})
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -371,7 +403,7 @@ export const getAssociatedUsers = async (req, res) => {
           select: {
             name: true,
             role: true,
-            surname: true
+            surname: true,
           },
         },
       },
@@ -465,8 +497,7 @@ export const getArchivedOrders = async (req, res) => {
       take: 10,
     });
     if (!orders) return res.status(404).json({ message: "No archived orders" });
-    orders = orders
-       .map((order) => ({
+    orders = orders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
     }));
@@ -479,7 +510,12 @@ export const getArchivedOrders = async (req, res) => {
 export const updateOrderSequence = async (req, res) => {
   try {
     const { id } = req.user;
-    const { addedColArray, visibleColArray, archiveAddedColArray, archiveVisibleColArray } = req.body;
+    const {
+      addedColArray,
+      visibleColArray,
+      archiveAddedColArray,
+      archiveVisibleColArray,
+    } = req.body;
 
     if (
       (addedColArray && !visibleColArray) ||
@@ -526,8 +562,12 @@ export const updateOrderSequence = async (req, res) => {
     const invalidFields = [
       ...(addedColArray || []).filter((field) => !reqOrdval.includes(field)),
       ...(visibleColArray || []).filter((field) => !reqOrdval.includes(field)),
-      ...(archiveAddedColArray || []).filter((field) => !reqOrdval.includes(field)),
-      ...(archiveVisibleColArray || []).filter((field) => !reqOrdval.includes(field)),
+      ...(archiveAddedColArray || []).filter(
+        (field) => !reqOrdval.includes(field)
+      ),
+      ...(archiveVisibleColArray || []).filter(
+        (field) => !reqOrdval.includes(field)
+      ),
     ];
 
     if (invalidFields.length > 0) {
@@ -551,12 +591,11 @@ export const updateOrderSequence = async (req, res) => {
       updateData.archive_visible_col_array = archiveVisibleColArray;
     }
 
-    
     await prisma.ordSequence.upsert({
       where: { adminId: id },
-      update: updateData, 
+      update: updateData,
       create: {
-        added_col_array: addedColArray || [], 
+        added_col_array: addedColArray || [],
         visible_col_array: visibleColArray || [],
         archive_added_col_array: archiveAddedColArray || [],
         archive_visible_col_array: archiveVisibleColArray || [],
