@@ -108,7 +108,7 @@ export const createOrder = async (req, res) => {
 export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params
-    const { customerName, supplierName, address, ...rest } = req.body;
+    const { customerName, supplierName, address, adminId, ...rest } = req.body;
 
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
@@ -170,6 +170,11 @@ export const updateOrder = async (req, res) => {
       ...(supplierName && {
         supplier: {
           connect: { companyName: supplierName },
+        },
+      }),
+      ...(adminId && {
+        admin: {
+          connect: { id: adminId },
         },
       }),
     };
@@ -291,6 +296,8 @@ export const createOrders = async (req,res) => {
       "workAmount",
       "advancePayment",
       "dipositRecovery",
+      "Customer",
+      "supplier",
       "iva",
       "withholdingAmount",
     ];
