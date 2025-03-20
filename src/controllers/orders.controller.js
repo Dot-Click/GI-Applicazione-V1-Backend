@@ -172,11 +172,6 @@ export const updateOrder = async (req, res) => {
           connect: { companyName: supplierName },
         },
       }),
-      ...(adminId && {
-        admin: {
-          connect: { id: adminId },
-        },
-      }),
     };
     const order = await prisma.order.update({
       where: { id },
