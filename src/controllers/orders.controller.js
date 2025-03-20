@@ -108,8 +108,7 @@ export const createOrder = async (req, res) => {
 export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { customerName, supplierName, address, adminId,code, ...rest } = req.body;
-    if(code !== undefined) return res.status(400).json({message:"can't update code"})
+    const { customerName, supplierName, address, adminId, ...rest } = req.body;
     const expectedFields = new Set([
       "code",
       "description",
