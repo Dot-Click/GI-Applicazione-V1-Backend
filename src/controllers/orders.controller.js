@@ -133,6 +133,7 @@ export const updateOrder = async (req, res) => {
     }
     let upd_data = {
       ...rest,
+      address,
       ...(address && location && { lat: String(location.lat), lng: String(location.lng) }),
     };
     const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
