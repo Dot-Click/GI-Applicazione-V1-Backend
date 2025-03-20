@@ -108,8 +108,38 @@ export const createOrder = async (req, res) => {
 export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { customerName, supplierName, address, adminId, ...rest } = req.body;
+    const { customerName, supplierName, address, adminId,code, ...rest } = req.body;
+    if(code !== undefined) return res.status(400).json({message:"can't update code"})
+    const expectedFields = new Set([
+      "code",
+      "description",
+      "startDate",
+      "endDate",
+      "address",
+      "cig",
+      "cup",
+      "siteManager",
+      "orderManager",
+      "technicalManager",
+      "cnceCode",
+      "workAmount",
+      "advancePayment",
+      "dipositRecovery",
+      "customerName",
+      "supplierName",
+      "iva",
+      "withholdingAmount",
+      "isPublic",
+      "archived"
+    ]);
+    const bodyFields = Object.keys(req.body);
+  const invalidFields = bodyFields.filter(field => !expectedFields.has(field));
 
+  if (invalidFields.length > 0) {
+    return res.status(400).json({
+      message: `Invalid field(s) found: ${invalidFields.join(", ")}`
+    });
+  }
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
     let location = null;
@@ -300,8 +330,8 @@ export const createOrders = async (req,res) => {
       "workAmount",
       "advancePayment",
       "dipositRecovery",
-      "Customer",
-      "supplier",
+      "customerName",
+      "supplierName",
       "iva",
       "withholdingAmount",
     ];
@@ -486,6 +516,8 @@ export const updateOrderSequence = async (req, res) => {
       "workAmount",
       "advancePayment",
       "dipositRecovery",
+      "customerName",
+      "supplierName",
       "isPublic",
       "iva",
       "cup",
