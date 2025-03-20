@@ -328,7 +328,7 @@ export const getCustomer = async (req, res) => {
       state: orderStateMap[order.state] || order.state,
       customerName: order.Customer?.companyName || null,
       supplierName: order.supplier?.companyName || null,
-    }));
+    })).map(({ Customer, supplier, ...rest }) => rest);
     return res
       .status(200)
       .json({

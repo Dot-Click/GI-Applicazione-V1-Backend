@@ -53,7 +53,7 @@ export const getSupplier = async (req, res) => {
       state: orderStateMap[order.state] || order.state,
       customerName: order.Customer?.companyName || null,
       supplierName: order.supplier?.companyName || null,
-    }));
+    })).map(({ Customer, supplier, ...rest }) => rest);
     return res.status(200).json({ message: "supplier fetched", data: {...supp, orders: suppOrders} });
   } catch (error) {
     return res.status(500).json({ message: error.message });
