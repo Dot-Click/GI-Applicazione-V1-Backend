@@ -48,7 +48,7 @@ export const getSupplier = async (req, res) => {
     if (!supp.orders.length) {
       return res.status(200).json({ message: "No current orders", data: supp });
     }
-    const suppOrders = cust.orders.map((order) => ({
+    const suppOrders = supp.orders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
       customerName: order.Customer?.companyName || null,
