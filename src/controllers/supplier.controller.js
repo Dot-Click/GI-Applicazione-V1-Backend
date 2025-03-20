@@ -1,6 +1,13 @@
 import prisma from "../../prisma/prisma.js";
 import bcrypt from "bcrypt";
 
+const orderStateMap = {
+  ON_HOLD: "In attesa",
+  IN_PROGRESS: "In corso",
+  CANCELLED: "Cancellato",
+  COMPLETED: "Completato",
+};
+
 export const getAllSuppliers = async (req, res) => {
   try {
     const { id } = req.user;
@@ -31,6 +38,14 @@ export const getSupplier = async (req, res) => {
       omit: { password: true },
     });
     if (!supp) return res.status(404).json({ message: "supplier not found" });
+    if (!supp.orders.length) {
+      return res.status(200).json({ message: "No current orders", data: supp });
+    }
+    supp.orders =  supp.orders
+    .map((order) => ({
+   ...order,
+   state: orderStateMap[order.state] || order.state,
+    }));
     return res.status(200).json({ message: "supplier fetched", data: supp });
   } catch (error) {
     return res.status(500).json({ message: error.message });

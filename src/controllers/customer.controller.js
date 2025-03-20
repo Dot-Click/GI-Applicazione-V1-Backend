@@ -3,6 +3,12 @@ import prisma from "../../prisma/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+const orderStateMap = {
+  ON_HOLD: "In attesa",
+  IN_PROGRESS: "In corso",
+  CANCELLED: "Cancellato",
+  COMPLETED: "Completato",
+};
 export const signup = async (req, res) => {
   try {
     const { id } = req.user;
@@ -308,6 +314,14 @@ export const getCustomer = async (req, res) => {
       omit: { password: true },
     });
     if (!cust) return res.status(404).json({ message: "not found" });
+    if (!cust.orders.length) {
+      return res.status(200).json({ message: "No current orders", data: cust });
+    }
+    cust.orders =  cust.orders
+    .map((order) => ({
+   ...order,
+   state: orderStateMap[order.state] || order.state,
+    }));
     return res
       .status(200)
       .json({ message: "sucessfully get a user", data: cust });
