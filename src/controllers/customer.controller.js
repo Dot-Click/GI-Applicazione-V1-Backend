@@ -64,14 +64,14 @@ export const createCust = async (req, res) => {
     const missingField = requiredFields.find((field) => !req.body[field]);
     if (missingField) {
       return res
-      .status(400)
-      .json({ message: `Missing required field: ${missingField}` });
+        .status(400)
+        .json({ message: `Missing required field: ${missingField}` });
     }
     const ifExist = await prisma.customer.findUnique({ where: { email } });
     if (ifExist) {
       return res.status(409).json({ message: "Customer already exists" });
     }
-    
+
     let count = Math.round(Math.random() * 100);
     const randomPass = `customer${count}`;
     customerData.password = await bcrypt.hash(randomPass, 10);
@@ -265,12 +265,12 @@ export const updateCustSequence = async (req, res) => {
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),
       ...visibleColArray.filter((field) => !reqOrdval.includes(field)),
     ];
-    
+
     if (invalidFields.length > 0) {
       return res
         .status(422)
         .json({ error: `Invalid fields found: ${invalidFields.join(", ")}` });
-    } 
+    }
     await prisma.custSequence.upsert({
       where: { adminId: id },
       update: {
@@ -309,21 +309,32 @@ export const getCustomer = async (req, res) => {
     const { id } = req.params;
     const cust = await prisma.customer.findUnique({
       where: { id },
-      include:{orders: true},
+      include: {
+        orders: {
+          include: {
+            Customer: true,
+            supplier: true,
+          },
+        },
+      },
       omit: { password: true },
     });
     if (!cust) return res.status(404).json({ message: "not found" });
     if (!cust.orders.length) {
       return res.status(200).json({ message: "No current orders", data: cust });
     }
-    cust.orders =  cust.orders
-    .map((order) => ({
-   ...order,
-   state: orderStateMap[order.state] || order.state,
+    const custOrders = cust.orders.map((order) => ({
+      ...order,
+      state: orderStateMap[order.state] || order.state,
+      customerName: order.Customer?.companyName || null,
+      supplierName: order.supplier?.companyName || null,
     }));
     return res
       .status(200)
-      .json({ message: "sucessfully get a user", data: cust });
+      .json({
+        message: "sucessfully get a user",
+        data: { ...cust, orders: custOrders },
+      });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

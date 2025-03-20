@@ -34,19 +34,27 @@ export const getSupplier = async (req, res) => {
     if (!id) return res.status(400).json({ message: "id not found" });
     const supp = await prisma.supplier.findUnique({
       where: { id },
-      include: {orders: true},
+      include: {
+        orders: {
+          include: {
+            Customer: true,
+            supplier: true,
+          },
+        },
+      },
       omit: { password: true },
     });
     if (!supp) return res.status(404).json({ message: "supplier not found" });
     if (!supp.orders.length) {
       return res.status(200).json({ message: "No current orders", data: supp });
     }
-    supp.orders =  supp.orders
-    .map((order) => ({
-   ...order,
-   state: orderStateMap[order.state] || order.state,
+    const suppOrders = cust.orders.map((order) => ({
+      ...order,
+      state: orderStateMap[order.state] || order.state,
+      customerName: order.Customer?.companyName || null,
+      supplierName: order.supplier?.companyName || null,
     }));
-    return res.status(200).json({ message: "supplier fetched", data: supp });
+    return res.status(200).json({ message: "supplier fetched", data: {...supp, orders: suppOrders} });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
