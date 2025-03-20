@@ -154,7 +154,12 @@ export const updateOrder = async (req, res) => {
         upd_data[field] = uploadedFiles[field]?.secure_url;
       }
     });
-
+    const orderStateMap = {
+      ON_HOLD: "In attesa",
+      IN_PROGRESS: "In corso",
+      CANCELLED: "Cancellato",
+      COMPLETATO: "Completato",
+    };
     const updateData = {
       ...upd_data,
       ...(customerName && {
@@ -167,11 +172,6 @@ export const updateOrder = async (req, res) => {
           connect: { companyName: supplierName },
         },
       }),
-      ...(req.user?.id && {
-        admin: {
-          connect: { id: req.user.id },
-        },
-      }),
     };
     const order = await prisma.order.update({
       where: { id },
@@ -180,7 +180,7 @@ export const updateOrder = async (req, res) => {
 
     return res
       .status(200)
-      .json({ data: order, message: "Order updated successfully." });
+      .json({ data: {...order, state: orderStateMap[order.state] || order.state}, message: "Order updated successfully." });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
