@@ -373,8 +373,7 @@ export const createOrders = async (req, res) => {
       data: orders.map((order) => ({ ...order, adminId: id })),
       skipDuplicates: true,
     });
-    if (!multipleOrder.count)
-      return res.status(400).json({ message: "CSV contain duplicate orders" });
+    
     return res
       .status(200)
       .json({ message: `orders added: ${multipleOrder.count}` });

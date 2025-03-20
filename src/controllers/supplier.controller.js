@@ -80,7 +80,6 @@ export const createSupps = async (req,res) => {
       });
     }
     const multiplesupplier = await prisma.supplier.createMany({data: suppliers.map(supplier => ({ ...supplier, adminId: id })), skipDuplicates: true})
-    if(!multiplesupplier.count) return res.status(400).json({message:"Can't create duplicate suppliers"})
     return res.status(200).json({message:`suppliers added: ${multiplesupplier.count}`})
   } catch (error) {
     return res.status(500).json({message: error.message})
