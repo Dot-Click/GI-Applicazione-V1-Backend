@@ -107,8 +107,8 @@ export const createOrder = async (req, res) => {
 
 export const updateOrder = async (req, res) => {
   try {
-    const { id } = req.params
-    const { customerName, supplierName, address,adminId, ...rest } = req.body;
+    const { id } = req.params;
+    const { customerName, supplierName, address, adminId, ...rest } = req.body;
 
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
@@ -162,16 +162,21 @@ export const updateOrder = async (req, res) => {
     };
     const updateData = {
       ...upd_data,
-      ...(customerName && {
-        Customer: {
-          connect: { companyName: customerName },
-        },
-      }),
-      ...(supplierName && {
-        supplier: {
-          connect: { companyName: supplierName },
-        },
-      }),
+      ...(customerName
+        ? {
+            Customer: {
+              connect: { companyName: customerName },
+            },
+          }
+        : {}),
+
+      ...(supplierName
+        ? {
+            supplier: {
+              connect: { companyName: supplierName },
+            },
+          }
+        : {}),
     };
     const order = await prisma.order.update({
       where: { id },
@@ -180,7 +185,11 @@ export const updateOrder = async (req, res) => {
 
     return res
       .status(200)
-      .json({ data: {...order, state: orderStateMap[order.state] || order.state}, message: "Order updated successfully." });
+      .json({
+        data: { ...order, state: orderStateMap[order.state] || order.state },
+        message: "Order updated successfully.",
+      });
+
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
