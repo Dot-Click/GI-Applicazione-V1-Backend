@@ -319,6 +319,7 @@ export const createUnilav = async (req, res) => {
   try {
     const { eid } = req.params;
     const reqFields = ["healthEligibility", "expiryDate", "dataRilascio"];
+    const {expiryDate, dataRilascio} = req.body
     const missingField = reqFields.find((field) => !req.body[field]);
     if (missingField) {
       return res
@@ -327,8 +328,19 @@ export const createUnilav = async (req, res) => {
     }
 
     const file = await cloudinaryUploader(req.file.path);
+    const startDate = new Date(dataRilascio);
+    const endDate = new Date(expiryDate);
+
+    if (startDate > endDate) {
+      return res.status(400).json({
+        message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+      });
+    }
+    const validityDays = String(Math.ceil(
+      (new Date(expiryDate) - new Date(dataRilascio)) / (1000 * 60 * 60 * 24)
+    ));
     const unilav = await prisma.unilav.create({
-      data: { ...req.body, attachment: file?.secure_url, employeeId:eid },
+      data: { ...req.body, attachment: file?.secure_url, employeeId:eid,validityDays },
     });
     return res.status(200).json({ message: "created!", data: unilav });
   } catch (error) {
@@ -339,11 +351,32 @@ export const updUnilav = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "id is required" });
-    const file = await cloudinaryUploader(req.file?.path || null);
+
+    const { expiryDate, dataRilascio } = req.body;
+    let validityDays;
+    
+    if (expiryDate && dataRilascio) {
+      const startDate = new Date(dataRilascio);
+      const endDate = new Date(expiryDate);
+      if (startDate > endDate) {
+        return res.status(400).json({
+          message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+        });
+      }
+      validityDays = String(Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+    }
+
+    const file = req.file ? await cloudinaryUploader(req.file.path) : null;
+
     const upd = await prisma.unilav.update({
       where: { id },
-      data: { ...req.body, attachment: file?.secure_url },
+      data: { 
+        ...req.body, 
+        attachment: file ? file.secure_url : undefined, 
+        ...(validityDays !== undefined && { validityDays }) 
+      },
     });
+
     return res.status(200).json(upd);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -404,6 +437,7 @@ export const createSeritia = async (req, res) => {
   try {
     const { eid } = req.params;
     const reqFields = ["healthEligibility", "expiryDate", "dataRilascio"];
+    const {expiryDate, dataRilascio} = req.body
     const missingField = reqFields.find((field) => !req.body[field]);
     if (missingField) {
       return res
@@ -412,8 +446,19 @@ export const createSeritia = async (req, res) => {
     }
 
     const file = await cloudinaryUploader(req.file.path);
+    const startDate = new Date(dataRilascio);
+    const endDate = new Date(expiryDate);
+
+    if (startDate > endDate) {
+      return res.status(400).json({
+        message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+      });
+    }
+    const validityDays = String(Math.ceil(
+      (new Date(expiryDate) - new Date(dataRilascio)) / (1000 * 60 * 60 * 24)
+    ));
     const sertia = await prisma.seritia.create({
-      data: { ...req.body, attachment: file?.secure_url, employeeId:eid },
+      data: { ...req.body, attachment: file?.secure_url, employeeId:eid, validityDays },
     });
     return res.status(200).json({ message: "created!", data: sertia });
   } catch (error) {
@@ -424,11 +469,32 @@ export const updSeritia = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "id is required" });
-    const file = await cloudinaryUploader(req.file?.path || null);
+
+    const { expiryDate, dataRilascio } = req.body;
+    let validityDays;
+
+    if (expiryDate && dataRilascio) {
+      const startDate = new Date(dataRilascio);
+      const endDate = new Date(expiryDate);
+      if (startDate > endDate) {
+        return res.status(400).json({
+          message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+        });
+      }
+      validityDays = String(Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+    }
+
+    const file = req.file ? await cloudinaryUploader(req.file.path) : null;
+
     const upd = await prisma.seritia.update({
       where: { id },
-      data: { ...req.body, attachment: file?.secure_url },
+      data: { 
+        ...req.body, 
+        attachment: file ? file.secure_url : undefined, 
+        ...(validityDays !== undefined && { validityDays }) 
+      },
     });
+
     return res.status(200).json(upd);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -489,6 +555,7 @@ export const createFormazone = async (req, res) => {
   try {
     const { eid } = req.params;
     if(!eid) return res.status(400).json({message:"Bad Request"})
+      const {expiryDate, dataRilascio} = req.body
     const reqFields = ["training", "expiryDate", "dataRilascio"];
     const missingField = reqFields.find((field) => !req.body[field]);
     if (missingField) {
@@ -498,10 +565,21 @@ export const createFormazone = async (req, res) => {
     }
 
     const file = await cloudinaryUploader(req.file.path);
+    const startDate = new Date(dataRilascio);
+    const endDate = new Date(expiryDate);
+
+    if (startDate > endDate) {
+      return res.status(400).json({
+        message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+      });
+    }
+    const validityDays = String(Math.ceil(
+      (new Date(expiryDate) - new Date(dataRilascio)) / (1000 * 60 * 60 * 24)
+    ));
     const forma = await prisma.formazone.create({
-      data: { ...req.body, attachment: file?.secure_url, employeeId: eid },
+      data: { ...req.body, attachment: file?.secure_url, employeeId: eid, validityDays },
     });
-    return res.status(200).json({ message: "created!", data: forma });
+    return res.status(200).json({ message: "created!", data:forma });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -510,10 +588,30 @@ export const updateFormazone = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "id is required" });
-    const file = await cloudinaryUploader(req.file?.path || null);
+
+    const { expiryDate, dataRilascio } = req.body;
+    let validityDays;
+
+    if (expiryDate && dataRilascio) {
+      const startDate = new Date(dataRilascio);
+      const endDate = new Date(expiryDate);
+      if (startDate > endDate) {
+        return res.status(400).json({
+          message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+        });
+      }
+      validityDays = String(Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+    }
+
+    const file = req.file ? await cloudinaryUploader(req.file.path) : null;
+
     const upd = await prisma.formazone.update({
       where: { id },
-      data: { ...req.body, attachment: file?.secure_url },
+      data: { 
+        ...req.body, 
+        attachment: file ? file.secure_url : undefined, 
+        ...(validityDays !== undefined && { validityDays }) 
+      },
     });
     return res.status(200).json(upd);
   } catch (error) {
