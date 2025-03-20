@@ -138,6 +138,10 @@ export const getAdminInfo = async (req, res) => {
           },
           where:{
             archieved:"false"
+          },
+          include:{
+            Customer: {select:{companyName:true}},
+            supplier: {select:{companyName:true}},
           }
         },
         suppliers: {

@@ -70,7 +70,7 @@ export const createOrder = async (req, res) => {
       ON_HOLD: "In attesa",
       IN_PROGRESS: "In corso",
       CANCELLED: "Cancellato",
-      COMPLETED: "Completato",
+      COMPLETATO: "Completato",
     };
     const order = await prisma.order.create({
       data: {

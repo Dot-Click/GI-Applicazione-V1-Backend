@@ -5,7 +5,7 @@ const orderStateMap = {
   ON_HOLD: "In attesa",
   IN_PROGRESS: "In corso",
   CANCELLED: "Cancellato",
-  COMPLETED: "Completato",
+  COMPLETATO: "Completato",
 };
 
 export const getAllSuppliers = async (req, res) => {
