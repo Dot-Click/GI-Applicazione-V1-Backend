@@ -10,12 +10,12 @@ const EmpRoles= {
 
 export const createEmployee = async (req, res) => {
   try {
+    const {telephone} = req.body
     const reqFields = [
       "name",
       "surname",
       "nameAndsurname",
       "taxId",
-      "telephone",
       "contractorNo",
       "sector",
       "startDate",
@@ -23,7 +23,7 @@ export const createEmployee = async (req, res) => {
       "municipalityOfBirth",
       "level",
       "qualification",
-      "number",
+      "telephone",
       "address",
       "role",
       "email",
@@ -50,7 +50,7 @@ export const createEmployee = async (req, res) => {
       });
     }
     const emp = await prisma.employee.create({
-      data: { ...req.body, adminId: id, password: hash },
+      data: { ...req.body, adminId: id, password: hash,number: telephone },
       omit: { password: true },
     });
     return res.status(200).json({
@@ -159,7 +159,6 @@ export const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
     const {email} = req.body
-    if(email) return res.status(400).json({message:"Email is not editable"})
     const emp = await prisma.employee.update({
       where: { id },
       data: { ...req.body },
@@ -359,9 +358,14 @@ export const getUnilav = async (req, res) => {
     const data = await prisma.unilav.findMany({
       skip: (page - 1) * 1,
       take: 1,
+      include:{Employee: {select: {name: true}}},
       where:{employeeId: eid}
     });
-    return res.status(200).json(data);
+    const modifiedData = data.map(({ Employee, ...rest }) => ({
+      ...rest,
+      name: Employee?.name || null ,
+    }));
+    return res.status(200).json(modifiedData);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -439,9 +443,14 @@ export const getSeritia = async (req, res) => {
     const data = await prisma.seritia.findMany({
       skip: (page - 1) * 1,
       take: 1,
+      include:{Employee: {select: {name: true}}},
       where:{employeeId: eid}
     });
-    return res.status(200).json(data);
+    const modifiedData = data.map(({ Employee, ...rest }) => ({
+      ...rest,
+      name: Employee?.name || null ,
+    }));
+    return res.status(200).json(modifiedData);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -520,9 +529,14 @@ export const getFormazone = async (req, res) => {
     const data = await prisma.formazone.findMany({
       skip: (page - 1) * 4,
       take: 4,
+      include:{Employee: {select: {name: true}}},
       where:{employeeId: eid}
     });
-    return res.status(200).json(data);
+    const modifiedData = data.map(({ Employee, ...rest }) => ({
+      ...rest,
+      name: Employee?.name || null ,
+    }));
+    return res.status(200).json(modifiedData);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

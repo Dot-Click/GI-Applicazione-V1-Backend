@@ -150,6 +150,7 @@ export const createCusts = async (req,res) => {
       });
     }
     const multiplecustomer = await prisma.customer.createMany({data: customers.map(customer => ({ ...customer, adminId: id })), skipDuplicates: true})
+    if(!multiplecustomer.count) return res.status(400).json({message:"Customers was already existes"})
     return res.status(200).json({message:`customers added: ${multiplecustomer.count}`})
   } catch (error) {
     return res.status(500).json({message: error.message})
