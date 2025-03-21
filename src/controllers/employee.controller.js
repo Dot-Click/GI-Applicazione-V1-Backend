@@ -3,11 +3,15 @@ import { cloudinaryUploader } from "../lib/utils.js";
 import bcrypt from "bcrypt";
 
 const EmpRoles= {
-  Technical_Manager : 'Technical_Manager',
-  Order_Manager : 'Order_Manager',
-  Construction_Manager : 'Construction_Manager',
+  Technical_Manager : 'Technical Manager',
+  Order_Manager : 'Order Manager',
+  Construction_Manager : 'Construction Manager',
 }
-
+const EmpDBRoles = {
+  'Technical Manager': 'Technical_Manager',
+  'Order Manager': 'Order_Manager',
+  'Construction Manager': 'Construction_Manager',
+};
 export const createEmployee = async (req, res) => {
   try {
     const {telephone} = req.body
@@ -44,9 +48,9 @@ export const createEmployee = async (req, res) => {
     const randomPass = `employee${count}`;
     const hash = await bcrypt.hash(randomPass, 10);
 
-    if (!Object.values(EmpRoles).includes(req.body.role)) {
+    if (!Object.values(EmpDBRoles).includes(req.body.role)) {
       return res.status(400).json({
-        message: `Invalid role. Valid roles are: ${Object.values(EmpRoles).join(', ')}`,
+        message: `Invalid role. Valid roles are: ${Object.values(EmpDBRoles).join(', ')}`,
       });
     }
     const emp = await prisma.employee.create({
@@ -74,7 +78,10 @@ export const getAllEmployee = async (req, res) => {
       skip: (page - 1) * 10,
       take: 10,
     });
-
+    employees.map((emp)=>({
+      ...emp,
+      role: EmpRoles[emp.role] || emp.role,
+    }))
     return res.status(200).json({
       data: employees,
       page,
@@ -100,7 +107,7 @@ export const getEmployee = async (req, res) => {
     if (!emp) {
       return res.status(200).json({ message: "employee not found" });
     }
-    return res.status(200).json({ message: "employee fetched", data: emp });
+    return res.status(200).json({ message: "employee fetched", data: {...emp, role: EmpRoles[emp.role] || emp.role, } });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -138,15 +145,17 @@ export const createEmployees = async (req,res) => {
       });
     }
    
-    const invalidRoleEmployee = employees.find((employee) =>
-      !Object.values(EmpRoles).includes(employee.role)
-    );
+    const invalidRoleEmployee = employees.find((employee) => {
+      const dbRole = EmpDBRoles[employee.role];
+      return !dbRole;
+    });
+    
     if (invalidRoleEmployee) {
       return res.status(400).json({
         message: `Invalid role for employee: ${invalidRoleEmployee.nameAndsurname}. Valid roles are: ${Object.values(EmpRoles).join(', ')}`,
       });
     }
-    const multipleemployee = await prisma.employee.createMany({data: employees.map(employee => ({ ...employee, adminId: id, number: employee.telephone })), skipDuplicates: true})
+    const multipleemployee = await prisma.employee.createMany({data: employees.map(employee => ({ ...employee, adminId: id, number: employee.telephone, role: dbRole })), skipDuplicates: true})
     if(!multipleemployee.count) return res.status(400).json({message:"Can't create duplicate employees"})
     return res.status(200).json({message:`employees added: ${multipleemployee.count}`})
   } catch (error) {

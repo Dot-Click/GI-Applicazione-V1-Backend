@@ -248,6 +248,14 @@ export const updateCustSequence = async (req, res) => {
     }
     if (!Array.isArray(addedColArray) || !Array.isArray(visibleColArray))
       return res.status(406).json({ error: "Invalid type" });
+    if (
+      (addedColArray && !visibleColArray) ||
+      (!addedColArray && visibleColArray)
+    ) {
+      return res.status(400).json({
+        error: "addedColArray and visibleColArray must be provided together.",
+      });
+    }
     const reqOrdval = [
       "nation",
       "companyName",
