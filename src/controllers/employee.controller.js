@@ -144,9 +144,9 @@ export const createEmployees = async (req,res) => {
         message: `An employee is missing required fields: ${missingFields.join(", ")}`,
       });
     }
-   
+    let dbRole;
     const invalidRoleEmployee = employees.find((employee) => {
-      const dbRole = EmpDBRoles[employee.role];
+      dbRole = EmpDBRoles[employee.role];
       return !dbRole;
     });
     
