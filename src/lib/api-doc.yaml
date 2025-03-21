@@ -352,6 +352,38 @@ paths:
                               type: string
                               example: "2025-02-11 22:19:34.99"
 
+  /api/auth/logout:
+    post:
+      summary: Logout the authenticated admin user.
+      tags:
+        - Authentication
+      description: |
+        This endpoint logs out the authenticated admin user by clearing the `token` and `refreshToken` cookies.
+        The cookies are cleared with specific attributes (`httpOnly`, `secure`, and `sameSite: "none"`) for security.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful logout.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "logout successfull"
+        '401':
+          description: Unauthorized. Authentication failed or user is not authorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
   # Verification
   /api/auth/verify-email:
     post:
@@ -914,6 +946,86 @@ paths:
           schema:
             type: string
             example: "Bearer <token>"
+
+  /api/order/getUsers:
+    get:
+      summary: Retrieve associated users for the authenticated admin.
+      tags:
+        - Order
+      description: |
+        This endpoint retrieves the associated clients, suppliers, and employees for the authenticated admin user.
+        The employees are categorized by their roles (Technical_Manager, Construction_Manager, Order_Manager).
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful retrieval of associated users.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        companyName:
+                          type: string
+                  suppliers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        companyName:
+                          type: string
+                  employees:
+                    type: object
+                    properties:
+                      Technical_Manager:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            role:
+                              type: string
+                            surname:
+                              type: string
+                      Construction_Manager:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            role:
+                              type: string
+                            surname:
+                              type: string
+                      Order_Manager:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            role:
+                              type: string
+                            surname:
+                              type: string
+        '401':
+          description: Unauthorized. Authentication failed or user is not authorized.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
 
   /api/order/{id}:
     get:
