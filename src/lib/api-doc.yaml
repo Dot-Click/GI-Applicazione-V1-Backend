@@ -1766,6 +1766,8 @@ paths:
               required:
                 - addedColArray
                 - visibleColArray
+                - archiveAddedColArray
+                - archiveVisibleColArray
               properties:
                 addedColArray:
                   type: array
@@ -2262,6 +2264,8 @@ paths:
   /api/customer/createMany:
     post:
       summary: Create Multiple Customers
+      tags:
+        - Customer
       description: Adds multiple customers under the authenticated admin while ensuring all required fields are present.
       security:
         - BearerAuth: []
@@ -3209,6 +3213,8 @@ paths:
   /api/supplier/createMany:
     post:
       summary: Create Multiple Suppliers
+      tags: 
+        - Supplier
       description: Adds multiple suppliers under the authenticated admin while ensuring all required fields are present.
       security:
         - BearerAuth: []
@@ -4065,6 +4071,8 @@ paths:
   /api/employee/createMany:
     post:
       summary: Create Multiple Employees
+      tags:
+        - Employee 
       description: Adds multiple employees under the authenticated admin while ensuring all required fields are present and roles are valid.
       security:
         - BearerAuth: []
@@ -4503,6 +4511,8 @@ paths:
               required:
                 - addedColArray
                 - visibleColArray
+                - archiveAddedColArray
+                - archiveVisibleColArray
               properties:
                 addedColArray:
                   type: array

@@ -30,6 +30,7 @@ model Admin {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
+
 model Order {
   id                       String      @id @default(uuid())
   code                     String      @unique
@@ -59,7 +60,7 @@ model Order {
   cup                      String
   iva                      String
   dipositRecovery          String
-  employee                 Employee?    @relation(fields: [employeeId], references: [id])
+  employee                 Employee?   @relation(fields: [employeeId], references: [id])
   employeeId               String?
   vat                      String?
   jobName                  String?
@@ -132,7 +133,7 @@ model Supplier {
   email       String   @unique //ref to supplierEmail in order table
   name        String?
   password    String?
-  companyName String    @unique
+  companyName String   @unique
   vat         String
   taxId       String
   // ateco       String?
@@ -193,15 +194,17 @@ model Employee {
 }
 
 model empSequence {
-  id                String   @id @default(uuid())
-  added_col_array   String[]
-  visible_col_array String[]
-  admin             Admin?   @relation(fields: [adminId], references: [id])
-  adminId           String?  @unique
+  id                        String   @id @default(uuid())
+  added_col_array           String[]
+  visible_col_array         String[]
+  archive_added_col_array   String[]
+  archive_visible_col_array String[]
+  admin                     Admin?   @relation(fields: [adminId], references: [id])
+  adminId                   String?  @unique
 }
 
 model Unilav {
-  id                String    @id @default(uuid())
+  id                String        @id @default(uuid())
   name              String?
   status            Status?       @default(active)
   state             SectionState? @default(Valido)
@@ -210,42 +213,42 @@ model Unilav {
   expiryDate        String
   dataRilascio      String
   validityDays      String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  Employee          Employee? @relation(fields: [employeeId], references: [id])
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  Employee          Employee?     @relation(fields: [employeeId], references: [id])
   employeeId        String?
 }
 
 model Seritia {
-  id                String    @id @default(uuid())
+  id                String        @id @default(uuid())
   name              String?
-  status            Status?   @default(active)
+  status            Status?       @default(active)
   state             SectionState? @default(Valido)
   attachment        String
   healthEligibility String
   expiryDate        String
   dataRilascio      String
-  Employee          Employee? @relation(fields: [employeeId], references: [id])
+  Employee          Employee?     @relation(fields: [employeeId], references: [id])
   employeeId        String?
   validityDays      String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 model Formazone {
-  id           String    @id @default(uuid())
+  id           String        @id @default(uuid())
   name         String?
-  status       Status?   @default(active)
+  status       Status?       @default(active)
   state        SectionState? @default(Valido)
   attachment   String
   training     String
   expiryDate   String
   dataRilascio String
-  Employee     Employee? @relation(fields: [employeeId], references: [id])
+  Employee     Employee?     @relation(fields: [employeeId], references: [id])
   employeeId   String?
   validityDays String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 enum OrderState {
