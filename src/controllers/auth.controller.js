@@ -134,11 +134,12 @@ export const getAdminInfo = async (req, res) => {
       include: {
         orders: {
           orderBy: {
-            createdAt: "desc",
+            createdAt: "desc"
           },
           where: {
             archieved: "false"
           },
+          take: 10,
           include: {
             Customer: { select: { companyName: true } },
             supplier: { select: { companyName: true } },
@@ -146,18 +147,25 @@ export const getAdminInfo = async (req, res) => {
         },
         suppliers: {
           orderBy: {
-            updatedAt: "desc",
+            createdAt: "desc",
           },
+          omit: { password: true },
+          take: 10,
         },
         clients: {
-          orderBy: {
-            updatedAt: "desc",
-          },
+          orderBy: [
+            { createdAt: "desc" },
+            { id: "asc" },
+          ],
+          omit: { password: true },
+          take: 10,
         },
         employees: {
           orderBy: {
-            updatedAt: "desc",
+            createdAt: "desc",
           },
+          omit: { password: true },
+          take: 10,
           where: {
             archieved: "false"
           }
