@@ -2259,6 +2259,98 @@ paths:
                     type: string
                     example: "Internal server error"
 
+  /api/customer/createMany:
+    post:
+      summary: Create Multiple Customers
+      description: Adds multiple customers under the authenticated admin while ensuring all required fields are present.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      companyName:
+                        type: string
+                      vat:
+                        type: string
+                      taxId:
+                        type: string
+                      nation:
+                        type: string
+                      province:
+                        type: string
+                      common:
+                        type: string
+                      cap:
+                        type: string
+                      address:
+                        type: string
+                      pec:
+                        type: string
+                      email:
+                        type: string
+                        format: email
+                      telephone:
+                        type: string
+                  example:
+                    - companyName: "Tech Corp"
+                      vat: "VAT12345"
+                      taxId: "TAX98765"
+                      nation: "USA"
+                      province: "California"
+                      common: "Los Angeles"
+                      cap: "90001"
+                      address: "123 Silicon Valley, CA"
+                      pec: "techcorp@pec.com"
+                      email: "contact@techcorp.com"
+                      telephone: "+1234567890"
+      responses:
+        200:
+          description: Customers successfully added.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "customers added: 5"
+        400:
+          description: Bad request due to missing fields or duplicate customers.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "A customer is missing required fields: taxId, telephone"
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
   /api/customer/update/{id}:
     patch:
       summary: Update customer details
@@ -3114,6 +3206,99 @@ paths:
                     type: string
                     example: "Internal server error"
 
+  /api/supplier/createMany:
+    post:
+      summary: Create Multiple Suppliers
+      description: Adds multiple suppliers under the authenticated admin while ensuring all required fields are present.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                suppliers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      companyName:
+                        type: string
+                      vat:
+                        type: string
+                      taxId:
+                        type: string
+                      nation:
+                        type: string
+                      province:
+                        type: string
+                      common:
+                        type: string
+                      cap:
+                        type: string
+                      address:
+                        type: string
+                      pec:
+                        type: string
+                      email:
+                        type: string
+                        format: email
+                      telephone:
+                        type: string
+                  example:
+                    - companyName: "Supplier Corp"
+                      vat: "VAT67890"
+                      taxId: "TAX54321"
+                      nation: "USA"
+                      province: "New York"
+                      common: "Brooklyn"
+                      cap: "11201"
+                      address: "456 Supply Street, NY"
+                      pec: "suppliercorp@pec.com"
+                      email: "contact@suppliercorp.com"
+                      telephone: "+1987654321"
+      responses:
+        200:
+          description: Suppliers successfully added.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "suppliers added: 5"
+        400:
+          description: Bad request due to missing fields or duplicate suppliers.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "A supplier is missing required fields: taxId, telephone"
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+
   /api/supplier/{id}:
     get:
       summary: Get a specific supplier by ID
@@ -3876,6 +4061,225 @@ paths:
                   message:
                     type: string
                     example: "Internal server error"
+
+  /api/employee/createMany:
+    post:
+      summary: Create Multiple Employees
+      description: Adds multiple employees under the authenticated admin while ensuring all required fields are present and roles are valid.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employees:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      surname:
+                        type: string
+                      nameAndsurname:
+                        type: string
+                      taxId:
+                        type: string
+                      telephone:
+                        type: string
+                      contractorNo:
+                        type: string
+                      sector:
+                        type: string
+                      startDate:
+                        type: string
+                        format: date
+                      endDate:
+                        type: string
+                        format: date
+                      municipalityOfBirth:
+                        type: string
+                      level:
+                        type: string
+                      qualification:
+                        type: string
+                      number:
+                        type: string
+                      address:
+                        type: string
+                      role:
+                        type: string
+                      email:
+                        type: string
+                        format: email
+                  example:
+                    - name: "John"
+                      surname: "Doe"
+                      nameAndsurname: "John Doe"
+                      taxId: "123456789"
+                      telephone: "+1234567890"
+                      contractorNo: "CN-001"
+                      sector: "IT"
+                      startDate: "2025-01-01"
+                      endDate: "2026-01-01"
+                      municipalityOfBirth: "New York"
+                      level: "Senior"
+                      qualification: "Master's Degree"
+                      number: "987654321"
+                      address: "123 Main St, NY"
+                      role: "Developer"
+                      email: "johndoe@example.com"
+      responses:
+        200:
+          description: Employees successfully added.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "employees added: 5"
+        400:
+          description: Bad request due to missing fields, invalid role, or duplicate employees.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "An employee is missing required fields: taxId, telephone"
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/archieve:
+    get:
+      summary: Get Archived Employees
+      description: Retrieves a paginated list of archived employees for the authenticated admin.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication.
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+          description: The page number for paginated results (default is 1).
+      responses:
+        200:
+          description: Successfully retrieved archived employees.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                    example: [ { "id": "123", "name": "John Doe", "archieved": "true" } ]
+                  message:
+                    type: string
+                    example: "found"
+        404:
+          description: No archived employees found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No archived employees"
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+  /api/employee/archieve/{id}:
+     patch:
+        summary: Archive or Unarchive an Employee
+        description: Toggles the archived status of an employee by their ID.
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+            description: The unique identifier of the employee.
+        responses:
+          200:
+            description: Employee archived or unarchived successfully.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "'Employee archieved!' or 'Employee unarchieved!'"
+          400:
+            description: Bad request if ID is missing.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Bad request"
+          404:
+            description: Employee not found.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Employee not found"
+          500:
+            description: Internal server error.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Internal server error"
 
   /api/employee/update/{id}:
     patch:
