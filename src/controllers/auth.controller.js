@@ -134,7 +134,7 @@ export const getAdminInfo = async (req, res) => {
       include: {
         orders: {
           orderBy: {
-            updatedAt: "desc",
+            createdAt: "desc",
           },
           where: {
             archieved: "false"
