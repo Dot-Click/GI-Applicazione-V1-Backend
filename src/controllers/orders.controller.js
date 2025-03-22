@@ -325,10 +325,12 @@ export const createOrders = async (req, res) => {
 
     const createdOrders = [];
     for (const order of orders) {
-      const { customerName, supplierName, ...orderData } = order;
+      const { customerName, supplierName,startDate,endDate, ...orderData } = order;
       const createdOrder = await prisma.order.create({
         data: {
           ...orderData,
+          startDate: String(startDate),
+          endDate: String(endDate),
           admin: { connect: { id } },
           Customer: { connect: { companyName: customerName } },
           supplier: { connect: { companyName: supplierName } },
