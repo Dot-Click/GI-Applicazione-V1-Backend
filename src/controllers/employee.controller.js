@@ -155,7 +155,7 @@ export const createEmployees = async (req,res) => {
         message: `Invalid role for employee: ${invalidRoleEmployee.nameAndsurname}. Valid roles are: ${Object.values(EmpRoles).join(', ')}`,
       });
     }
-    const multipleemployee = await prisma.employee.createMany({data: employees.map(employee => ({ ...employee, adminId: id, number: String(employee.telephone), role: dbRole, contractorNo: String(employee.contractorNo), level: String(employee.level), taxId: String(employee.taxId) })), skipDuplicates: true})
+    const multipleemployee = await prisma.employee.createMany({data: employees.map(employee => ({ ...employee, adminId: id, number: String(employee.telephone), telephone:String(employee.telephone), role: dbRole, contractorNo: String(employee.contractorNo), level: String(employee.level), taxId: String(employee.taxId) })), skipDuplicates: true})
     if(!multipleemployee.count) return res.status(400).json({message:"Can't create duplicate employees"})
     return res.status(200).json({message:`employees added: ${multipleemployee.count}`})
   } catch (error) {
