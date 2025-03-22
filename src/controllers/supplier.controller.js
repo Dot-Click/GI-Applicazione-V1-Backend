@@ -87,7 +87,7 @@ export const createSupps = async (req,res) => {
         message: `An supplier is missing required fields: ${missingFields.join(", ")}`,
       });
     }
-    const multiplesupplier = await prisma.supplier.createMany({data: suppliers.map(supplier => ({ ...supplier, adminId: id })), skipDuplicates: true})
+    const multiplesupplier = await prisma.supplier.createMany({data: suppliers.map(supplier => ({ ...supplier, adminId: id, taxId: String(supplier.taxId), cap: String(supplier.cap),vat: String(supplier.vat),telephone: String(supplier.telephone) })), skipDuplicates: true})
     if(!multiplesupplier.count)  return res.status(400).json({message:'Suppliers already exists'})
     return res.status(200).json({message:`suppliers added: ${multiplesupplier.count}`})
   } catch (error) {
