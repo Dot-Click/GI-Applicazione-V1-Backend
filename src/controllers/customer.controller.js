@@ -149,6 +149,18 @@ export const createCusts = async (req,res) => {
         message: `An customer is missing required fields: ${missingFields.join(", ")}`,
       });
     }
+    const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    const invalidCustomer = customers.find(({ telephone, email, pec }) => 
+        !telRegex.test(telephone) || !emailRegex.test(email) || !emailRegex.test(pec)
+    );
+    
+    if (invalidCustomer) {
+        return res.status(400).json({ 
+            message: `Invalid Fields found for ${invalidCustomer.companyName}` 
+        });
+    }
     const multiplecustomer = await prisma.customer.createMany({data: customers.map(customer => ({ ...customer, adminId: id })), skipDuplicates: true})
     if(!multiplecustomer.count) return res.status(400).json({message:"Customers already exists"})
     return res.status(200).json({message:`customers added: ${multiplecustomer.count}`})

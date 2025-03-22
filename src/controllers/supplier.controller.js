@@ -87,6 +87,18 @@ export const createSupps = async (req,res) => {
         message: `An supplier is missing required fields: ${missingFields.join(", ")}`,
       });
     }
+    const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    const invalidSupplier = suppliers.find(({ telephone, email, pec }) => 
+        !telRegex.test(telephone) || !emailRegex.test(email) || !emailRegex.test(pec)
+    );
+    
+    if (invalidSupplier) {
+        return res.status(400).json({ 
+            message: `Invalid Fields found for ${invalidSupplier.companyName}` 
+        });
+    }
     const multiplesupplier = await prisma.supplier.createMany({data: suppliers.map(supplier => ({ ...supplier, adminId: id, taxId: String(supplier.taxId), cap: String(supplier.cap),vat: String(supplier.vat),telephone: String(supplier.telephone) })), skipDuplicates: true})
     if(!multiplesupplier.count)  return res.status(400).json({message:'Suppliers already exists'})
     return res.status(200).json({message:`suppliers added: ${multiplesupplier.count}`})

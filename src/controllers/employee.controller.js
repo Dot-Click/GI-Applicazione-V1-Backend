@@ -155,7 +155,20 @@ export const createEmployees = async (req,res) => {
         message: `Invalid role for employee: ${invalidRoleEmployee.nameAndsurname}. Valid roles are: ${Object.values(EmpRoles).join(', ')}`,
       });
     }
-    const multipleemployee = await prisma.employee.createMany({data: employees.map(employee => ({ ...employee, adminId: id, number: String(employee.telephone), telephone:String(employee.telephone), role: dbRole, contractorNo: String(employee.contractorNo), level: String(employee.level), taxId: String(employee.taxId) })), skipDuplicates: true})
+    const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const format = '\d{4}-\d{2}-\d{2}'
+    
+    const invalidSupplier = suppliers.find(({ telephone, email, pec }) => 
+        !telRegex.test(telephone) || !emailRegex.test(email) || !emailRegex.test(pec) || !format.test(startDate) || !format.test(endDate)
+    );
+    
+    if (invalidSupplier) {
+        return res.status(400).json({ 
+            message: `Invalid Fields found for ${invalidSupplier.companyName}` 
+        });
+    }
+    const multipleemployee = await prisma.employee.createMany({data: employees.map(employee => ({ ...employee, adminId: id, number: String(employee.telephone), telephone:String(employee.telephone), role: dbRole, contractorNo: String(employee.contractorNo), level: String(employee.level), taxId: String(employee.taxId), startDate: String(employee.startDate), endDate: String(employee.endDate) })), skipDuplicates: true})
     if(!multipleemployee.count) return res.status(400).json({message:"Can't create duplicate employees"})
     return res.status(200).json({message:`employees added: ${multipleemployee.count}`})
   } catch (error) {
