@@ -311,41 +311,76 @@ export const createOrders = async (req, res) => {
       "iva",
       "withholdingAmount",
     ];
-    const invalidOrder = orders.find((order) =>
-      requiredFields.some((field) => !order[field])
-    );
+    const codeRegex = /^COM-\d{6}$/;
+
+    let invalidOrder = null;
+    let invalidCode = false;
+
+    for (const order of orders) {
+      const missingFields = requiredFields.filter((field) => !order[field]);
+
+      if (missingFields.length > 0) {
+        invalidOrder = order;
+        break;
+      }
+
+      if (!codeRegex.test(order.code)) {
+        invalidCode = order.code;
+        break;
+      }
+    }
+
     if (invalidOrder) {
-      const missingFields = requiredFields.filter(
-        (field) => !invalidOrder[field]
-      );
+      const missingFields = requiredFields.filter((field) => !invalidOrder[field]);
       return res.status(400).json({
         message: `An order is missing required fields: ${missingFields.join(", ")}`,
       });
     }
 
-    const createdOrders = [];
-    for (const order of orders) {
-      const { customerName, supplierName,startDate,endDate,dipositRecovery,advancePayment,workAmount,withholdingAmount,iva,  ...orderData } = order;
-      const createdOrder = await prisma.order.create({
-        data: {
-          ...orderData,
-          startDate: String(startDate),
-          endDate: String(endDate),
-          dipositRecovery: String(dipositRecovery),
-          advancePayment: String(advancePayment),
-          workAmount: String(workAmount),
-          withholdingAmount: String(withholdingAmount),
-          iva: String(iva),
-          admin: { connect: { id } },
-          Customer: { connect: { companyName: customerName } },
-          supplier: { connect: { companyName: supplierName } },
-        },
-      });
-
-      createdOrders.push(createdOrder);
+    if (invalidCode) {
+      return res.status(400).json({ message:  `Invalid order ${invalidCode}. Expected format: COM-{6 digits}` });
     }
 
-    return res.status(200).json({ message: `Orders added: ${createdOrders.length}` });
+    const orderCodes = orders.map((order) => order.code);
+    const existingOrders = await prisma.order.findMany({
+      where: {
+        code: { in: orderCodes },
+      },
+      select: { code: true },
+    });
+
+    const existingOrderCodes = existingOrders.map((order) => order.code);
+
+    const uniqueOrders = orders.filter(
+      (order) => !existingOrderCodes.includes(order.code)
+    );
+
+    const createdOrders = await Promise.all(
+      uniqueOrders.map(async (order) => {
+        const { customerName, supplierName, startDate, endDate, dipositRecovery, advancePayment, workAmount, withholdingAmount, iva, ...orderData } = order;
+
+        return await prisma.order.create({
+          data: {
+            ...orderData,
+            startDate: String(startDate),
+            endDate: String(endDate),
+            dipositRecovery: String(dipositRecovery),
+            advancePayment: String(advancePayment),
+            workAmount: String(workAmount),
+            withholdingAmount: String(withholdingAmount),
+            iva: String(iva),
+            admin: { connect: { id } },
+            Customer: { connect: { companyName: customerName } },
+            supplier: { connect: { companyName: supplierName } },
+          },
+        });
+      })
+    );
+
+    return res.status(200).json({
+      message: `Orders added: ${createdOrders.length}, Skipped duplicates: ${orders.length - uniqueOrders.length}`,
+      skippedOrders: existingOrderCodes,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
