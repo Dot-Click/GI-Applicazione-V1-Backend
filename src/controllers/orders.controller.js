@@ -319,19 +319,26 @@ export const createOrders = async (req, res) => {
         (field) => !invalidOrder[field]
       );
       return res.status(400).json({
-        message: `An order is missing required fields: ${missingFields.join(
-          ", "
-        )}`,
+        message: `An order is missing required fields: ${missingFields.join(", ")}`,
       });
     }
-    const multipleOrder = await prisma.order.createMany({
-      data: orders.map((order) => ({ ...order, adminId: id })),
-      skipDuplicates: true,
-    });
-    if(!multipleOrder.count) return res.status(400).json({message:"Orders already exists"})
-    return res
-      .status(200)
-      .json({ message: `orders added: ${multipleOrder.count}` });
+
+    const createdOrders = [];
+    for (const order of orders) {
+      const { customerName, supplierName, ...orderData } = order;
+      const createdOrder = await prisma.order.create({
+        data: {
+          ...orderData,
+          admin: { connect: { id } },
+          Customer: { connect: { companyName: customerName } },
+          supplier: { connect: { companyName: supplierName } },
+        },
+      });
+
+      createdOrders.push(createdOrder);
+    }
+
+    return res.status(200).json({ message: `Orders added: ${createdOrders.length}` });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
