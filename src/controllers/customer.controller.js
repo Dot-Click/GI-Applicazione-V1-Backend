@@ -158,7 +158,7 @@ export const createCusts = async (req,res) => {
     
     if (invalidCustomer) {
         return res.status(400).json({ 
-            message: `Invalid Fields found for ${invalidCustomer.companyName}` 
+            message: `Invalid Fields format found for ${invalidCustomer.companyName}` 
         });
     }
     const multiplecustomer = await prisma.customer.createMany({data: customers.map(customer => ({ ...customer, adminId: id })), skipDuplicates: true})

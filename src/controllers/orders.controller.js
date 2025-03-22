@@ -290,7 +290,10 @@ export const createOrders = async (req, res) => {
   try {
     const { id } = req.user;
     const { orders } = req.body;
-    if (!orders) return res.status(404).json({ message: "Bad Request" });
+    if (!orders || !Array.isArray(orders) || orders.length === 0) {
+      return res.status(400).json({ message: "Bad Request: Orders are required" });
+    }
+
     const requiredFields = [
       "code",
       "description",
@@ -311,67 +314,93 @@ export const createOrders = async (req, res) => {
       "iva",
       "withholdingAmount",
     ];
-    const codeRegex = /^COM-\d{6}$/;
 
-    let invalidOrder = null;
-    let invalidCode = false;
+    const codeRegex = /^COM-\d{6}$/;
+    const dateFormat = /^\d{4}-\d{2}-\d{2}$/;
 
     for (const order of orders) {
       const missingFields = requiredFields.filter((field) => !order[field]);
 
       if (missingFields.length > 0) {
-        invalidOrder = order;
-        break;
+        return res.status(400).json({
+          message: `An order is missing required fields: ${missingFields.join(", ")}`,
+        });
       }
 
       if (!codeRegex.test(order.code)) {
-        invalidCode = order.code;
-        break;
+        return res.status(400).json({ message: `Invalid order code: ${order.code}. Expected format: COM-{6 digits}` });
+      }
+
+      if (!dateFormat.test(order.startDate) || !dateFormat.test(order.endDate)) {
+        return res.status(400).json({ message: `Invalid date format: ${order.startDate} or ${order.endDate}` });
       }
     }
 
-    if (invalidOrder) {
-      const missingFields = requiredFields.filter((field) => !invalidOrder[field]);
+    const managerNames = [
+      ...new Set(orders.flatMap((order) => [order.orderManager, order.siteManager, order.technicalManager])),
+    ];
+
+    const [existingOrders, employees, customers, suppliers] = await Promise.all([
+      prisma.order.findMany({
+        where: { code: { in: orders.map((order) => order.code) } },
+        select: { code: true },
+      }),
+      prisma.employee.findMany({
+        where: { nameAndsurname: { in: managerNames } },
+        select: { nameAndsurname: true },
+      }),
+      prisma.customer.findMany({
+        where: { companyName: { in: orders.map((order) => order.customerName) } },
+        select: { companyName: true },
+      }),
+      prisma.supplier.findMany({
+        where: { companyName: { in: orders.map((order) => order.supplierName) } },
+        select: { companyName: true },
+      }),
+    ]);
+
+    const existingOrderCodes = new Set(existingOrders.map((order) => order.code));
+    const validManagers = new Set(employees.map((emp) => emp.nameAndsurname));
+    const validCustomers = new Set(customers.map((customer) => customer.companyName));
+    const validSuppliers = new Set(suppliers.map((supplier) => supplier.companyName));
+
+    const invalidReferences = orders.filter((order) => {
+      return (
+        !validManagers.has(order.orderManager) ||
+        !validManagers.has(order.siteManager) ||
+        !validManagers.has(order.technicalManager) ||
+        !validCustomers.has(order.customerName) ||
+        !validSuppliers.has(order.supplierName)
+      );
+    });
+
+    if (invalidReferences.length > 0) {
       return res.status(400).json({
-        message: `An order is missing required fields: ${missingFields.join(", ")}`,
+        message: "Invalid references found for orderManager, siteManager, technicalManager, customerName, or supplierName",
+        invalidReferences,
       });
     }
 
-    if (invalidCode) {
-      return res.status(400).json({ message:  `Invalid order ${invalidCode}. Expected format: COM-{6 digits}` });
-    }
-
-    const orderCodes = orders.map((order) => order.code);
-    const existingOrders = await prisma.order.findMany({
-      where: {
-        code: { in: orderCodes },
-      },
-      select: { code: true },
-    });
-
-    const existingOrderCodes = existingOrders.map((order) => order.code);
-
-    const uniqueOrders = orders.filter(
-      (order) => !existingOrderCodes.includes(order.code)
-    );
+    const uniqueOrders = orders.filter((order) => !existingOrderCodes.has(order.code));
 
     const createdOrders = await Promise.all(
       uniqueOrders.map(async (order) => {
-        const { customerName, supplierName, startDate, endDate, dipositRecovery, advancePayment, workAmount, withholdingAmount, iva, ...orderData } = order;
+        let isPublic = order.isPublic === "true" || order.isPublic === "false" ? order.isPublic : "false";
 
         return await prisma.order.create({
           data: {
-            ...orderData,
-            startDate: String(startDate),
-            endDate: String(endDate),
-            dipositRecovery: String(dipositRecovery),
-            advancePayment: String(advancePayment),
-            workAmount: String(workAmount),
-            withholdingAmount: String(withholdingAmount),
-            iva: String(iva),
+            ...order,
+            startDate: String(order.startDate),
+            endDate: String(order.endDate),
+            isPublic: String(isPublic),
+            dipositRecovery: String(order.dipositRecovery),
+            advancePayment: String(order.advancePayment),
+            workAmount: String(order.workAmount),
+            withholdingAmount: String(order.withholdingAmount),
+            iva: String(order.iva),
             admin: { connect: { id } },
-            Customer: { connect: { companyName: customerName } },
-            supplier: { connect: { companyName: supplierName } },
+            Customer: { connect: { companyName: order.customerName } },
+            supplier: { connect: { companyName: order.supplierName } },
           },
         });
       })
@@ -379,8 +408,9 @@ export const createOrders = async (req, res) => {
 
     return res.status(200).json({
       message: `Orders added: ${createdOrders.length}, Skipped duplicates: ${orders.length - uniqueOrders.length}`,
-      skippedOrders: existingOrderCodes,
+      skippedOrders: Array.from(existingOrderCodes),
     });
+
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

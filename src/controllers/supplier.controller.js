@@ -96,7 +96,7 @@ export const createSupps = async (req,res) => {
     
     if (invalidSupplier) {
         return res.status(400).json({ 
-            message: `Invalid Fields found for ${invalidSupplier.companyName}` 
+            message: `Invalid Fields format found for ${invalidSupplier.companyName}` 
         });
     }
     const multiplesupplier = await prisma.supplier.createMany({data: suppliers.map(supplier => ({ ...supplier, adminId: id, taxId: String(supplier.taxId), cap: String(supplier.cap),vat: String(supplier.vat),telephone: String(supplier.telephone) })), skipDuplicates: true})
