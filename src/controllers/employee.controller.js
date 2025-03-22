@@ -158,14 +158,15 @@ export const createEmployees = async (req,res) => {
     const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const format = '\d{4}-\d{2}-\d{2}'
+
     
-    const invalidSupplier = suppliers.find(({ telephone, email, pec }) => 
-        !telRegex.test(telephone) || !emailRegex.test(email) || !emailRegex.test(pec) || !format.test(startDate) || !format.test(endDate)
+    const invalidEmployee = employees.find(({ telephone, email, level }) => 
+        !telRegex.test(telephone) || !emailRegex.test(email) || !format.test(startDate) || !format.test(endDate) || /^\d$/g.test(level)
     );
     
-    if (invalidSupplier) {
+    if (invalidEmployee) {
         return res.status(400).json({ 
-            message: `Invalid Fields found for ${invalidSupplier.companyName}` 
+            message: `Invalid Fields found for ${invalidEmployee.name}` 
         });
     }
     const multipleemployee = await prisma.employee.createMany({data: employees.map(employee => ({ ...employee, adminId: id, number: String(employee.telephone), telephone:String(employee.telephone), role: dbRole, contractorNo: String(employee.contractorNo), level: String(employee.level), taxId: String(employee.taxId), startDate: String(employee.startDate), endDate: String(employee.endDate) })), skipDuplicates: true})
