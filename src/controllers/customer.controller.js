@@ -278,12 +278,13 @@ export const updateCustSequence = async (req, res) => {
       "taxId",
       "nation",
       "province",
+      "address",
       "common",
       "cap",
-      "address",
       "pec",
-      "email",
       "telephone",
+      "email",
+      "actions",
     ];
     const invalidFields = [
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),
