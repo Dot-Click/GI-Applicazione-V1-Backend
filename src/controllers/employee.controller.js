@@ -288,6 +288,7 @@ export const updateEmpSequence = async (req, res) => {
       "address",
       "role",
       "email",
+      "actions"
     ];
     const invalidFields = [
           ...(addedColArray || []).filter((field) => !reqOrdval.includes(field)),
