@@ -340,7 +340,7 @@ export const createOrders = async (req, res) => {
       ...new Set(orders.flatMap((order) => [order.orderManager, order.siteManager, order.technicalManager])),
     ];
 
-    const [existingOrders, employees, customers, suppliers] = await Promise.all([
+    const [existingOrders, employees] = await Promise.all([
       prisma.order.findMany({
         where: { code: { in: orders.map((order) => order.code) } },
         select: { code: true },
@@ -348,29 +348,17 @@ export const createOrders = async (req, res) => {
       prisma.employee.findMany({
         where: { nameAndsurname: { in: managerNames } },
         select: { nameAndsurname: true },
-      }),
-      prisma.customer.findMany({
-        where: { companyName: { in: orders.map((order) => order.customerName) } },
-        select: { companyName: true },
-      }),
-      prisma.supplier.findMany({
-        where: { companyName: { in: orders.map((order) => order.supplierName) } },
-        select: { companyName: true },
-      }),
+      })
     ]);
 
     const existingOrderCodes = new Set(existingOrders.map((order) => order.code));
     const validManagers = new Set(employees.map((emp) => emp.nameAndsurname));
-    const validCustomers = new Set(customers.map((customer) => customer.companyName));
-    const validSuppliers = new Set(suppliers.map((supplier) => supplier.companyName));
 
     const invalidReferences = orders.filter((order) => {
       return (
         !validManagers.has(order.orderManager) ||
         !validManagers.has(order.siteManager) ||
-        !validManagers.has(order.technicalManager) ||
-        !validCustomers.has(order.customerName) ||
-        !validSuppliers.has(order.supplierName)
+        !validManagers.has(order.technicalManager)
       );
     });
 
@@ -385,24 +373,48 @@ export const createOrders = async (req, res) => {
 
     const createdOrders = await Promise.all(
       uniqueOrders.map(async (order) => {
-        let isPublic = order.isPublic === "true" || order.isPublic === "false" ? order.isPublic : "false";
-
+        const customer = await prisma.customer.findUnique({
+          where: { companyName: order.customerName },
+          select: { id: true },
+        });
+    
+        const supplier = await prisma.supplier.findUnique({
+          where: { companyName: order.supplierName },
+          select: { id: true },
+        });
+        console.log(customer, supplier);
+        if (!customer || !supplier) {
+          return res.status(400).json({error:`Invalid customer or supplier: ${order.customerName}, ${order.supplierName} for order: ${order.code}`});
+        }
+    
         return await prisma.order.create({
           data: {
-            ...order,
+            admin: { connect: { id } },
+            code: order.code,
+            description: order.description,
             startDate: String(order.startDate),
             endDate: String(order.endDate),
-            isPublic: String(isPublic),
-            dipositRecovery: String(order.dipositRecovery),
-            advancePayment: String(order.advancePayment),
+            address: order.address,
+            cig: order.cig,
+            cup: order.cup,
+            siteManager: order.siteManager,
+            orderManager: order.orderManager,
+            technicalManager: order.technicalManager,
+            cnceCode: order.cnceCode,
             workAmount: String(order.workAmount),
-            withholdingAmount: String(order.withholdingAmount),
+            advancePayment: String(order.advancePayment),
+            dipositRecovery: String(order.dipositRecovery),
             iva: String(order.iva),
-            admin: { connect: { id } },
-            Customer: { connect: { companyName: order.customerName } },
-            supplier: { connect: { companyName: order.supplierName } },
+            withholdingAmount: String(order.withholdingAmount),
+            isPublic: order.isPublic === "true" ? "true" : "false",
+            pos: order?.pos,
+            psc: order?.psc,
+            permission_to_build: order?.permission_to_build ,
+            contract: order?.contract ,
+            Customer: { connect: { id: customer.id } },
+            supplier: { connect: { id: supplier.id } },
           },
-        });
+        });        
       })
     );
 
