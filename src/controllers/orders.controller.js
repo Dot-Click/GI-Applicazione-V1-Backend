@@ -539,13 +539,19 @@ export const getArchivedOrders = async (req, res) => {
     let orders = await prisma.order.findMany({
       where: { adminId: id, archieved: "true" },
       skip: (page - 1) * 10,
+      include: {
+        Customer: { select: { companyName: true } },
+        supplier: { select: { companyName: true } },
+      },
       take: 10,
     });
     if (!orders) return res.status(404).json({ message: "No archived orders" });
     orders = orders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
-    }));
+      customerName: order.Customer?.companyName || null,
+      supplierName: order.supplier?.companyName || null,
+    })).map(({ Customer, supplier, ...rest }) => rest);
     return res.status(200).json({ data: orders, message: "found" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
