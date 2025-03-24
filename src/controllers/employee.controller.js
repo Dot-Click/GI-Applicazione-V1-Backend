@@ -157,23 +157,43 @@ export const createEmployees = async (req,res) => {
     }
     const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const format = '\d{4}-\d{2}-\d{2}'
+    const format = /^\d{2}\/\d{2}\/\d{4}$/;
 
-    
-    const invalidEmployee = employees.find(({ telephone, email, level }) => 
-        !telRegex.test(telephone) || !emailRegex.test(email) || !format.test(startDate) || !format.test(endDate) || /^\d$/g.test(level)
-    );
-    
-    if (invalidEmployee) {
-        return res.status(400).json({ 
-            message: `Invalid Fields format found for ${invalidEmployee.name}` 
+    let invalidFields = [];
+    for (const { startDate, telephone, email, endDate, nameAndsurname } of employees) {
+      if (!telRegex.test(telephone)) invalidFields.push("telephone");
+      if (!emailRegex.test(email)) invalidFields.push("email");
+      if (!format.test(startDate)) invalidFields.push("startDate");
+      if (!format.test(endDate)) invalidFields.push("endDate");
+
+      if (invalidFields.length > 0) {
+        return res.status(400).json({
+          message: `Invalid fields for ${nameAndsurname}: ${invalidFields.join(", ")}`,
         });
+      }
     }
-    const multipleemployee = await prisma.employee.createMany({data: employees.map(employee => ({ ...employee, adminId: id, number: String(employee.telephone), telephone:String(employee.telephone), role: dbRole, contractorNo: String(employee.contractorNo), level: String(employee.level), taxId: String(employee.taxId), startDate: String(employee.startDate), endDate: String(employee.endDate) })), skipDuplicates: true})
-    if(!multipleemployee.count) return res.status(400).json({message:"Can't create duplicate employees"})
-    return res.status(200).json({message:`employees added: ${multipleemployee.count}`})
+
+    const multipleemployee = await prisma.employee.createMany({
+      data: employees.map(employee => ({
+        ...employee,
+        adminId: id,
+        number: String(employee.telephone),
+        telephone: String(employee.telephone),
+        role: dbRole,
+        contractorNo: String(employee.contractorNo),
+        level: String(employee.level),
+        taxId: String(employee.taxId),
+        startDate: String(employee.startDate),
+        endDate: String(employee.endDate),
+      })),
+      skipDuplicates: true,
+    });
+
+    if (!multipleemployee.count) return res.status(400).json({ message: "Can't create duplicate employees" });
+
+    return res.status(200).json({ message: `employees added: ${multipleemployee.count}` });
   } catch (error) {
-    return res.status(500).json({message: error.message})
+    return res.status(500).json({ message: error.message });
   }
 };
 

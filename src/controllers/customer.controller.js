@@ -151,16 +151,20 @@ export const createCusts = async (req,res) => {
     }
     const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    const invalidCustomer = customers.find(({ telephone, email, pec }) => 
-        !telRegex.test(telephone) || !emailRegex.test(email) || !emailRegex.test(pec)
-    );
-    
-    if (invalidCustomer) {
+
+  let invalidFields = [];
+  customers.find(({ companyName,telephone, email, pec }) => {
+
+    if (!telRegex.test(telephone)) invalidFields.push("telephone");
+    if (!emailRegex.test(email)) invalidFields.push("email");
+    if (!emailRegex.test(pec)) invalidFields.push("pec");
+
+    if (invalidFields.length > 0) {
         return res.status(400).json({ 
-            message: `Invalid Fields format found for ${invalidCustomer.companyName}` 
+            message: `Invalid fields for ${companyName}: ${invalidFields.join(", ")}` 
         });
     }
+  });
     const multiplecustomer = await prisma.customer.createMany({data: customers.map(customer => ({ ...customer, adminId: id })), skipDuplicates: true})
     if(!multiplecustomer.count) return res.status(400).json({message:"Customers already exists"})
     return res.status(200).json({message:`customers added: ${multiplecustomer.count}`})

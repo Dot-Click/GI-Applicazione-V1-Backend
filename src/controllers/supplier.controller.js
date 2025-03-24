@@ -89,16 +89,20 @@ export const createSupps = async (req,res) => {
     }
     const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    const invalidSupplier = suppliers.find(({ telephone, email, pec }) => 
-        !telRegex.test(telephone) || !emailRegex.test(email) || !emailRegex.test(pec)
-    );
-    
-    if (invalidSupplier) {
+
+  let invalidFields = [];
+  suppliers.find(({ companyName,telephone, email, pec }) => {
+
+    if (!telRegex.test(telephone)) invalidFields.push("telephone");
+    if (!emailRegex.test(email)) invalidFields.push("email");
+    if (!emailRegex.test(pec)) invalidFields.push("pec");
+
+    if (invalidFields.length > 0) {
         return res.status(400).json({ 
-            message: `Invalid Fields format found for ${invalidSupplier.companyName}` 
+            message: `Invalid fields for ${companyName}: ${invalidFields.join(", ")}` 
         });
     }
+  });
     const multiplesupplier = await prisma.supplier.createMany({data: suppliers.map(supplier => ({ ...supplier, adminId: id, taxId: String(supplier.taxId), cap: String(supplier.cap),vat: String(supplier.vat),telephone: String(supplier.telephone) })), skipDuplicates: true})
     if(!multiplesupplier.count)  return res.status(400).json({message:'Suppliers already exists'})
     return res.status(200).json({message:`suppliers added: ${multiplesupplier.count}`})
