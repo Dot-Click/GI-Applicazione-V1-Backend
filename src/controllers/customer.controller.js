@@ -273,18 +273,17 @@ export const updateCustSequence = async (req, res) => {
       });
     }
     const reqOrdval = [
-      "nation",
       "companyName",
-      "vatNumber",
-      "fiscalCode",
+      "vat",
+      "taxId",
+      "nation",
       "province",
+      "common",
+      "cap",
       "address",
-      "municipality",
-      "zipCode",
-      "pecAddress",
-      "phoneNumber",
-      "emailAddress",
-      "actions"
+      "pec",
+      "email",
+      "telephone",
     ];
     const invalidFields = [
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),

@@ -273,22 +273,21 @@ export const updateEmpSequence = async (req, res) => {
       });
     }
     const reqOrdval = [
-      "firstName",
-      "lastName",
-      "fullName",
-      "birthPlace",
-      "contractor",
-      "homeAddress",
-      "qualification",
-      "role",
-      "phoneNumber",
-      "emailAddress",
+      "name",
+      "surname",
+      "nameAndsurname",
+      "taxId",
+      "contractorNo",
+      "sector",
       "startDate",
       "endDate",
+      "municipalityOfBirth",
       "level",
-      "sector",
-      "fiscalCode",
-      "actions"
+      "qualification",
+      "telephone",
+      "address",
+      "role",
+      "email",
     ];
     const invalidFields = [
           ...(addedColArray || []).filter((field) => !reqOrdval.includes(field)),

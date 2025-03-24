@@ -180,18 +180,18 @@ export const updateSuppSequence = async (req, res) => {
       });
     }
     const reqOrdval = [
-      "nation",
       "companyName",
-      "vatNumber",
-      "fiscalCode",
+      "vat",
+      "taxId",
+      "nation",
       "province",
       "address",
-      "municipality",
-      "zipCode",
-      "pecAddress",
-      "phoneNumber",
-      "emailAddress",
-      "actions"
+      "common",
+      "cap",
+      "pec",
+      "telephone",
+      "email",
+      "actions",
     ];
     const invalidFields = [
       ...addedColArray.filter((field) => !reqOrdval.includes(field)),
