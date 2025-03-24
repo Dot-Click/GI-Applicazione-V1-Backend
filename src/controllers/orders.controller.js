@@ -316,7 +316,7 @@ export const createOrders = async (req, res) => {
     ];
 
     const codeRegex = /^COM-\d{6}$/;
-    const dateFormat = /^\d{4}-\d{2}-\d{2}$/;
+    const dateFormat = /^\d{2}\/\d{2}\/\d{4}$/;
 
     for (const order of orders) {
       const missingFields = requiredFields.filter((field) => !order[field]);
