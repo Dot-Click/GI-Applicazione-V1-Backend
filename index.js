@@ -1,12 +1,12 @@
 import "dotenv/config";
 import express from "express";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 import authRouter from "./src/routes/auth.routes.js";
 import orderRouter from "./src/routes/orders.routes.js";
 import customerRouter from "./src/routes/customer.routes.js";
 import supplierRouter from "./src/routes/supplier.routes.js";
 import employeeRouter from "./src/routes/employee.routes.js";
-import cookieParser from "cookie-parser";
-import cors from "cors";
 import swaggerDocs from "./src/lib/swagger.js";
 import { cloudinaryConfig } from "./src/lib/utils.js";
 import { loggerMiddleware } from "./src/middlewares/logger.middleware.js";
