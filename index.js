@@ -1,15 +1,15 @@
 import "dotenv/config";
 import express from "express";
-import authRouter from "./routes/auth.routes.js";
-import orderRouter from "./routes/orders.routes.js";
-import customerRouter from "./routes/customer.routes.js";
-import supplierRouter from "./routes/supplier.routes.js";
-import employeeRouter from "./routes/employee.routes.js";
+import authRouter from "./src/routes/auth.routes.js";
+import orderRouter from "./src/routes/orders.routes.js";
+import customerRouter from "./src/routes/customer.routes.js";
+import supplierRouter from "./src/routes/supplier.routes.js";
+import employeeRouter from "./src/routes/employee.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import swaggerDocs from "./lib/swagger.js";
-import { cloudinaryConfig } from "./lib/utils.js";
-import { loggerMiddleware } from "./middlewares/logger.middleware.js";
+import swaggerDocs from "./src/lib/swagger.js";
+import { cloudinaryConfig } from "./src/lib/utils.js";
+import { loggerMiddleware } from "./src/middlewares/logger.middleware.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
