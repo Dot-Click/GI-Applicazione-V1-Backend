@@ -73,29 +73,40 @@ export const createOrder = async (req, res) => {
       CANCELLED: "Cancellato",
       COMPLETATO: "Completato",
     };
-    const order = await prisma.order.create({
-      data: {
-        ...orderData,
-        code,
-        address,
-        contract: uploadedFiles.contract?.secure_url || null,
-        permission_to_build:
-          uploadedFiles.permission_to_build?.secure_url || null,
-        psc: uploadedFiles.psc?.secure_url || null,
-        pos: uploadedFiles.pos?.secure_url || null,
-        admin: {
-          connect: { id },
+    let order
+    try {
+      order = await prisma.order.create({
+        data: {
+          ...orderData,
+          code,
+          address,
+          contract: uploadedFiles.contract?.secure_url || null,
+          permission_to_build:
+            uploadedFiles.permission_to_build?.secure_url || null,
+          psc: uploadedFiles.psc?.secure_url || null,
+          pos: uploadedFiles.pos?.secure_url || null,
+          admin: {
+            connect: { id },
+          },
+          lat: String(location?.lat) || null,
+          lng: String(location?.lng) || null,
+          Customer: {
+            connect: { companyName: customerName },
+          },
+          supplier: {
+            connect: { companyName: supplierName },
+          },
         },
-        lat: String(location?.lat) || null,
-        lng: String(location?.lng) || null,
-        Customer: {
-          connect: { companyName: customerName },
-        },
-        supplier: {
-          connect: { companyName: supplierName },
-        },
-      },
-    });
+      });
+    } catch (prismaError) {
+      if (prismaError.code === "P2025") {
+        return res.status(400).json({ 
+          error: "Invalid reference",
+          details: "Customer, Supplier, or one of the managers does not exist. Please check the provided names" 
+        });
+      }
+      return res.status(500).json({ error: prismaError.message });
+    }
 
     return res.status(201).json({
       data: { ...order, state: orderStateMap[order.state] || order.state },
@@ -316,7 +327,7 @@ export const createOrders = async (req, res) => {
     ];
 
     const codeRegex = /^COM-\d{6}$/;
-    const dateFormat = /^\d{2}\/\d{2}\/\d{4}$/;
+    const dateFormat = /^\d{4}\-\d{2}\-\d{2}$/;
 
     for (const order of orders) {
       const missingFields = requiredFields.filter((field) => !order[field]);

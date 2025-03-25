@@ -157,7 +157,7 @@ export const createEmployees = async (req,res) => {
     }
     const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const format = /^\d{2}\/\d{2}\/\d{4}$/;
+    const format = /^\d{4}\-\d{2}\-\d{2}$/;
 
     let invalidFields = [];
     for (const { startDate, telephone, email, endDate, nameAndsurname } of employees) {
