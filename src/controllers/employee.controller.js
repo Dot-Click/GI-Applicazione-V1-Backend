@@ -293,6 +293,7 @@ export const updateEmpSequence = async (req, res) => {
       "address",
       "role",
       "email",
+      "contractor", "firstName", "lastName", "fullName", "birthPlace", "homeAddress", "phoneNumber", "emailAddress", "fiscalCode",
       "actions"
     ];
     const invalidFields = [
