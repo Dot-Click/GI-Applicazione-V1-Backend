@@ -236,6 +236,9 @@ export const updateOrder = async (req, res) => {
       ...(startDate && { startDate: new Date(startDate).toISOString() }),
       ...(endDate && { endDate: new Date(endDate).toISOString() }),
     };
+    delete updateData.supplierId
+    delete updateData.customerId
+    delete updateData.adminId
     const order = await prisma.order.update({
       where: { id },
       data: updateData,
