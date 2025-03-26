@@ -186,6 +186,13 @@ export const getAdminInfo = async (req, res) => {
       .map((order) => ({
         ...order,
         state: orderStateMap[order.state] || order.state,
+        startDate: new Date(order.startDate).toDateString(),
+        endDate: new Date().toDateString(),
+        advancePayment: Number(order.advancePayment).toFixed(2),
+        withholdingAmount: Number(order.withholdingAmount).toFixed(2),
+        workAmount: Number(order.workAmount).toFixed(2),
+        dipositRecovery: Number(order.dipositRecovery).toFixed(2),
+        iva: Number(order.iva).toFixed(2),
         customerName: order.Customer?.companyName || null,
         supplierName: order.supplier?.companyName || null,
       }))

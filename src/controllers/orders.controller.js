@@ -127,8 +127,7 @@ export const createOrder = async (req, res) => {
 export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { customerName, supplierName, address, adminId, ...rest } = req.body;
-
+    const { customerName, supplierName, address, adminId,withholdingAmount,workAmount,dipositRecovery,iva,startDate,endDate,advancePayment, ...rest } = req.body;
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
     let location = null;
@@ -200,7 +199,16 @@ export const updateOrder = async (req, res) => {
     };
     const order = await prisma.order.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...updateData,
+        withholdingAmount: Number(withholdingAmount),
+          iva: Number(iva),
+          dipositRecovery: Number(dipositRecovery),
+          workAmount: Number(workAmount),
+          advancePayment: Number(advancePayment),
+          endDate: new Date(startDate).toISOString(),
+          startDate: new Date(endDate).toISOString()
+      },
     });
 
     return res.status(200).json({
@@ -382,7 +390,7 @@ export const createOrders = async (req, res) => {
 
     if (invalidReferences.length > 0) {
       return res.status(400).json({
-        message: "Invalid references found for orderManager, siteManager, technicalManager, customerName, or supplierName",
+        message: "Invalid references found for orderManager, siteManager, technicalManager",
         invalidReferences,
       });
     }
@@ -410,8 +418,8 @@ export const createOrders = async (req, res) => {
             admin: { connect: { id } },
             code: order.code,
             description: order.description,
-            startDate: String(order.startDate),
-            endDate: String(order.endDate),
+            startDate: new Date(order.startDate).toISOString(),
+            endDate: new Date(order.endDate).toISOString(),
             address: order.address,
             cig: order.cig,
             cup: order.cup,
@@ -419,11 +427,11 @@ export const createOrders = async (req, res) => {
             orderManager: order.orderManager,
             technicalManager: order.technicalManager,
             cnceCode: order.cnceCode,
-            workAmount: String(order.workAmount),
-            advancePayment: String(order.advancePayment),
-            dipositRecovery: String(order.dipositRecovery),
-            iva: String(order.iva),
-            withholdingAmount: String(order.withholdingAmount),
+            workAmount: Number(order.workAmount),
+            advancePayment: Number(order.advancePayment),
+            dipositRecovery: Number(order.dipositRecovery),
+            iva: Number(order.iva),
+            withholdingAmount: Number(order.withholdingAmount),
             isPublic: order.isPublic === "true" ? "true" : "false",
             pos: order?.pos,
             psc: order?.psc,
