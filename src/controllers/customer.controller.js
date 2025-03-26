@@ -351,6 +351,13 @@ export const getCustomer = async (req, res) => {
     const custOrders = cust.orders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
+      startDate: new Date(order.startDate).toLocaleDateString(),
+      endDate: new Date(order.endDate).toLocaleDateString(),
+      advancePayment: Number(order.advancePayment).toFixed(2),
+      withholdingAmount: Number(order.withholdingAmount).toFixed(2),
+      workAmount: Number(order.workAmount).toFixed(2),
+      dipositRecovery: Number(order.dipositRecovery).toFixed(2),
+      iva: Number(order.iva).toFixed(2),
       customerName: order.Customer?.companyName || null,
       supplierName: order.supplier?.companyName || null,
     })).map(({ Customer, supplier, ...rest }) => rest);
