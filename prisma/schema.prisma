@@ -33,12 +33,12 @@ model Admin {
 
 model Order {
   id                       String      @id @default(uuid())
-  code                     String      @unique
+  code                     String      @unique @db.VarChar(50)
   description              String
-  workAmount               String
-  advancePayment           String
-  startDate                String
-  endDate                  String
+  workAmount               String?
+  advancePayment           String?
+  startDate                String?
+  endDate                  String?
   address                  String
   // province           String
   // nation             String
@@ -58,11 +58,10 @@ model Order {
   status                   Status?     @default(active)
   cig                      String
   cup                      String
-  iva                      String
-  dipositRecovery          String
+  iva                      String?
+  dipositRecovery          String?
   employee                 Employee?   @relation(fields: [employeeId], references: [id])
   employeeId               String?
-  vat                      String?
   jobName                  String?
   projectName              String?
   typology                 String?
@@ -75,7 +74,7 @@ model Order {
   desc_psc                 String?
   pos                      String?
   desc_pos                 String?
-  withholdingAmount        String
+  withholdingAmount        String?
   lat                      String?     @default("37.7749")
   lng                      String?     @default("-122.4194")
   isPublic                 String?     @default("false")
