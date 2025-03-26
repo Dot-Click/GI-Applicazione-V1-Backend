@@ -5,7 +5,7 @@ import { cloudinaryUploader } from "../lib/utils.js";
 export const createOrder = async (req, res) => {
   try {
     const { id } = req.user;
-    const { address, code, customerName, supplierName, ...orderData } =
+    const { address, code, customerName, supplierName,withholdingAmount,workAmount,dipositRecovery,iva,startDate,endDate,advancePayment, ...orderData } =
       req.body;
 
     const requiredFields = [
@@ -78,6 +78,13 @@ export const createOrder = async (req, res) => {
       order = await prisma.order.create({
         data: {
           ...orderData,
+          withholdingAmount: Number(withholdingAmount),
+          iva: Number(iva),
+          dipositRecovery: Number(dipositRecovery),
+          workAmount: Number(workAmount),
+          advancePayment: Number(advancePayment),
+          endDate: new Date(endDate).toISOString(),
+          startDate: new Date(startDate).toISOString(),
           code,
           address,
           contract: uploadedFiles.contract?.secure_url || null,
