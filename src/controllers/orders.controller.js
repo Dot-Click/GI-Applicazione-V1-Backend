@@ -5,8 +5,20 @@ import { cloudinaryUploader } from "../lib/utils.js";
 export const createOrder = async (req, res) => {
   try {
     const { id } = req.user;
-    const { address, code, customerName, supplierName,withholdingAmount,workAmount,dipositRecovery,iva,startDate,endDate,advancePayment, ...orderData } =
-      req.body;
+    const {
+      address,
+      code,
+      customerName,
+      supplierName,
+      withholdingAmount,
+      workAmount,
+      dipositRecovery,
+      iva,
+      startDate,
+      endDate,
+      advancePayment,
+      ...orderData
+    } = req.body;
 
     const requiredFields = [
       "code",
@@ -73,7 +85,7 @@ export const createOrder = async (req, res) => {
       CANCELLED: "Cancellato",
       COMPLETATO: "Completato",
     };
-    let order
+    let order;
     try {
       order = await prisma.order.create({
         data: {
@@ -107,9 +119,10 @@ export const createOrder = async (req, res) => {
       });
     } catch (prismaError) {
       if (prismaError.code === "P2025") {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: "Invalid reference",
-          details: "Customer, Supplier, or one of the managers does not exist. Please check the provided names" 
+          details:
+            "Customer, Supplier, or one of the managers does not exist. Please check the provided names",
         });
       }
       return res.status(500).json({ error: prismaError.message });
@@ -127,7 +140,20 @@ export const createOrder = async (req, res) => {
 export const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { customerName, supplierName, address, adminId,withholdingAmount,workAmount,dipositRecovery,iva,startDate,endDate,advancePayment, ...rest } = req.body;
+    const {
+      customerName,
+      supplierName,
+      address,
+      adminId,
+      withholdingAmount,
+      workAmount,
+      dipositRecovery,
+      iva,
+      startDate,
+      endDate,
+      advancePayment,
+      ...rest
+    } = req.body;
     if (!id) return res.status(400).json({ message: "Order ID is required." });
 
     let location = null;
@@ -196,19 +222,19 @@ export const updateOrder = async (req, res) => {
             },
           }
         : {}),
-        ...(withholdingAmount !== undefined && {
-          withholdingAmount: Number(withholdingAmount),
-        }),
-        ...(iva !== undefined && { iva: Number(iva) }),
-        ...(dipositRecovery !== undefined && {
-          dipositRecovery: Number(dipositRecovery),
-        }),
-        ...(workAmount !== undefined && { workAmount: Number(workAmount) }),
-        ...(advancePayment !== undefined && {
-          advancePayment: Number(advancePayment),
-        }),
-        ...(startDate && { startDate: new Date(startDate).toISOString() }),
-        ...(endDate && { endDate: new Date(endDate).toISOString() }),
+      ...(withholdingAmount !== undefined && {
+        withholdingAmount: Number(withholdingAmount),
+      }),
+      ...(iva !== undefined && { iva: Number(iva) }),
+      ...(dipositRecovery !== undefined && {
+        dipositRecovery: Number(dipositRecovery),
+      }),
+      ...(workAmount !== undefined && { workAmount: Number(workAmount) }),
+      ...(advancePayment !== undefined && {
+        advancePayment: Number(advancePayment),
+      }),
+      ...(startDate && { startDate: new Date(startDate).toISOString() }),
+      ...(endDate && { endDate: new Date(endDate).toISOString() }),
     };
     const order = await prisma.order.update({
       where: { id },
@@ -247,6 +273,13 @@ export const getOrders = async (req, res) => {
     orders = orders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
+      startDate: new Date(order.startDate).toDateString(),
+      endDate: new Date().toDateString(),
+      advancePayment: Number(order.advancePayment).toFixed(2),
+      withholdingAmount: Number(order.withholdingAmount).toFixed(2),
+      workAmount: Number(order.workAmount).toFixed(2),
+      dipositRecovery: Number(order.dipositRecovery).toFixed(2),
+      iva: Number(order.iva).toFixed(2),
     }));
     return res.status(200).json({
       message: "All orders fetched",
@@ -283,6 +316,13 @@ export const recentOrders = async (req, res) => {
     RecentOrders = RecentOrders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
+      startDate: new Date(order.startDate).toDateString(),
+      endDate: new Date().toDateString(),
+      advancePayment: Number(order.advancePayment).toFixed(2),
+      withholdingAmount: Number(order.withholdingAmount).toFixed(2),
+      workAmount: Number(order.workAmount).toFixed(2),
+      dipositRecovery: Number(order.dipositRecovery).toFixed(2),
+      iva: Number(order.iva).toFixed(2),
     }));
     return res.status(200).json({
       message: "All Recent Orders fetched",
@@ -310,7 +350,17 @@ export const getOrder = async (req, res) => {
 
     return res
       .status(200)
-      .json({ ...order, state: orderStateMap[order.state] || order.state });
+      .json({
+        ...order,
+        state: orderStateMap[order.state] || order.state,
+        startDate: new Date(order.startDate).toDateString(),
+        endDate: new Date().toDateString(),
+        advancePayment: Number(order.advancePayment).toFixed(2),
+        withholdingAmount: Number(order.withholdingAmount).toFixed(2),
+        workAmount: Number(order.workAmount).toFixed(2),
+        dipositRecovery: Number(order.dipositRecovery).toFixed(2),
+        iva: Number(order.iva).toFixed(2),
+      });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -321,7 +371,9 @@ export const createOrders = async (req, res) => {
     const { id } = req.user;
     const { orders } = req.body;
     if (!orders || !Array.isArray(orders) || orders.length === 0) {
-      return res.status(400).json({ message: "Bad Request: Orders are required" });
+      return res
+        .status(400)
+        .json({ message: "Bad Request: Orders are required" });
     }
 
     const requiredFields = [
@@ -353,21 +405,40 @@ export const createOrders = async (req, res) => {
 
       if (missingFields.length > 0) {
         return res.status(400).json({
-          message: `An order is missing required fields: ${missingFields.join(", ")}`,
+          message: `An order is missing required fields: ${missingFields.join(
+            ", "
+          )}`,
         });
       }
 
       if (!codeRegex.test(order.code)) {
-        return res.status(400).json({ message: `Invalid order code: ${order.code}. Expected format: COM-{6 digits}` });
+        return res
+          .status(400)
+          .json({
+            message: `Invalid order code: ${order.code}. Expected format: COM-{6 digits}`,
+          });
       }
 
-      if (!dateFormat.test(order.startDate) || !dateFormat.test(order.endDate)) {
-        return res.status(400).json({ message: `Invalid date format: ${order.startDate} or ${order.endDate}` });
+      if (
+        !dateFormat.test(order.startDate) ||
+        !dateFormat.test(order.endDate)
+      ) {
+        return res
+          .status(400)
+          .json({
+            message: `Invalid date format: ${order.startDate} or ${order.endDate}`,
+          });
       }
     }
 
     const managerNames = [
-      ...new Set(orders.flatMap((order) => [order.orderManager, order.siteManager, order.technicalManager])),
+      ...new Set(
+        orders.flatMap((order) => [
+          order.orderManager,
+          order.siteManager,
+          order.technicalManager,
+        ])
+      ),
     ];
 
     const [existingOrders, employees] = await Promise.all([
@@ -378,10 +449,12 @@ export const createOrders = async (req, res) => {
       prisma.employee.findMany({
         where: { nameAndsurname: { in: managerNames } },
         select: { nameAndsurname: true },
-      })
+      }),
     ]);
 
-    const existingOrderCodes = new Set(existingOrders.map((order) => order.code));
+    const existingOrderCodes = new Set(
+      existingOrders.map((order) => order.code)
+    );
     const validManagers = new Set(employees.map((emp) => emp.nameAndsurname));
 
     const invalidReferences = orders.filter((order) => {
@@ -394,12 +467,15 @@ export const createOrders = async (req, res) => {
 
     if (invalidReferences.length > 0) {
       return res.status(400).json({
-        message: "Invalid references found for orderManager, siteManager, technicalManager",
+        message:
+          "Invalid references found for orderManager, siteManager, technicalManager",
         invalidReferences,
       });
     }
 
-    const uniqueOrders = orders.filter((order) => !existingOrderCodes.has(order.code));
+    const uniqueOrders = orders.filter(
+      (order) => !existingOrderCodes.has(order.code)
+    );
 
     const createdOrders = await Promise.all(
       uniqueOrders.map(async (order) => {
@@ -407,16 +483,20 @@ export const createOrders = async (req, res) => {
           where: { companyName: order.customerName },
           select: { id: true },
         });
-    
+
         const supplier = await prisma.supplier.findUnique({
           where: { companyName: order.supplierName },
           select: { id: true },
         });
         console.log(customer, supplier);
         if (!customer || !supplier) {
-          return res.status(400).json({error:`Invalid customer or supplier: ${order.customerName}, ${order.supplierName} for order: ${order.code}`});
+          return res
+            .status(400)
+            .json({
+              error: `Invalid customer or supplier: ${order.customerName}, ${order.supplierName} for order: ${order.code}`,
+            });
         }
-    
+
         return await prisma.order.create({
           data: {
             admin: { connect: { id } },
@@ -439,20 +519,21 @@ export const createOrders = async (req, res) => {
             isPublic: order.isPublic === "true" ? "true" : "false",
             pos: order?.pos,
             psc: order?.psc,
-            permission_to_build: order?.permission_to_build ,
-            contract: order?.contract ,
+            permission_to_build: order?.permission_to_build,
+            contract: order?.contract,
             Customer: { connect: { id: customer.id } },
             supplier: { connect: { id: supplier.id } },
           },
-        });        
+        });
       })
     );
 
     return res.status(200).json({
-      message: `Orders added: ${createdOrders.length}, Skipped duplicates: ${orders.length - uniqueOrders.length}`,
+      message: `Orders added: ${createdOrders.length}, Skipped duplicates: ${
+        orders.length - uniqueOrders.length
+      }`,
       skippedOrders: Array.from(existingOrderCodes),
     });
-
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -576,12 +657,21 @@ export const getArchivedOrders = async (req, res) => {
       take: 10,
     });
     if (!orders) return res.status(404).json({ message: "No archived orders" });
-    orders = orders.map((order) => ({
-      ...order,
-      state: orderStateMap[order.state] || order.state,
-      customerName: order.Customer?.companyName || null,
-      supplierName: order.supplier?.companyName || null,
-    })).map(({ Customer, supplier, ...rest }) => rest);
+    orders = orders
+      .map((order) => ({
+        ...order,
+        state: orderStateMap[order.state] || order.state,
+        startDate: new Date(order.startDate).toDateString(),
+        endDate: new Date().toDateString(),
+        advancePayment: Number(order.advancePayment).toFixed(2),
+        withholdingAmount: Number(order.withholdingAmount).toFixed(2),
+        workAmount: Number(order.workAmount).toFixed(2),
+        dipositRecovery: Number(order.dipositRecovery).toFixed(2),
+        iva: Number(order.iva).toFixed(2),
+        customerName: order.Customer?.companyName || null,
+        supplierName: order.supplier?.companyName || null,
+      }))
+      .map(({ Customer, supplier, ...rest }) => rest);
     return res.status(200).json({ data: orders, message: "found" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
