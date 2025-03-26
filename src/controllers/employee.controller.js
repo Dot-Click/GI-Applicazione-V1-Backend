@@ -73,12 +73,12 @@ export const getAllEmployee = async (req, res) => {
     page = parseInt(page, 10);
     if (isNaN(page) || page < 1) page = 1;
 
-    const employees = await prisma.employee.findMany({
+    let employees = await prisma.employee.findMany({
       where: { adminId: id },
       skip: (page - 1) * 10,
       take: 10,
     });
-    employees.map((emp)=>({
+    employees = employees.map((emp)=>({
       ...emp,
       startDate: new Date(emp.startDate).toLocaleDateString(),
       endDate: new Date(emp.endDate).toLocaleDateString(),
@@ -392,13 +392,13 @@ export const getArchivedEmployees = async (req, res) => {
     let { page } = req.query;
     page = parseInt(page, 10);
     if (isNaN(page) || page < 1) page = 1;
-    const employees = await prisma.employee.findMany({
+    let employees = await prisma.employee.findMany({
       where: { adminId: id, archieved: "true" },
       skip: (page - 1) * 10,
       take: 10,
     });
     if (!employees) return res.status(404).json({ message: "No archived employees" });
-    employees.map((emp)=>({
+    employees = employees.map((emp)=>({
       ...emp,
       startDate: new Date(emp.startDate).toLocaleDateString(),
       endDate: new Date(emp.endDate).toLocaleDateString(),
