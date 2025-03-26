@@ -14,7 +14,7 @@ const EmpDBRoles = {
 };
 export const createEmployee = async (req, res) => {
   try {
-    const {telephone} = req.body
+    const {telephone,startDate,endDate} = req.body
     const reqFields = [
       "name",
       "surname",
@@ -54,7 +54,7 @@ export const createEmployee = async (req, res) => {
       });
     }
     const emp = await prisma.employee.create({
-      data: { ...req.body, adminId: id, password: hash,number: telephone },
+      data: { ...req.body, adminId: id, password: hash,number: telephone,startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString() },
       omit: { password: true },
     });
     return res.status(200).json({
@@ -80,6 +80,8 @@ export const getAllEmployee = async (req, res) => {
     });
     employees.map((emp)=>({
       ...emp,
+      startDate: new Date(emp.startDate).toLocaleDateString(),
+      endDate: new Date(emp.endDate).toLocaleDateString(),
       role: EmpRoles[emp.role] || emp.role,
     }))
     return res.status(200).json({
@@ -107,7 +109,7 @@ export const getEmployee = async (req, res) => {
     if (!emp) {
       return res.status(200).json({ message: "employee not found" });
     }
-    return res.status(200).json({ message: "employee fetched", data: {...emp, role: EmpRoles[emp.role] || emp.role, } });
+    return res.status(200).json({ message: "employee fetched", data: {...emp, role: EmpRoles[emp.role] || emp.role,startDate: new Date(emp.startDate).toLocaleDateString(), endDate: new Date(emp.endDate).toLocaleDateString(), } });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -157,14 +159,11 @@ export const createEmployees = async (req,res) => {
     }
     const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const format = /^\d{4}\-\d{2}\-\d{2}$/;
 
     let invalidFields = [];
     for (const { startDate, telephone, email, endDate, nameAndsurname } of employees) {
       if (!telRegex.test(telephone)) invalidFields.push("telephone");
       if (!emailRegex.test(email)) invalidFields.push("email");
-      if (!format.test(startDate)) invalidFields.push("startDate");
-      if (!format.test(endDate)) invalidFields.push("endDate");
 
       if (invalidFields.length > 0) {
         return res.status(400).json({
@@ -183,8 +182,8 @@ export const createEmployees = async (req,res) => {
         contractorNo: String(employee.contractorNo),
         level: String(employee.level),
         taxId: String(employee.taxId),
-        startDate: String(employee.startDate),
-        endDate: String(employee.endDate),
+        startDate: new Date(employee.startDate).toISOString(),
+        endDate: new Date(employee.endDate).toISOString(),
       })),
       skipDuplicates: true,
     });
@@ -200,10 +199,16 @@ export const createEmployees = async (req,res) => {
 export const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const {email} = req.body
+    const {startDate, endDate} = req.body
+    const upd_emp = {
+      ...req.body,
+      ...(startDate && { startDate: new Date(startDate).toISOString() }),
+      ...(endDate && { endDate: new Date(endDate).toISOString() })
+    }
+    delete upd_emp.email
     const emp = await prisma.employee.update({
       where: { id },
-      data: { ...req.body },
+      data: upd_emp,
     });
     if (!emp) return res.status(404).json({ message: "emp not found" });
     return res.status(200).json({ message: "updated!", data: emp });
@@ -392,6 +397,12 @@ export const getArchivedEmployees = async (req, res) => {
       take: 10,
     });
     if (!employees) return res.status(404).json({ message: "No archived employees" });
+    employees.map((emp)=>({
+      ...emp,
+      startDate: new Date(emp.startDate).toLocaleDateString(),
+      endDate: new Date(emp.endDate).toLocaleDateString(),
+      role: EmpRoles[emp.role] || emp.role,
+    }))
     return res.status(200).json({ data: employees, message: "found" });
   } catch (error) {
     return res.status(500).json({ message: error.message });

@@ -186,8 +186,8 @@ export const getAdminInfo = async (req, res) => {
       .map((order) => ({
         ...order,
         state: orderStateMap[order.state] || order.state,
-        startDate: new Date(order.startDate).toDateString(),
-        endDate: new Date().toDateString(),
+        startDate: new Date(order.startDate).toLocaleDateString(),
+        endDate: new Date(order.endDate).toLocaleDateString(),
         advancePayment: Number(order.advancePayment).toFixed(2),
         withholdingAmount: Number(order.withholdingAmount).toFixed(2),
         workAmount: Number(order.workAmount).toFixed(2),
@@ -199,6 +199,8 @@ export const getAdminInfo = async (req, res) => {
       .map(({ Customer, supplier, ...rest }) => rest);
     admin.employees = admin.employees.map((emp)=>({
       ...emp,
+      startDate: new Date(emp.startDate).toLocaleDateString(),
+      endDate: new Date(emp.endDate).toLocaleDateString(),
       role: EmpRoles[emp.role] || emp.role,
     }))  
 

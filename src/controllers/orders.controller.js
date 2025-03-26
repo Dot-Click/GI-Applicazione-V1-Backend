@@ -276,8 +276,8 @@ export const getOrders = async (req, res) => {
     orders = orders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
-      startDate: new Date(order.startDate).toDateString(),
-      endDate: new Date().toDateString(),
+      startDate: new Date(order.startDate).toLocaleDateString(),
+      endDate: new Date(order.endDate).toLocaleDateString(),
       advancePayment: Number(order.advancePayment).toFixed(2),
       withholdingAmount: Number(order.withholdingAmount).toFixed(2),
       workAmount: Number(order.workAmount).toFixed(2),
@@ -319,8 +319,8 @@ export const recentOrders = async (req, res) => {
     RecentOrders = RecentOrders.map((order) => ({
       ...order,
       state: orderStateMap[order.state] || order.state,
-      startDate: new Date(order.startDate).toDateString(),
-      endDate: new Date().toDateString(),
+      startDate: new Date(order.startDate).toLocaleDateString(),
+      endDate: new Date(order.endDate).toLocaleDateString(),
       advancePayment: Number(order.advancePayment).toFixed(2),
       withholdingAmount: Number(order.withholdingAmount).toFixed(2),
       workAmount: Number(order.workAmount).toFixed(2),
@@ -356,8 +356,8 @@ export const getOrder = async (req, res) => {
       .json({
         ...order,
         state: orderStateMap[order.state] || order.state,
-        startDate: new Date(order.startDate).toDateString(),
-        endDate: new Date().toDateString(),
+        startDate: new Date(order.startDate).toLocaleDateString(),
+        endDate: new Date(order.endDate).toLocaleDateString(),
         advancePayment: Number(order.advancePayment).toFixed(2),
         withholdingAmount: Number(order.withholdingAmount).toFixed(2),
         workAmount: Number(order.workAmount).toFixed(2),
@@ -401,7 +401,6 @@ export const createOrders = async (req, res) => {
     ];
 
     const codeRegex = /^COM-\d{6}$/;
-    const dateFormat = /^\d{4}\-\d{2}\-\d{2}$/;
 
     for (const order of orders) {
       const missingFields = requiredFields.filter((field) => !order[field]);
@@ -422,16 +421,6 @@ export const createOrders = async (req, res) => {
           });
       }
 
-      if (
-        !dateFormat.test(order.startDate) ||
-        !dateFormat.test(order.endDate)
-      ) {
-        return res
-          .status(400)
-          .json({
-            message: `Invalid date format: ${order.startDate} or ${order.endDate}`,
-          });
-      }
     }
 
     const managerNames = [
@@ -664,8 +653,8 @@ export const getArchivedOrders = async (req, res) => {
       .map((order) => ({
         ...order,
         state: orderStateMap[order.state] || order.state,
-        startDate: new Date(order.startDate).toDateString(),
-        endDate: new Date().toDateString(),
+        startDate: new Date(order.startDate).toLocaleDateString(),
+        endDate: new Date(order.endDate).toLocaleDateString(),
         advancePayment: Number(order.advancePayment).toFixed(2),
         withholdingAmount: Number(order.withholdingAmount).toFixed(2),
         workAmount: Number(order.workAmount).toFixed(2),

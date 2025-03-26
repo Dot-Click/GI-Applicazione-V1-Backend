@@ -167,8 +167,8 @@ model Employee {
   taxId               String
   contractorNo        String
   sector              String
-  startDate           String
-  endDate             String
+  startDate           DateTime?   @db.Date
+  endDate             DateTime?   @db.Date
   municipalityOfBirth String
   level               String
   qualification       String
