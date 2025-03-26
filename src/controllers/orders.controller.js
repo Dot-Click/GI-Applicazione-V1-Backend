@@ -196,19 +196,23 @@ export const updateOrder = async (req, res) => {
             },
           }
         : {}),
+        ...(withholdingAmount !== undefined && {
+          withholdingAmount: Number(withholdingAmount),
+        }),
+        ...(iva !== undefined && { iva: Number(iva) }),
+        ...(dipositRecovery !== undefined && {
+          dipositRecovery: Number(dipositRecovery),
+        }),
+        ...(workAmount !== undefined && { workAmount: Number(workAmount) }),
+        ...(advancePayment !== undefined && {
+          advancePayment: Number(advancePayment),
+        }),
+        ...(startDate && { startDate: new Date(startDate).toISOString() }),
+        ...(endDate && { endDate: new Date(endDate).toISOString() }),
     };
     const order = await prisma.order.update({
       where: { id },
-      data: {
-        ...updateData,
-        withholdingAmount: Number(withholdingAmount),
-          iva: Number(iva),
-          dipositRecovery: Number(dipositRecovery),
-          workAmount: Number(workAmount),
-          advancePayment: Number(advancePayment),
-          endDate: new Date(startDate).toISOString(),
-          startDate: new Date(endDate).toISOString()
-      },
+      data: updateData,
     });
 
     return res.status(200).json({
