@@ -33,12 +33,12 @@ model Admin {
 
 model Order {
   id                       String      @id @default(uuid())
-  code                     String      @unique @db.VarChar(50)
+  code                     String      @unique @db.VarChar(10)
   description              String
-  workAmount               String?
-  advancePayment           String?
-  startDate                String?
-  endDate                  String?
+  workAmount               Decimal?    @db.Decimal(12,4)
+  advancePayment           Decimal?    @db.Decimal(12,4)
+  startDate                DateTime?   @db.Date
+  endDate                  DateTime?   @db.Date
   address                  String
   // province           String
   // nation             String
@@ -47,7 +47,7 @@ model Order {
   // contractAttachment String
   // discountPercentage Float
   state                    OrderState? @default(ON_HOLD)
-  cnceCode                 String
+  cnceCode                 String      @db.VarChar(50)
   orderManager             String
   siteManager              String
   technicalManager         String
@@ -56,10 +56,10 @@ model Order {
   supplier                 Supplier?   @relation(fields: [supplierId], references: [id])
   supplierId               String?
   status                   Status?     @default(active)
-  cig                      String
-  cup                      String
-  iva                      String?
-  dipositRecovery          String?
+  cig                      String      @db.VarChar(50)
+  cup                      String      @db.VarChar(50)
+  iva                      Decimal?    @db.Decimal(12,4)
+  dipositRecovery          Decimal?    @db.Decimal(12,4)
   employee                 Employee?   @relation(fields: [employeeId], references: [id])
   employeeId               String?
   jobName                  String?
@@ -74,7 +74,7 @@ model Order {
   desc_psc                 String?
   pos                      String?
   desc_pos                 String?
-  withholdingAmount        String?
+  withholdingAmount        Decimal?    @db.Decimal(12,4)
   lat                      String?     @default("37.7749")
   lng                      String?     @default("-122.4194")
   isPublic                 String?     @default("false")
