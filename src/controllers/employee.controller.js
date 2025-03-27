@@ -206,6 +206,9 @@ export const updateEmployee = async (req, res) => {
       ...(endDate && { endDate: new Date(endDate).toISOString() })
     }
     delete upd_emp.email
+    if (!req.body.role) {
+      delete upd_emp.role
+    }
     const emp = await prisma.employee.update({
       where: { id },
       data: upd_emp,
@@ -487,7 +490,8 @@ export const getUnilav = async (req, res) => {
       skip: (page - 1) * 1,
       take: 1,
       include:{Employee: {select: {name: true}}},
-      where:{employeeId: eid}
+      where:{employeeId: eid},
+      orderBy:[{createdAt:"desc"},{updatedAt: "desc"}]
     });
     const modifiedData = data.map(({ Employee, ...rest }) => ({
       ...rest,
@@ -605,7 +609,8 @@ export const getSeritia = async (req, res) => {
       skip: (page - 1) * 1,
       take: 1,
       include:{Employee: {select: {name: true}}},
-      where:{employeeId: eid}
+      where:{employeeId: eid},
+      orderBy:[{createdAt:"desc"},{updatedAt: "desc"}]
     });
     const modifiedData = data.map(({ Employee, ...rest }) => ({
       ...rest,
@@ -723,7 +728,8 @@ export const getFormazone = async (req, res) => {
       skip: (page - 1) * 4,
       take: 4,
       include:{Employee: {select: {name: true}}},
-      where:{employeeId: eid}
+      where:{employeeId: eid},
+      orderBy:[{createdAt:"desc"},{updatedAt: "desc"}]
     });
     const modifiedData = data.map(({ Employee, ...rest }) => ({
       ...rest,
