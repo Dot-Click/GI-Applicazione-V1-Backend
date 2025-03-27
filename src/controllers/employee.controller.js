@@ -1,5 +1,5 @@
 import prisma from "../../prisma/prisma.js";
-import { cloudinaryUploader } from "../lib/utils.js";
+import { cloudinaryUploader, formatDate } from "../lib/utils.js";
 import bcrypt from "bcrypt";
 
 const EmpRoles= {
@@ -109,7 +109,7 @@ export const getEmployee = async (req, res) => {
     if (!emp) {
       return res.status(200).json({ message: "employee not found" });
     }
-    return res.status(200).json({ message: "employee fetched", data: {...emp, role: EmpRoles[emp.role] || emp.role,startDate: new Date(emp.startDate).toLocaleDateString(), endDate: new Date(emp.endDate).toLocaleDateString(), } });
+    return res.status(200).json({ message: "employee fetched", data: {...emp, role: EmpRoles[emp.role] || emp.role,startDate: formatDate(emp.startDate), endDate: formatDate(emp.endDate), } });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -403,8 +403,8 @@ export const getArchivedEmployees = async (req, res) => {
     if (!employees) return res.status(404).json({ message: "No archived employees" });
     employees = employees.map((emp)=>({
       ...emp,
-      startDate: new Date(emp.startDate).toLocaleDateString(),
-      endDate: new Date(emp.endDate).toLocaleDateString(),
+      startDate: formatDate(emp.startDate),
+      endDate: formatDate(emp.endDate),
       role: EmpRoles[emp.role] || emp.role,
     }))
     return res.status(200).json({ data: employees, message: "found" });
