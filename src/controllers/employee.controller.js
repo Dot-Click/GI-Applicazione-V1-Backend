@@ -203,12 +203,10 @@ export const updateEmployee = async (req, res) => {
     const upd_emp = {
       ...req.body,
       ...(startDate && { startDate: new Date(startDate).toISOString() }),
-      ...(endDate && { endDate: new Date(endDate).toISOString() })
+      ...(endDate && { endDate: new Date(endDate).toISOString() }),
+      ...(role !== undefined && { role }),
     }
     delete upd_emp.email
-    if (!req.body.role) {
-      delete upd_emp.role
-    }
     const emp = await prisma.employee.update({
       where: { id },
       data: upd_emp,
