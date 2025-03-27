@@ -2,7 +2,7 @@ import "dotenv/config";
 import prisma from "../../prisma/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { generateAndSaveToken } from "../lib/utils.js";
+import { formatDate, generateAndSaveToken } from "../lib/utils.js";
 
 const { sign, verify } = jwt;
 
@@ -186,8 +186,8 @@ export const getAdminInfo = async (req, res) => {
       .map((order) => ({
         ...order,
         state: orderStateMap[order.state] || order.state,
-        startDate: new Date(order.startDate).toLocaleDateString(),
-        endDate: new Date(order.endDate).toLocaleDateString(),
+        startDate: formatDate(order.startDate),
+        endDate: formatDate(order.endDate),
         advancePayment: Number(order.advancePayment).toFixed(2),
         withholdingAmount: Number(order.withholdingAmount).toFixed(2),
         workAmount: Number(order.workAmount).toFixed(2),
@@ -199,8 +199,8 @@ export const getAdminInfo = async (req, res) => {
       .map(({ Customer, supplier, ...rest }) => rest);
     admin.employees = admin.employees.map((emp)=>({
       ...emp,
-      startDate: new Date(emp.startDate).toLocaleDateString(),
-      endDate: new Date(emp.endDate).toLocaleDateString(),
+      startDate: formatDate(order.startDate),
+      endDate: formatDate(order.endDate),
       role: EmpRoles[emp.role] || emp.role,
     }))  
 
