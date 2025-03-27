@@ -1,6 +1,6 @@
 import prisma from "../../prisma/prisma.js";
 import axios from "axios";
-import { cloudinaryUploader } from "../lib/utils.js";
+import { cloudinaryUploader, formatDate } from "../lib/utils.js";
 
 export const createOrder = async (req, res) => {
   try {
@@ -356,8 +356,8 @@ export const getOrder = async (req, res) => {
       .json({
         ...order,
         state: orderStateMap[order.state] || order.state,
-        startDate: new Date(order.startDate).toLocaleDateString(),
-        endDate: new Date(order.endDate).toLocaleDateString(),
+        startDate: formatDate(order.startDate),
+        endDate: formatDate(order.endDate),
         advancePayment: Number(order.advancePayment).toFixed(2),
         withholdingAmount: Number(order.withholdingAmount).toFixed(2),
         workAmount: Number(order.workAmount).toFixed(2),
@@ -653,8 +653,8 @@ export const getArchivedOrders = async (req, res) => {
       .map((order) => ({
         ...order,
         state: orderStateMap[order.state] || order.state,
-        startDate: new Date(order.startDate).toLocaleDateString(),
-        endDate: new Date(order.endDate).toLocaleDateString(),
+        startDate: formatDate(order.startDate),
+        endDate: formatDate(order.startDate),
         advancePayment: Number(order.advancePayment).toFixed(2),
         withholdingAmount: Number(order.withholdingAmount).toFixed(2),
         workAmount: Number(order.workAmount).toFixed(2),
