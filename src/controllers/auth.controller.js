@@ -199,8 +199,8 @@ export const getAdminInfo = async (req, res) => {
       .map(({ Customer, supplier, ...rest }) => rest);
     admin.employees = admin.employees.map((emp)=>({
       ...emp,
-      startDate: formatDate(order.startDate),
-      endDate: formatDate(order.endDate),
+      startDate: formatDate(emp.startDate),
+      endDate: formatDate(emp.endDate),
       role: EmpRoles[emp.role] || emp.role,
     }))  
 
