@@ -199,7 +199,7 @@ export const createEmployees = async (req,res) => {
 export const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const {startDate, endDate} = req.body
+    const {startDate, endDate, role} = req.body
     const upd_emp = {
       ...req.body,
       ...(startDate && { startDate: new Date(startDate).toISOString() }),
