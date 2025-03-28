@@ -157,7 +157,7 @@ export const createEmployees = async (req,res) => {
         message: `Invalid role for employee: ${invalidRoleEmployee.nameAndsurname}. Valid roles are: ${Object.values(EmpRoles).join(', ')}`,
       });
     }
-    const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
+    const telRegex = /^\+\d{1}\s\(\d{3}\)\s\d{4}\s\d{4}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     let invalidFields = [];

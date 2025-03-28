@@ -94,7 +94,7 @@ export const createSupps = async (req,res) => {
         message: `An supplier is missing required fields: ${missingFields.join(", ")}`,
       });
     }
-    const telRegex = /^\+\d{2}\s\d{3}\s\d{3}\s\d{4}$/;
+    const telRegex = /^\+\d{1}\s\(\d{3}\)\s\d{4}\s\d{4}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   let invalidFields = [];

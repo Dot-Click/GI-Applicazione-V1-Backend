@@ -519,7 +519,7 @@ export const createOrders = async (req, res) => {
         });
       })
     );
-
+    if(!createdOrders.length) return res.status(400).json({message:"Orders already exists"})
     return res.status(200).json({
       message: `Orders added: ${createdOrders.length}, Skipped duplicates: ${
         orders.length - uniqueOrders.length
