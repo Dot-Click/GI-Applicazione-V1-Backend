@@ -358,11 +358,11 @@ export const getOrder = async (req, res) => {
         state: orderStateMap[order.state] || order.state,
         startDate: formatDate(order.startDate),
         endDate: formatDate(order.endDate),
-        advancePayment: Number(order.advancePayment).toFixed(2),
-        withholdingAmount: Number(order.withholdingAmount).toFixed(2),
-        workAmount: Number(order.workAmount).toFixed(2),
-        dipositRecovery: Number(order.dipositRecovery).toFixed(2),
-        iva: Number(order.iva).toFixed(2),
+        advancePayment: Number(order.advancePayment).toFixed(2)+"€",
+        withholdingAmount: Number(order.withholdingAmount).toFixed(2)+"%",
+        workAmount: Number(order.workAmount).toFixed(2)+"€",
+        dipositRecovery: Number(order.dipositRecovery).toFixed(2)+"%",
+        iva: Number(order.iva).toFixed(2)+"%",
       });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -655,11 +655,11 @@ export const getArchivedOrders = async (req, res) => {
         state: orderStateMap[order.state] || order.state,
         startDate: formatDate(order.startDate),
         endDate: formatDate(order.startDate),
-        advancePayment: Number(order.advancePayment).toFixed(2),
-        withholdingAmount: Number(order.withholdingAmount).toFixed(2),
-        workAmount: Number(order.workAmount).toFixed(2),
-        dipositRecovery: Number(order.dipositRecovery).toFixed(2),
-        iva: Number(order.iva).toFixed(2),
+        advancePayment: Number(order.advancePayment).toFixed(2)+"€",
+        withholdingAmount: Number(order.withholdingAmount).toFixed(2)+"%",
+        workAmount: Number(order.workAmount).toFixed(2)+"€",
+        dipositRecovery: Number(order.dipositRecovery).toFixed(2)+"%",
+        iva: Number(order.iva).toFixed(2)+"%",
         customerName: order.Customer?.companyName || null,
         supplierName: order.supplier?.companyName || null,
       }))
