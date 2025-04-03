@@ -96,6 +96,7 @@ model ordSequence {
 
 model Customer {
   id          String   @id @default(uuid())
+  code        String?  @db.VarChar(10)
   email       String   @unique
   name        String?
   password    String?
@@ -129,6 +130,7 @@ model custSequence {
 
 model Supplier {
   id          String   @id @default(uuid())
+  code        String?  @db.VarChar(10)
   email       String   @unique //ref to supplierEmail in order table
   name        String?
   password    String?
@@ -161,6 +163,7 @@ model supSequence {
 
 model Employee {
   id                  String      @id @default(uuid())
+  code                String?     @db.VarChar(10)
   email               String      @unique
   name                String
   surname             String
