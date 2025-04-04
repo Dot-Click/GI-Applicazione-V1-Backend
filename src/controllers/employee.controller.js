@@ -102,7 +102,8 @@ export const getEmployee = async (req, res) => {
     if (!emp) {
       return res.status(200).json({ message: "employee not found" });
     }
-    return res.status(200).json({ message: "employee fetched", data: {...emp, role: EmpRoles[emp.role] || emp.role,startDate: formatDate(emp.startDate), endDate: formatDate(emp.endDate), } });
+    delete emp.role
+    return res.status(200).json({ message: "employee fetched", data: {...emp,startDate: formatDate(emp.startDate), endDate: formatDate(emp.endDate), } });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -189,12 +190,11 @@ export const createEmployees = async (req,res) => {
 export const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const {startDate, endDate, role} = req.body
+    const {startDate, endDate} = req.body
     const upd_emp = {
       ...req.body,
       ...(startDate && { startDate: new Date(startDate).toISOString() }),
       ...(endDate && { endDate: new Date(endDate).toISOString() }),
-      ...(role !== undefined ? { role: EmpDBRoles[role] || role } : {}),
     }
     delete upd_emp.email
     const emp = await prisma.employee.update({
@@ -273,7 +273,6 @@ export const updateEmpSequence = async (req, res) => {
       "surname",
       "nameAndsurname",
       "taxId",
-      "contractorNo",
       "code",
       "sector",
       "startDate",
@@ -283,9 +282,7 @@ export const updateEmpSequence = async (req, res) => {
       "qualification",
       "telephone",
       "address",
-      "role",
       "email",
-      "contractor",
       "actions"
     ];
     const invalidFields = [

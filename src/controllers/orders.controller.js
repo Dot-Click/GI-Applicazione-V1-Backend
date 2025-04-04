@@ -9,7 +9,6 @@ export const createOrder = async (req, res) => {
       address,
       code,
       customerName,
-      supplierName,
       withholdingAmount,
       workAmount,
       dipositRecovery,
@@ -101,10 +100,7 @@ export const createOrder = async (req, res) => {
           lng: String(location?.lng) || null,
           Customer: {
             connect: { companyName: customerName },
-          },
-          supplier: {
-            connect: { companyName: supplierName },
-          },
+          }
         },
       });
     } catch (prismaError) {
@@ -132,7 +128,6 @@ export const updateOrder = async (req, res) => {
     const { id } = req.params;
     const {
       customerName,
-      supplierName,
       address,
       adminId,
       withholdingAmount,
@@ -205,13 +200,6 @@ export const updateOrder = async (req, res) => {
           }
         : {}),
 
-      ...(supplierName
-        ? {
-            supplier: {
-              connect: { companyName: supplierName },
-            },
-          }
-        : {}),
       ...(withholdingAmount !== undefined && {
         withholdingAmount: Number(withholdingAmount),
       }),
@@ -519,24 +507,13 @@ export const getAssociatedUsers = async (req, res) => {
         employees: {
           select: {
             name: true,
-            role: true,
             surname: true,
           },
         },
       },
     });
-    const transformedData = {
-      Technical_Manager: users.employees.filter(
-        (emp) => emp.role === "Technical_Manager"
-      ),
-      Construction_Manager: users.employees.filter(
-        (emp) => emp.role === "Construction_Manager"
-      ),
-      Order_Manager: users.employees.filter(
-        (emp) => emp.role === "Order_Manager"
-      ),
-    };
-    return res.status(200).json({ ...users, employees: transformedData });
+    
+    return res.status(200).json(users);
   } catch (error) {
     return res.status(200).json({ error: error.message });
   }
@@ -684,7 +661,6 @@ export const updateOrderSequence = async (req, res) => {
       "advancePayment",
       "dipositRecovery",
       "customerName",
-      "supplierName",
       "isPublic",
       "iva",
       "cup",

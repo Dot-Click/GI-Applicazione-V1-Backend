@@ -129,11 +129,11 @@ export const getAdminInfo = async (req, res) => {
       CANCELLED: "Cancellato",
       COMPLETATO: "Completato",
     };
-    const EmpRoles= {
-      Technical_Manager : 'Technical Manager',
-      Order_Manager : 'Order Manager',
-      Construction_Manager : 'Construction Manager',
-    }
+    // const EmpRoles= {
+    //   Technical_Manager : 'Technical Manager',
+    //   Order_Manager : 'Order Manager',
+    //   Construction_Manager : 'Construction Manager',
+    // }
 
     const admin = await prisma.admin.findUnique({
       where: { id },
@@ -201,7 +201,7 @@ export const getAdminInfo = async (req, res) => {
       ...emp,
       startDate: formatDate(emp.startDate),
       endDate: formatDate(emp.endDate),
-      role: EmpRoles[emp.role] || emp.role,
+      role: null,
     }))  
 
     return res.status(200).json({
