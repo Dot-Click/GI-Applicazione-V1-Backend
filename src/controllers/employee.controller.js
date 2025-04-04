@@ -49,13 +49,8 @@ export const createEmployee = async (req, res) => {
     const randomPass = `employee${count}`;
     const hash = await bcrypt.hash(randomPass, 10);
 
-    if (!Object.values(EmpDBRoles).includes(req.body.role)) {
-      return res.status(400).json({
-        message: `Invalid role. Valid roles are: ${Object.values(EmpDBRoles).join(', ')}`,
-      });
-    }
     const emp = await prisma.employee.create({
-      data: { ...req.body, adminId: id, password: hash,number: telephone,startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString() },
+      data: { ...req.body, adminId: id, password: hash,number: telephone,startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString(), role: EmpDBRoles[req.body?.role] },
       omit: { password: true },
     });
     return res.status(200).json({
