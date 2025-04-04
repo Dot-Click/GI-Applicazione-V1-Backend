@@ -47,7 +47,7 @@ model Order {
   // contractAttachment String
   // discountPercentage Float
   state                    OrderState? @default(ON_HOLD)
-  cnceCode                 String      @db.VarChar(50)
+  cnceCode                 String?      @db.VarChar(50)
   orderManager             String
   siteManager              String
   technicalManager         String
@@ -56,8 +56,8 @@ model Order {
   supplier                 Supplier?   @relation(fields: [supplierId], references: [id])
   supplierId               String?
   status                   Status?     @default(active)
-  cig                      String      @db.VarChar(50)
-  cup                      String      @db.VarChar(50)
+  cig                      String?      @db.VarChar(50)
+  cup                      String?      @db.VarChar(50)
   iva                      Decimal?    @db.Decimal(12,4)
   dipositRecovery          Decimal?    @db.Decimal(12,4)
   employee                 Employee?   @relation(fields: [employeeId], references: [id])
@@ -96,8 +96,8 @@ model ordSequence {
 
 model Customer {
   id          String   @id @default(uuid())
-  code        String?  @db.VarChar(10)
-  email       String   @unique
+  code        String   @unique @db.VarChar(10)
+  email       String?  
   name        String?
   password    String?
   companyName String   @unique
@@ -109,9 +109,9 @@ model Customer {
   address     String
   common      String?
   cap         String?
-  pec         String
+  pec         String?
   status      Status?  @default(active)
-  telephone   String
+  telephone   String?
   role        Role     @default(USER)
   admin       Admin?   @relation(fields: [adminId], references: [id])
   adminId     String?
@@ -130,8 +130,8 @@ model custSequence {
 
 model Supplier {
   id          String   @id @default(uuid())
-  code        String?  @db.VarChar(10)
-  email       String   @unique //ref to supplierEmail in order table
+  code        String   @unique @db.VarChar(10)
+  email       String?  
   name        String?
   password    String?
   companyName String   @unique
@@ -143,9 +143,9 @@ model Supplier {
   address     String
   common      String?
   cap         String?
-  pec         String
+  pec         String?
   status      Status?  @default(active)
-  telephone   String
+  telephone   String?
   admin       Admin?   @relation(fields: [adminId], references: [id])
   adminId     String?
   orders      Order[]
@@ -162,21 +162,20 @@ model supSequence {
 }
 
 model Employee {
-  id                  String      @id @default(uuid())
-  code                String?     @db.VarChar(10)
-  email               String      @unique
+  id                  String     @id @default(uuid())
+  code                String     @unique @db.VarChar(10)
+  email               String      
   name                String
   surname             String
   taxId               String
-  contractorNo        String
+  contractorNo        String?
   sector              String
-  startDate           DateTime?   @db.Date
-  endDate             DateTime?   @db.Date
+  startDate           DateTime   @db.Date
+  endDate             DateTime   @db.Date
   municipalityOfBirth String
   level               String
   qualification       String
-  number              String
-  nameAndsurname      String?
+  nameAndsurname      String
   natureContract      String?
   archieved           String?     @default("false")
   password            String?
@@ -190,7 +189,7 @@ model Employee {
   telephone           String?
   status              Status      @default(active)
   address             String
-  role                EmpRole     @default(Admin)
+  role                EmpRole?    @default(Technical_Manager)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 }

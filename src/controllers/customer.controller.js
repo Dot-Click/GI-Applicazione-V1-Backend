@@ -45,7 +45,7 @@ export const signup = async (req, res) => {
 export const createCust = async (req, res) => {
   try {
     const { id } = req.user;
-    const { email, ...customerData } = req.body;
+    const { code,email, ...customerData } = req.body;
 
     const requiredFields = [
       "companyName",
@@ -57,9 +57,6 @@ export const createCust = async (req, res) => {
       "common",
       "cap",
       "address",
-      "pec",
-      "email",
-      "telephone",
     ];
 
     const missingField = requiredFields.find((field) => !req.body[field]);
@@ -68,7 +65,7 @@ export const createCust = async (req, res) => {
         .status(400)
         .json({ message: `Missing required field: ${missingField}` });
     }
-    const ifExist = await prisma.customer.findUnique({ where: { email } });
+    const ifExist = await prisma.customer.findUnique({ where: { code } });
     if (ifExist) {
       return res.status(409).json({ message: "Customer already exists" });
     }
@@ -76,17 +73,16 @@ export const createCust = async (req, res) => {
     let count = Math.round(Math.random() * 100);
     const randomPass = `customer${count}`;
     customerData.password = await bcrypt.hash(randomPass, 10);
-    customerData.adminId = id;
-    customerData.email = email;
+    customerData.email = email || null;
     const customer = await prisma.customer.create({
-      data: customerData,
+      data: {...customerData, code, adminId: id},
       omit: { password: true },
     });
 
     return res.status(201).json({
       message: "Customer created successfully",
       data: { ...customer },
-      login_crdentials: { password: randomPass, email: customer.email },
+      login_crdentials: { password: randomPass, email: customer?.email },
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -138,9 +134,6 @@ export const createCusts = async (req,res) => {
       "common",
       "cap",
       "address",
-      "pec",
-      "email",
-      "telephone",
     ];
      const invalidcustomer = customers.find(customer => 
       requiredFields.some(field => !customer[field])

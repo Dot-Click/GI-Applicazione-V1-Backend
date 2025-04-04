@@ -14,23 +14,20 @@ const EmpDBRoles = {
 };
 export const createEmployee = async (req, res) => {
   try {
-    const {telephone,startDate,endDate} = req.body
+    const {telephone,startDate,endDate, code} = req.body
     const reqFields = [
       "name",
       "surname",
       "nameAndsurname",
       "taxId",
       "code",
-      "contractorNo",
       "sector",
       "startDate",
       "endDate",
       "municipalityOfBirth",
       "level",
       "qualification",
-      "telephone",
       "address",
-      "role",
       "email",
     ];
     const missingField = reqFields.find((field) => !req.body[field]);
@@ -40,7 +37,7 @@ export const createEmployee = async (req, res) => {
         .json({ message: `Missing required field: ${missingField}` });
     }
     const ifExist = await prisma.employee.findUnique({
-      where: { email: req.body.email },
+      where: { code },
     });
     if (ifExist)
       return res.status(400).json({ message: "employee already exist" });
@@ -50,7 +47,7 @@ export const createEmployee = async (req, res) => {
     const hash = await bcrypt.hash(randomPass, 10);
 
     const emp = await prisma.employee.create({
-      data: { ...req.body, adminId: id, password: hash,number: telephone,startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString(), role: EmpDBRoles[req.body?.role] },
+      data: { ...req.body, adminId: id, password: hash, telephone: telephone || null,startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString(),/*role: EmpDBRoles[req.body?.role]  */},
       omit: { password: true },
     });
     return res.status(200).json({
@@ -121,7 +118,6 @@ export const createEmployees = async (req,res) => {
       "surname",
       "nameAndsurname",
       "taxId",
-      "contractorNo",
       "code",
       "sector",
       "startDate",
@@ -129,9 +125,7 @@ export const createEmployees = async (req,res) => {
       "municipalityOfBirth",
       "level",
       "qualification",
-      "telephone",
       "address",
-      "role",
       "email",
     ];
      const invalidemployee = employees.find(employee => 
@@ -143,22 +137,22 @@ export const createEmployees = async (req,res) => {
         message: `An employee is missing required fields: ${missingFields.join(", ")}`,
       });
     }
-    let dbRole;
-    const invalidRoleEmployee = employees.find((employee) => {
-      dbRole = EmpDBRoles[employee.role];
-      return !dbRole;
-    });
+    // let dbRole;
+    // const invalidRoleEmployee = employees.find((employee) => {
+    //   dbRole = EmpDBRoles[employee.role];
+    //   return !dbRole;
+    // });
     
-    if (invalidRoleEmployee) {
-      return res.status(400).json({
-        message: `Invalid role for employee: ${invalidRoleEmployee.nameAndsurname}. Valid roles are: ${Object.values(EmpRoles).join(', ')}`,
-      });
-    }
+    // if (invalidRoleEmployee) {
+    //   return res.status(400).json({
+    //     message: `Invalid role for employee: ${invalidRoleEmployee.nameAndsurname}. Valid roles are: ${Object.values(EmpRoles).join(', ')}`,
+    //   });
+    // }
     const telRegex = /^\+\d{1}\s\(\d{3}\)\s\d{4}\s\d{4}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     let invalidFields = [];
-    for (const { startDate, telephone, email, endDate, nameAndsurname } of employees) {
+    for (const { telephone, email, nameAndsurname } of employees) {
       if (!telRegex.test(telephone)) invalidFields.push("telephone");
       if (!emailRegex.test(email)) invalidFields.push("email");
 
@@ -174,8 +168,7 @@ export const createEmployees = async (req,res) => {
         ...employee,
         adminId: id,
         number: String(employee.telephone),
-        telephone: String(employee.telephone),
-        role: dbRole,
+        telephone: String(employee.telephone) || null,
         contractorNo: String(employee.contractorNo),
         level: String(employee.level),
         taxId: String(employee.taxId),

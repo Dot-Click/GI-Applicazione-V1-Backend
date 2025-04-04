@@ -23,22 +23,12 @@ export const createOrder = async (req, res) => {
     const requiredFields = [
       "code",
       "description",
-      "startDate",
-      "endDate",
       "address",
-      "cig",
-      "cup",
       "siteManager",
       "orderManager",
       "technicalManager",
-      "cnceCode",
       "workAmount",
-      "advancePayment",
-      "dipositRecovery",
       "customerName",
-      "supplierName",
-      "iva",
-      "withholdingAmount",
     ];
 
     const missingField = requiredFields.find((field) => !req.body[field]);
@@ -382,25 +372,13 @@ export const createOrders = async (req, res) => {
     const requiredFields = [
       "code",
       "description",
-      "startDate",
-      "endDate",
       "address",
-      "cig",
-      "cup",
       "siteManager",
       "orderManager",
       "technicalManager",
-      "cnceCode",
       "workAmount",
-      "advancePayment",
-      "dipositRecovery",
       "customerName",
-      "supplierName",
-      "iva",
-      "withholdingAmount",
     ];
-
-    const codeRegex = /^COM-\d{6}$/;
 
     for (const order of orders) {
       const missingFields = requiredFields.filter((field) => !order[field]);
@@ -412,15 +390,6 @@ export const createOrders = async (req, res) => {
           )}`,
         });
       }
-
-      if (!codeRegex.test(order.code)) {
-        return res
-          .status(400)
-          .json({
-            message: `Invalid order code: ${order.code}. Expected format: COM-{6 digits}`,
-          });
-      }
-
     }
 
     const managerNames = [

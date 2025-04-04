@@ -82,9 +82,6 @@ export const createSupps = async (req,res) => {
       "common",
       "cap",
       "address",
-      "pec",
-      "email",
-      "telephone",
     ];
      const invalidsupplier = suppliers.find(supplier => 
       requiredFields.some(field => !supplier[field])
@@ -122,7 +119,7 @@ export const createSupps = async (req,res) => {
 export const createSupp = async (req, res) => {
   try {
     const { id } = req.user;
-    const { email } = req.body;
+    const { code } = req.body;
 
     const requiredFields = [
       "companyName",
@@ -134,16 +131,13 @@ export const createSupp = async (req, res) => {
       "common",
       "cap",
       "address",
-      "pec",
-      "email",
-      "telephone",
     ];
     
     if (!requiredFields.every((field) => req.body[field])) {
       return res.status(400).json({ message: "Missing required fields" });
     }
     const existingSupplier = await prisma.supplier.findUnique({
-      where: { email },
+      where: { code },
     });
     if (existingSupplier) {
       return res.status(409).json({ message: "Supplier already exists" });
@@ -155,7 +149,7 @@ export const createSupp = async (req, res) => {
       data: {
         ...req.body,
         adminId: id,
-        email,
+        code,
         password: hash,
       },
       omit: { password: true },
@@ -164,7 +158,7 @@ export const createSupp = async (req, res) => {
     return res.status(201).json({
       message: "Supplier created successfully",
       data: newSupplier,
-      login_crdentials: { password: randomPass, email: newSupplier.email },
+      login_crdentials: { password: randomPass, email: newSupplier?.email },
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
