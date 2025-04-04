@@ -20,6 +20,7 @@ export const createEmployee = async (req, res) => {
       "surname",
       "nameAndsurname",
       "taxId",
+      "code",
       "contractorNo",
       "sector",
       "startDate",
@@ -126,6 +127,7 @@ export const createEmployees = async (req,res) => {
       "nameAndsurname",
       "taxId",
       "contractorNo",
+      "code",
       "sector",
       "startDate",
       "endDate",
@@ -284,6 +286,7 @@ export const updateEmpSequence = async (req, res) => {
       "nameAndsurname",
       "taxId",
       "contractorNo",
+      "code",
       "sector",
       "startDate",
       "endDate",
@@ -294,7 +297,7 @@ export const updateEmpSequence = async (req, res) => {
       "address",
       "role",
       "email",
-      "contractor", "firstName", "lastName", "fullName", "birthPlace", "homeAddress", "phoneNumber", "emailAddress", "fiscalCode",
+      "contractor",
       "actions"
     ];
     const invalidFields = [
