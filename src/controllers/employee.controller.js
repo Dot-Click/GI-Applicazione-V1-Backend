@@ -41,6 +41,16 @@ export const createEmployee = async (req, res) => {
     });
     if (ifExist)
       return res.status(400).json({ message: "employee already exist" });
+    if (startDate && endDate) {
+      const dataRilascio = new Date(startDate);
+      const expiryDate = new Date(endDate);
+    
+      if (dataRilascio > expiryDate) {
+        return res.status(400).json({
+          message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+        });
+      }
+    }
     const { id } = req.user;
     let count = Math.round(Math.random() * 100);
     const randomPass = `employee${count}`;
@@ -153,14 +163,24 @@ export const createEmployees = async (req,res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     let invalidFields = [];
-    for (const { telephone, email, nameAndsurname } of employees) {
-      if (!telRegex.test(telephone)) invalidFields.push("telephone");
-      if (!emailRegex.test(email)) invalidFields.push("email");
+    for (const { telephone, email, nameAndsurname, startDate, endDate } of employees) {
+      if (telephone && !telRegex.test(telephone)) invalidFields.push("telephone");
+      if (email && !emailRegex.test(email)) invalidFields.push("email");
 
       if (invalidFields.length > 0) {
         return res.status(400).json({
           message: `Invalid fields for ${nameAndsurname}: ${invalidFields.join(", ")}`,
         });
+      }
+      if (startDate && endDate) {
+        const dataRilascio = new Date(startDate);
+        const expiryDate = new Date(endDate);
+      
+        if (dataRilascio > expiryDate) {
+          return res.status(400).json({
+            message: `Invalid dates: dataRilascio cannot be greater than expiryDate for ${nameAndsurname}`,
+          });
+        }
       }
     }
 
@@ -168,9 +188,7 @@ export const createEmployees = async (req,res) => {
       data: employees.map(employee => ({
         ...employee,
         adminId: id,
-        number: String(employee.telephone),
         telephone: String(employee.telephone) || null,
-        contractorNo: String(employee.contractorNo),
         level: String(employee.level),
         taxId: String(employee.taxId),
         startDate: new Date(employee.startDate).toISOString(),
@@ -191,6 +209,16 @@ export const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
     const {startDate, endDate} = req.body
+    if (startDate && endDate) {
+      const dataRilascio = new Date(startDate);
+      const expiryDate = new Date(endDate);
+    
+      if (dataRilascio > expiryDate) {
+        return res.status(400).json({
+          message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+        });
+      }
+    }
     const upd_emp = {
       ...req.body,
       ...(startDate && { startDate: new Date(startDate).toISOString() }),

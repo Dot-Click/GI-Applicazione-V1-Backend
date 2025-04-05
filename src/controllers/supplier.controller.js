@@ -98,9 +98,9 @@ export const createSupps = async (req,res) => {
   let invalidFields = [];
   suppliers.find(({ companyName,telephone, email, pec }) => {
 
-    if (!telRegex.test(telephone)) invalidFields.push("telephone");
-    if (!emailRegex.test(email)) invalidFields.push("email");
-    if (!emailRegex.test(pec)) invalidFields.push("pec");
+    if (telephone && !telRegex.test(telephone)) invalidFields.push("telephone");
+    if (email && !emailRegex.test(email)) invalidFields.push("email");
+    if (pec && !emailRegex.test(pec)) invalidFields.push("pec");
 
     if (invalidFields.length > 0) {
         return res.status(400).json({ 

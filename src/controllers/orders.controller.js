@@ -41,7 +41,16 @@ export const createOrder = async (req, res) => {
     if (existingOrder) {
       return res.status(400).json({ error: "Can't create duplicate orders" });
     }
-
+    if (startDate && endDate) {
+      const dataRilascio = new Date(startDate);
+      const expiryDate = new Date(endDate);
+    
+      if (dataRilascio > expiryDate) {
+        return res.status(400).json({
+          message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+        });
+      }
+    }
     let location = null;
     try {
       const { data } = await axios.get(
@@ -140,7 +149,16 @@ export const updateOrder = async (req, res) => {
       ...rest
     } = req.body;
     if (!id) return res.status(400).json({ message: "Order ID is required." });
-
+    if (startDate && endDate) {
+      const dataRilascio = new Date(startDate);
+      const expiryDate = new Date(endDate);
+    
+      if (dataRilascio > expiryDate) {
+        return res.status(400).json({
+          message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
+        });
+      }
+    }
     let location = null;
     if (address) {
       try {
@@ -378,8 +396,17 @@ export const createOrders = async (req, res) => {
           )}`,
         });
       }
+      if (order?.startDate && order?.endDate) {
+        const dataRilascio = new Date(order.startDate);
+        const expiryDate = new Date(order.endDate);
+      
+        if (dataRilascio > expiryDate) {
+          return res.status(400).json({
+            message: `Invalid dates: dataRilascio cannot be greater than expiryDate for ${order.code}`,
+          });
+        }
+      }
     }
-
     const managerNames = [
       ...new Set(
         orders.flatMap((order) => [
@@ -433,16 +460,11 @@ export const createOrders = async (req, res) => {
           select: { id: true },
         });
 
-        const supplier = await prisma.supplier.findUnique({
-          where: { companyName: order.supplierName },
-          select: { id: true },
-        });
-        console.log(customer, supplier);
-        if (!customer || !supplier) {
+        if (!customer) {
           return res
             .status(400)
             .json({
-              error: `Invalid customer or supplier: ${order.customerName}, ${order.supplierName} for order: ${order.code}`,
+              error: `Invalid customer: ${order.customerName} for order: ${order.code}`,
             });
         }
 
@@ -451,27 +473,26 @@ export const createOrders = async (req, res) => {
             admin: { connect: { id } },
             code: order.code,
             description: order.description,
-            startDate: new Date(order.startDate).toISOString(),
-            endDate: new Date(order.endDate).toISOString(),
+            startDate: order?.startDate ? new Date(order.startDate).toISOString() : null,
+            endDate: order?.endDate ? new Date(order.endDate).toISOString() : null,
             address: order.address,
-            cig: order.cig,
-            cup: order.cup,
+            cig: order?.cig,
+            cup: order?.cup,
             siteManager: order.siteManager,
             orderManager: order.orderManager,
             technicalManager: order.technicalManager,
-            cnceCode: order.cnceCode,
+            cnceCode: order?.cnceCode,
             workAmount: Number(order.workAmount),
             advancePayment: Number(order.advancePayment),
-            dipositRecovery: Number(order.dipositRecovery),
-            iva: Number(order.iva),
-            withholdingAmount: Number(order.withholdingAmount),
+            dipositRecovery: Number(order?.dipositRecovery),
+            iva: Number(order?.iva),
+            withholdingAmount: Number(order?.withholdingAmount),
             isPublic: order.isPublic === "true" ? "true" : "false",
             pos: order?.pos,
             psc: order?.psc,
             permission_to_build: order?.permission_to_build,
             contract: order?.contract,
             Customer: { connect: { id: customer.id } },
-            supplier: { connect: { id: supplier.id } },
           },
         });
       })
