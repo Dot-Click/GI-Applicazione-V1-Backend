@@ -16,6 +16,10 @@ export const createOrder = async (req, res) => {
       startDate,
       endDate,
       advancePayment,
+      desc_psc,
+      desc_pos,
+      desc_permission_to_build,
+      desc_contract,
       ...orderData
     } = req.body;
 
@@ -44,7 +48,6 @@ export const createOrder = async (req, res) => {
     if (startDate && endDate) {
       const dataRilascio = new Date(startDate);
       const expiryDate = new Date(endDate);
-    
       if (dataRilascio > expiryDate) {
         return res.status(400).json({
           message: "Invalid dates: dataRilascio cannot be greater than expiryDate",
@@ -76,7 +79,16 @@ export const createOrder = async (req, res) => {
         }
       })
     );
-
+    if (
+      (desc_psc && !uploadedFiles.psc) ||
+      (desc_pos && !uploadedFiles.pos) ||
+      (desc_permission_to_build && !uploadedFiles.permission_to_build) ||
+      (desc_contract && !uploadedFiles.contract)
+    ) {
+      return res.status(400).json({
+        message: "Descriptions aren't provided without attachments",
+      });
+    }
     const orderStateMap = {
       ON_HOLD: "In attesa",
       IN_PROGRESS: "In corso",
@@ -142,6 +154,10 @@ export const updateOrder = async (req, res) => {
       withholdingAmount,
       workAmount,
       dipositRecovery,
+      desc_psc,
+      desc_pos,
+      desc_permission_to_build,
+      desc_contract,
       iva,
       startDate,
       endDate,
@@ -196,7 +212,16 @@ export const updateOrder = async (req, res) => {
         }
       })
     );
-
+    if (
+      (desc_psc && !uploadedFiles.psc) ||
+      (desc_pos && !uploadedFiles.pos) ||
+      (desc_permission_to_build && !uploadedFiles.permission_to_build) ||
+      (desc_contract && !uploadedFiles.contract)
+    ) {
+      return res.status(400).json({
+        message: "Descriptions aren't provided without attachments",
+      });
+    }
     uploadFields.forEach((field) => {
       if (uploadedFiles[field]) {
         upd_data[field] = uploadedFiles[field]?.secure_url;
@@ -493,6 +518,7 @@ export const createOrders = async (req, res) => {
             permission_to_build: order?.permission_to_build,
             contract: order?.contract,
             Customer: { connect: { id: customer.id } },
+            supplier: { connect: { id: supplier.id } },
           },
         });
       })
