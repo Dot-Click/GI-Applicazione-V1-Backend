@@ -79,15 +79,25 @@ export const createOrder = async (req, res) => {
         }
       })
     );
-    if (
-      (desc_psc && !uploadedFiles.psc) ||
-      (desc_pos && !uploadedFiles.pos) ||
-      (desc_permission_to_build && !uploadedFiles.permission_to_build) ||
-      (desc_contract && !uploadedFiles.contract)
-    ) {
-      return res.status(400).json({
-        message: "Descriptions aren't provided without attachments",
-      });
+    const descAttachmentPairs = [
+      { desc: desc_psc, file: uploadedFiles.psc, name: "PSC" },
+      { desc: desc_pos, file: uploadedFiles.pos, name: "POS" },
+      { desc: desc_permission_to_build, file: uploadedFiles.permission_to_build, name: "Permission to Build" },
+      { desc: desc_contract, file: uploadedFiles.contract, name: "Contract" }
+    ];
+    
+    for (const { desc, file, name } of descAttachmentPairs) {
+      if (desc && !file) {
+        return res.status(400).json({
+          message: `You provided a description for ${name} without uploading the corresponding attachment.`,
+        });
+      }
+    
+      if (!desc && file) {
+        return res.status(400).json({
+          message: `You uploaded a file for ${name} without providing a description.`,
+        });
+      }
     }
     const orderStateMap = {
       ON_HOLD: "In attesa",
@@ -114,6 +124,10 @@ export const createOrder = async (req, res) => {
             uploadedFiles.permission_to_build?.secure_url || null,
           psc: uploadedFiles.psc?.secure_url || null,
           pos: uploadedFiles.pos?.secure_url || null,
+          desc_psc,
+          desc_pos,
+          desc_permission_to_build,
+          desc_contract,
           admin: {
             connect: { id },
           },
@@ -368,7 +382,7 @@ export const getOrder = async (req, res) => {
     };
     let order = await prisma.order.findUnique({
       where: { id },
-      include: { Customer: true, supplier: true },
+      include: { Customer: true, supplier: true, decs_ },
     });
     if (!order) return res.status(404).json({ message: "Order not found" });
 
