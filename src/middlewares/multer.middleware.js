@@ -26,6 +26,10 @@ const upload = (req, res, next) => {
     { name: "permission_to_build", maxCount: 1 },
     { name: "psc", maxCount: 1 },
     { name: "pos", maxCount: 1 },
+    { name: "add_additional_1", maxCount: 1 },
+    { name: "add_additional_2", maxCount: 1 },
+    { name: "add_additional_3", maxCount: 1 },
+    { name: "add_additional_4", maxCount: 1 },
   ])(req, res, (err) => {
     if (err) {
       return res.status(400).json({ message: err.message });

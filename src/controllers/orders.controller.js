@@ -20,6 +20,10 @@ export const createOrder = async (req, res) => {
       desc_pos,
       desc_permission_to_build,
       desc_contract,
+      desc_additional_1,
+      desc_additional_2,
+      desc_additional_3,
+      desc_additional_4,
       ...orderData
     } = req.body;
 
@@ -67,7 +71,16 @@ export const createOrder = async (req, res) => {
         .json({ error: `Failed to fetch geolocation: ${geoError.message}` });
     }
 
-    const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
+    const uploadFields = [
+      "contract",
+      "permission_to_build",
+      "psc",
+      "pos",
+      "add_additional_1",
+      "add_additional_2",
+      "add_additional_3",
+      "add_additional_4",
+    ];
     const uploadedFiles = {};
 
     await Promise.all(
@@ -83,7 +96,11 @@ export const createOrder = async (req, res) => {
       { desc: desc_psc, file: uploadedFiles.psc, name: "PSC" },
       { desc: desc_pos, file: uploadedFiles.pos, name: "POS" },
       { desc: desc_permission_to_build, file: uploadedFiles.permission_to_build, name: "Permission to Build" },
-      { desc: desc_contract, file: uploadedFiles.contract, name: "Contract" }
+      { desc: desc_contract, file: uploadedFiles.contract, name: "Contract" },
+      { desc: desc_additional_1, file: uploadedFiles.add_additional_1, name: "Additional Document 1" },
+      { desc: desc_additional_2, file: uploadedFiles.add_additional_2, name: "Additional Document 2" },
+      { desc: desc_additional_3, file: uploadedFiles.add_additional_3, name: "Additional Document 3" },
+      { desc: desc_additional_4, file: uploadedFiles.add_additional_4, name: "Additional Document 4" },
     ];
     
     for (const { desc, file, name } of descAttachmentPairs) {
@@ -110,47 +127,57 @@ export const createOrder = async (req, res) => {
       order = await prisma.order.create({
         data: {
           ...orderData,
-          withholdingAmount: Number(withholdingAmount),
-          iva: Number(iva),
-          dipositRecovery: Number(dipositRecovery),
-          workAmount: Number(workAmount),
-          advancePayment: Number(advancePayment),
-          endDate: new Date(endDate).toISOString(),
-          startDate: new Date(startDate).toISOString(),
           code,
           address,
+          workAmount: Number(workAmount),
+          advancePayment: Number(advancePayment),
+          withholdingAmount: Number(withholdingAmount),
+          dipositRecovery: Number(dipositRecovery),
+          iva: Number(iva),
+          startDate: new Date(startDate).toISOString(),
+          endDate: new Date(endDate).toISOString(),
           contract: uploadedFiles.contract?.secure_url || null,
-          permission_to_build:
-            uploadedFiles.permission_to_build?.secure_url || null,
+          permission_to_build: uploadedFiles.permission_to_build?.secure_url || null,
           psc: uploadedFiles.psc?.secure_url || null,
           pos: uploadedFiles.pos?.secure_url || null,
+          add_additional_1: uploadedFiles.add_additional_1?.secure_url || null,
+          add_additional_2: uploadedFiles.add_additional_2?.secure_url || null,
+          add_additional_3: uploadedFiles.add_additional_3?.secure_url || null,
+          add_additional_4: uploadedFiles.add_additional_4?.secure_url || null,
           desc_psc,
           desc_pos,
           desc_permission_to_build,
           desc_contract,
+          desc_additional_1,
+          desc_additional_2,
+          desc_additional_3,
+          desc_additional_4,
+          lat: String(location?.lat) || null,
+          lng: String(location?.lng) || null,
           admin: {
             connect: { id },
           },
-          lat: String(location?.lat) || null,
-          lng: String(location?.lng) || null,
+
           Customer: {
             connect: { companyName: customerName },
-          }
+          },
         },
       });
     } catch (prismaError) {
       if (prismaError.code === "P2025") {
         return res.status(400).json({
           error: "Invalid reference",
-          details:
-            "Customer, Supplier, or one of the managers does not exist. Please check the provided names",
+          details: "Customer, Supplier, or one of the managers does not exist. Please check the provided names",
         });
       }
       return res.status(500).json({ error: prismaError.message });
     }
 
     return res.status(201).json({
-      data: { ...order, state: orderStateMap[order.state] || order.state },
+      data: {
+        ...order,
+        state: orderStateMap[order.state] || order.state,
+      },
       message: "Order created successfully.",
     });
   } catch (error) {
@@ -168,10 +195,22 @@ export const updateOrder = async (req, res) => {
       withholdingAmount,
       workAmount,
       dipositRecovery,
+      permission_to_build,
+      contract,
+      pos,
+      psc,
+      add_additional_1,
+      add_additional_2,
+      add_additional_3,
+      add_additional_4,
       desc_psc,
       desc_pos,
       desc_permission_to_build,
       desc_contract,
+      desc_additional_1,
+      desc_additional_2,
+      desc_additional_3,
+      desc_additional_4,
       iva,
       startDate,
       endDate,
@@ -179,6 +218,7 @@ export const updateOrder = async (req, res) => {
       ...rest
     } = req.body;
     if (!id) return res.status(400).json({ message: "Order ID is required." });
+
     if (startDate && endDate) {
       const dataRilascio = new Date(startDate);
       const expiryDate = new Date(endDate);
@@ -214,7 +254,7 @@ export const updateOrder = async (req, res) => {
       ...(address &&
         location && { lat: String(location.lat), lng: String(location.lng) }),
     };
-    const uploadFields = ["contract", "permission_to_build", "psc", "pos"];
+    const uploadFields = ["contract", "permission_to_build", "psc", "pos","add_additional_1","add_additional_2","add_additional_3","add_additional_4"];
     const uploadedFiles = {};
 
     await Promise.all(
@@ -226,15 +266,32 @@ export const updateOrder = async (req, res) => {
         }
       })
     );
-    if (
-      (desc_psc && !uploadedFiles.psc) ||
-      (desc_pos && !uploadedFiles.pos) ||
-      (desc_permission_to_build && !uploadedFiles.permission_to_build) ||
-      (desc_contract && !uploadedFiles.contract)
-    ) {
-      return res.status(400).json({
-        message: "Descriptions aren't provided without attachments",
-      });
+    const descAttachmentPairs = [
+      { desc: desc_psc, file: uploadedFiles.psc, name: "psc" },
+      { desc: desc_pos, file: uploadedFiles.pos, name: "pos" },
+      { desc: desc_permission_to_build, file: uploadedFiles.permission_to_build, name: "permission_to_build" },
+      { desc: desc_contract, file: uploadedFiles.contract, name: "contract" },
+
+      { desc: desc_additional_1, file: uploadedFiles.add_additional_1, name: "add_additional_1" },
+      { desc: desc_additional_2, file: uploadedFiles.add_additional_2, name: "add_additional_2" },
+      { desc: desc_additional_3, file: uploadedFiles.add_additional_3, name: "add_additional_3" },
+      { desc: desc_additional_4, file: uploadedFiles.add_additional_4, name: "add_additional_4" },
+    ];
+    
+    for (const { desc, file, name } of descAttachmentPairs) {
+      const alreadyUploadedUrl = req.body[name]; // or existing URL if known
+      console.log(alreadyUploadedUrl)
+      if (desc && !file && !alreadyUploadedUrl) {
+        return res.status(400).json({
+          message: `You provided a description for ${name} without uploading the corresponding attachment.`,
+        });
+      }
+    
+      if (!desc && (file || alreadyUploadedUrl)) {
+        return res.status(400).json({
+          message: `You uploaded a file or have an existing file for ${name} without providing a description.`,
+        });
+      }
     }
     uploadFields.forEach((field) => {
       if (uploadedFiles[field]) {
@@ -270,6 +327,22 @@ export const updateOrder = async (req, res) => {
       }),
       ...(startDate && { startDate: new Date(startDate).toISOString() }),
       ...(endDate && { endDate: new Date(endDate).toISOString() }),
+      permission_to_build,
+      contract,
+      pos,
+      psc,
+      add_additional_1,  
+      add_additional_2,  
+      add_additional_3,  
+      add_additional_4,  
+      desc_permission_to_build,
+      desc_psc,
+      desc_pos,
+      desc_contract,
+      desc_additional_1,
+      desc_additional_2,
+      desc_additional_3,
+      desc_additional_4,
     };
     delete updateData.supplierId
     delete updateData.customerId
@@ -280,7 +353,20 @@ export const updateOrder = async (req, res) => {
     });
 
     return res.status(200).json({
-      data: { ...order, state: orderStateMap[order.state] || order.state },
+      data: { ...order,
+        state: orderStateMap[order.state] || order.state,
+        desc_psc: order.desc_permission_to_build,
+        desc_pos: order.desc_permission_to_build,
+        desc_permission_to_build: order.desc_permission_to_build,
+        desc_contract: order.desc_permission_to_build,
+        add_additional_1: order.add_additional_1?.secure_url || null,
+        add_additional_2: order.add_additional_1?.secure_url || null,
+        add_additional_3: order.add_additional_1?.secure_url || null,
+        add_additional_4: order.add_additional_1?.secure_url || null,
+        desc_additional_1: order.desc_additional_1,
+        desc_additional_2: order.desc_additional_2,
+        desc_additional_3: order.desc_additional_3,
+        desc_additional_4: order.desc_additional_4 },
       message: "Order updated successfully.",
     });
   } catch (error) {

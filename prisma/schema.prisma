@@ -35,8 +35,8 @@ model Order {
   id                       String      @id @default(uuid())
   code                     String      @unique @db.VarChar(10)
   description              String
-  workAmount               Decimal?    @db.Decimal(12,4)
-  advancePayment           Decimal?    @db.Decimal(12,4)
+  workAmount               Decimal?    @db.Decimal(12, 4)
+  advancePayment           Decimal?    @db.Decimal(12, 4)
   startDate                DateTime?   @db.Date
   endDate                  DateTime?   @db.Date
   address                  String
@@ -47,7 +47,7 @@ model Order {
   // contractAttachment String
   // discountPercentage Float
   state                    OrderState? @default(ON_HOLD)
-  cnceCode                 String?      @db.VarChar(50)
+  cnceCode                 String?     @db.VarChar(50)
   orderManager             String
   siteManager              String
   technicalManager         String
@@ -56,10 +56,10 @@ model Order {
   supplier                 Supplier?   @relation(fields: [supplierId], references: [id])
   supplierId               String?
   status                   Status?     @default(active)
-  cig                      String?      @db.VarChar(50)
-  cup                      String?      @db.VarChar(50)
-  iva                      Decimal?    @db.Decimal(12,4)
-  dipositRecovery          Decimal?    @db.Decimal(12,4)
+  cig                      String?     @db.VarChar(50)
+  cup                      String?     @db.VarChar(50)
+  iva                      Decimal?    @db.Decimal(12, 4)
+  dipositRecovery          Decimal?    @db.Decimal(12, 4)
   employee                 Employee?   @relation(fields: [employeeId], references: [id])
   employeeId               String?
   jobName                  String?
@@ -74,7 +74,15 @@ model Order {
   desc_psc                 String?
   pos                      String?
   desc_pos                 String?
-  withholdingAmount        Decimal?    @db.Decimal(12,4)
+  add_additional_1         String?
+  desc_additional_1        String?
+  add_additional_2         String?
+  desc_additional_2        String?
+  add_additional_3         String?
+  desc_additional_3        String?
+  add_additional_4         String?
+  desc_additional_4        String?
+  withholdingAmount        Decimal?    @db.Decimal(12, 4)
   lat                      String?     @default("37.7749")
   lng                      String?     @default("-122.4194")
   isPublic                 String?     @default("false")
@@ -97,7 +105,7 @@ model ordSequence {
 model Customer {
   id          String   @id @default(uuid())
   code        String   @unique @db.VarChar(10)
-  email       String?  
+  email       String?
   name        String?
   password    String?
   companyName String   @unique
@@ -131,7 +139,7 @@ model custSequence {
 model Supplier {
   id          String   @id @default(uuid())
   code        String   @unique @db.VarChar(10)
-  email       String?  
+  email       String?
   name        String?
   password    String?
   companyName String   @unique
@@ -162,16 +170,16 @@ model supSequence {
 }
 
 model Employee {
-  id                  String     @id @default(uuid())
-  code                String     @unique @db.VarChar(10)
-  email               String      
+  id                  String      @id @default(uuid())
+  code                String      @unique @db.VarChar(10)
+  email               String
   name                String
   surname             String
   taxId               String
   contractorNo        String?
   sector              String
-  startDate           DateTime   @db.Date
-  endDate             DateTime   @db.Date
+  startDate           DateTime    @db.Date
+  endDate             DateTime    @db.Date
   municipalityOfBirth String
   level               String
   qualification       String
