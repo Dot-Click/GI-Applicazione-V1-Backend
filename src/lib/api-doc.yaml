@@ -570,6 +570,14 @@ paths:
                 - permission_to_build
                 - psc
                 - pos
+                - desc_pos
+                - desc_psc
+                - desc_permission_to_build
+                - desc_contract
+                - add_additional_1
+                - add_additional_2
+                - add_additional_3
+                - add_additional_4
               properties:
                 code:
                   type: string
@@ -638,6 +646,42 @@ paths:
                 pos:
                   type: string
                   example: "path/to/pos.pdf"
+                desc_pos:
+                  type: string
+                  example: "lorem ipsum"
+                desc_psc:
+                  type: string
+                  example: "lorem ipsum"
+                desc_permission_to_build:
+                  type: string
+                  example: "lorem ipsum"
+                desc_contract:
+                  type: string
+                  example: "lorem ipsum"
+                add_additional_1:
+                   type: string
+                   example: "path/to/add_additional_1.pdf"
+                add_additional_2:
+                   type: string
+                   example: "path/to/add_additional_2.pdf"
+                add_additional_3:
+                   type: string
+                   example: "path/to/add_additional_3.pdf"
+                add_additional_4: 
+                   type: string
+                   example: "path/to/add_additional_4.pdf"
+                desc_additional_1: 
+                   type: string
+                   example: "lorem ipsum"
+                desc_additional_2: 
+                   type: string
+                   example: "lorem ipsum"
+                desc_additional_3: 
+                   type: string
+                   example: "lorem ipsum"
+                desc_additional_4: 
+                   type: string
+                   example: "lorem ipsum"
                 isPublic:
                   type: boolean
                   example: true
