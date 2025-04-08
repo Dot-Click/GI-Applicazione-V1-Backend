@@ -382,7 +382,7 @@ export const getOrder = async (req, res) => {
     };
     let order = await prisma.order.findUnique({
       where: { id },
-      include: { Customer: true, supplier: true, decs_ },
+      include: { Customer: true, supplier: true },
     });
     if (!order) return res.status(404).json({ message: "Order not found" });
 
