@@ -195,14 +195,6 @@ export const updateOrder = async (req, res) => {
       withholdingAmount,
       workAmount,
       dipositRecovery,
-      permission_to_build,
-      contract,
-      pos,
-      psc,
-      add_additional_1,
-      add_additional_2,
-      add_additional_3,
-      add_additional_4,
       desc_psc,
       desc_pos,
       desc_permission_to_build,
@@ -280,7 +272,6 @@ export const updateOrder = async (req, res) => {
     
     for (const { desc, file, name } of descAttachmentPairs) {
       const alreadyUploadedUrl = req.body[name]; // or existing URL if known
-      console.log(alreadyUploadedUrl)
       if (desc && !file && !alreadyUploadedUrl) {
         return res.status(400).json({
           message: `You provided a description for ${name} without uploading the corresponding attachment.`,
@@ -327,14 +318,6 @@ export const updateOrder = async (req, res) => {
       }),
       ...(startDate && { startDate: new Date(startDate).toISOString() }),
       ...(endDate && { endDate: new Date(endDate).toISOString() }),
-      permission_to_build,
-      contract,
-      pos,
-      psc,
-      add_additional_1,  
-      add_additional_2,  
-      add_additional_3,  
-      add_additional_4,  
       desc_permission_to_build,
       desc_psc,
       desc_pos,
@@ -353,20 +336,10 @@ export const updateOrder = async (req, res) => {
     });
 
     return res.status(200).json({
-      data: { ...order,
+      data: {
+        ...order,
         state: orderStateMap[order.state] || order.state,
-        desc_psc: order.desc_permission_to_build,
-        desc_pos: order.desc_permission_to_build,
-        desc_permission_to_build: order.desc_permission_to_build,
-        desc_contract: order.desc_permission_to_build,
-        add_additional_1: order.add_additional_1?.secure_url || null,
-        add_additional_2: order.add_additional_1?.secure_url || null,
-        add_additional_3: order.add_additional_1?.secure_url || null,
-        add_additional_4: order.add_additional_1?.secure_url || null,
-        desc_additional_1: order.desc_additional_1,
-        desc_additional_2: order.desc_additional_2,
-        desc_additional_3: order.desc_additional_3,
-        desc_additional_4: order.desc_additional_4 },
+      },
       message: "Order updated successfully.",
     });
   } catch (error) {
