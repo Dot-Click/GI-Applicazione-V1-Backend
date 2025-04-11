@@ -494,16 +494,16 @@ export const createOrders = async (req, res) => {
           )}`,
         });
       }
-      if (order?.startDate && order?.endDate) {
-        const dataRilascio = new Date(order.startDate);
-        const expiryDate = new Date(order.endDate);
+      // if (order?.startDate && order?.endDate) {
+      //   const dataRilascio = new Date(order.startDate);
+      //   const expiryDate = new Date(order.endDate);
       
-        if (dataRilascio > expiryDate) {
-          return res.status(400).json({
-            message: `Invalid dates: dataRilascio cannot be greater than expiryDate for ${order.code}`,
-          });
-        }
-      }
+      //   if (dataRilascio > expiryDate) {
+      //     return res.status(400).json({
+      //       message: `Invalid dates: dataRilascio cannot be greater than expiryDate for ${order.code}`,
+      //     });
+      //   }
+      // }
     }
     const managerNames = [
       ...new Set(

@@ -172,16 +172,16 @@ export const createEmployees = async (req,res) => {
           message: `Invalid fields for ${nameAndsurname}: ${invalidFields.join(", ")}`,
         });
       }
-      if (startDate && endDate) {
-        const dataRilascio = new Date(startDate);
-        const expiryDate = new Date(endDate);
+      // if (startDate && endDate) {
+      //   const dataRilascio = new Date(startDate);
+      //   const expiryDate = new Date(endDate);
       
-        if (dataRilascio > expiryDate) {
-          return res.status(400).json({
-            message: `Invalid dates: dataRilascio cannot be greater than expiryDate for ${nameAndsurname}`,
-          });
-        }
-      }
+      //   if (dataRilascio > expiryDate) {
+      //     return res.status(400).json({
+      //       message: `Invalid dates: dataRilascio cannot be greater than expiryDate for ${nameAndsurname}`,
+      //     });
+      //   }
+      // }
     }
 
     const multipleemployee = await prisma.employee.createMany({
