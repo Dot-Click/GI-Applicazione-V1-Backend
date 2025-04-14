@@ -2,7 +2,7 @@ import "dotenv/config";
 import prisma from "../../prisma/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { formatDate, generateAndSaveToken } from "../lib/utils.js";
+import { formatDate, formatNumberWithThousands, generateAndSaveToken } from "../lib/utils.js";
 
 const { sign, verify } = jwt;
 
@@ -188,9 +188,9 @@ export const getAdminInfo = async (req, res) => {
         state: orderStateMap[order.state] || order.state,
         startDate: formatDate(order.startDate),
         endDate: formatDate(order.endDate),
-        advancePayment: Number(order.advancePayment).toFixed(2)+"€",
+        advancePayment: formatNumberWithThousands(Number(order.advancePayment))+"€",
         withholdingAmount: Number(order.withholdingAmount).toFixed(2)+"%",
-        workAmount: Number(order.workAmount).toFixed(2)+"€",
+        workAmount: formatNumberWithThousands(Number(order.workAmount))+"€",  
         dipositRecovery: Number(order.dipositRecovery).toFixed(2)+"%",
         iva: Number(order.iva).toFixed(2)+"%",
         customerName: order.Customer?.companyName || null,

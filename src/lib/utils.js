@@ -56,6 +56,15 @@ function formatDate(date) {
   return `${day}/${month}/${year}`;
 }
 
+const formatNumberWithThousands = (value, locale = 'en-US') => {
+  if (isNaN(value)) return value;
+
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
 /**
  * cloudinary configuration function and uploader
  * @returns cloudinary configuration object and cloudinary uploader
@@ -79,4 +88,4 @@ const cloudinaryUploader = async (filePath) => {
   }
 };
 
-export { cloudinaryConfig, cloudinaryUploader,formatDate };
+export { cloudinaryConfig, cloudinaryUploader,formatDate, formatNumberWithThousands };
