@@ -122,6 +122,23 @@ export const createOrder = async (req, res) => {
       CANCELLED: "Cancellato",
       COMPLETATO: "Completato",
     };
+    const MAX_DECIMAL = 99999999.9999;
+
+    const decimalFields = {
+      workAmount,
+      advancePayment,
+      withholdingAmount,
+      dipositRecovery,
+      iva,
+    };
+
+    for (const [key, value] of Object.entries(decimalFields)) {
+      if (value !== undefined && Math.abs(Number(value)) > MAX_DECIMAL) {
+        return res.status(400).json({
+          message: `Value for ${key} exceeds allowed limit`,
+        });
+      }
+    }
     let order;
     try {
       order = await prisma.order.create({
