@@ -2,6 +2,7 @@ import "dotenv/config";
 import prisma from "../../prisma/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { formatNumberWithThousands } from "../lib/utils.js";
 
 const orderStateMap = {
   ON_HOLD: "In attesa",
@@ -349,9 +350,9 @@ export const getCustomer = async (req, res) => {
       state: orderStateMap[order.state] || order.state,
       startDate: new Date(order.startDate).toLocaleDateString(),
       endDate: new Date(order.endDate).toLocaleDateString(),
-      advancePayment: Number(order.advancePayment).toFixed(2)+"€",
+      advancePayment: formatNumberWithThousands(Number(order.advancePayment))+"€",
         withholdingAmount: Number(order.withholdingAmount).toFixed(2)+"%",
-        workAmount: Number(order.workAmount).toFixed(2)+"€",
+        workAmount: formatNumberWithThousands(Number(order.workAmount))+"€",
         dipositRecovery: Number(order.dipositRecovery).toFixed(2)+"%",
         iva: Number(order.iva).toFixed(2)+"%",
       customerName: order.Customer?.companyName || null,
