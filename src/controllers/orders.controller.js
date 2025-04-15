@@ -106,13 +106,13 @@ export const createOrder = async (req, res) => {
     for (const { desc, file, name } of descAttachmentPairs) {
       if (desc && !file) {
         return res.status(400).json({
-          message: `You provided a description for ${name} without uploading the corresponding attachment.`,
+          message: `You provided a description without uploading the corresponding attachment.`,
         });
       }
     
       if (!desc && file) {
         return res.status(400).json({
-          message: `You uploaded a file for ${name} without providing a description.`,
+          message: `You uploaded a file without providing a description.`,
         });
       }
     }
@@ -291,13 +291,13 @@ export const updateOrder = async (req, res) => {
       const alreadyUploadedUrl = req.body[name]; // or existing URL if known
       if (desc && !file && !alreadyUploadedUrl) {
         return res.status(400).json({
-          message: `You provided a description for ${name} without uploading the corresponding attachment.`,
+          message: `You provided a description without uploading the corresponding attachment.`,
         });
       }
     
       if (!desc && (file || alreadyUploadedUrl)) {
         return res.status(400).json({
-          message: `You uploaded a file or have an existing file for ${name} without providing a description.`,
+          message: `You uploaded a file or have an existing file without providing a description.`,
         });
       }
     }
