@@ -647,6 +647,11 @@ export const getAssociatedUsers = async (req, res) => {
             surname: true,
           },
         },
+        orders:{
+          select:{
+            code: true
+          }
+        }
       },
     });
     

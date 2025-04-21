@@ -23,6 +23,7 @@ model Admin {
   orders      Order[]
   suppliers   Supplier[]
   employees   Employee[]
+  account     Accounts[]
   orderSeq    ordSequence?
   supplierSeq supSequence?
   customerSeq custSequence?
@@ -90,6 +91,7 @@ model Order {
   updatedAt                DateTime    @updatedAt
   Customer                 Customer?   @relation(fields: [customerId], references: [id])
   customerId               String?
+  account                  Accounts[]   
 }
 
 model ordSequence {
@@ -156,6 +158,7 @@ model Supplier {
   telephone   String?
   admin       Admin?   @relation(fields: [adminId], references: [id])
   adminId     String?
+  account     Accounts[]
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -212,6 +215,69 @@ model empSequence {
   adminId                   String?  @unique
 }
 
+model Accounts {
+  id           String     @id @default(uuid())
+  code         String     @unique
+  supplier     Supplier   @relation(fields: [suppCode], references: [code])
+  suppCode String     
+  wbs          String?
+  date         DateTime?   @db.Date
+  sal         SAL[]
+  admin       Admin?      @relation(fields: [adminId], references: [id])
+  adminId     String?
+  see_SAL     String?
+  current_SAL_amount         Decimal?    @db.Decimal(10, 4)
+  progressive_SAL_amount     Decimal?    @db.Decimal(10, 4)
+  status      accState?  @default(Da_approvare)
+  order       Order      @relation(fields: [ordCode], references: [code])
+  ordCode     String     
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  @@unique([suppCode, ordCode])
+}
+model SAL {
+  id             String    @id @default(uuid())
+  account        Accounts? @relation(fields: [accId], references: [id],onDelete: Cascade)
+  accId          String?
+  sect           SALsect[]
+  add_additional_1   String?
+  desc_additional_1  String?  
+  add_additional_2   String?
+  desc_additional_2  String?  
+  add_additional_3   String?
+  desc_additional_3  String?
+  total                 Decimal?    @db.Decimal(10, 4)
+  discounts             Decimal?    @db.Decimal(10, 4)
+  roundingDiscount      Decimal?    @db.Decimal(10, 4)
+  agreed                Decimal?    @db.Decimal(10, 4)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+model SALsect {
+  id             String    @id @default(uuid())
+  title          String
+  sal            SAL?      @relation(fields: [salId], references: [id],onDelete: Cascade)
+  salId          String?
+  salData        salData[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+model salData {
+  id             String    @id @default(uuid())
+  unitOfMeasures String?
+  eqlParts       Int?
+  description    String?
+  lun            Int?
+  lar            Int?
+  alt            Int?
+  quantity       Int?
+  salSect        SALsect?  @relation(fields: [salSectId], references: [id],onDelete: Cascade)
+  salSectId      String?  
+  price          Decimal?   @db.Decimal(10, 4)
+  amount         Decimal?   @db.Decimal(10, 4)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
 model Unilav {
   id                String        @id @default(uuid())
   name              String?
@@ -224,7 +290,7 @@ model Unilav {
   validityDays      String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-  Employee          Employee?     @relation(fields: [employeeId], references: [id])
+  Employee          Employee?     @relation(fields: [employeeId], references: [id],onDelete: Cascade)
   employeeId        String?
 }
 
@@ -237,7 +303,7 @@ model Seritia {
   healthEligibility String
   expiryDate        String
   dataRilascio      String
-  Employee          Employee?     @relation(fields: [employeeId], references: [id])
+  Employee          Employee?     @relation(fields: [employeeId], references: [id],onDelete: Cascade)
   employeeId        String?
   validityDays      String?
   createdAt         DateTime      @default(now())
@@ -253,7 +319,7 @@ model Formazone {
   training     String
   expiryDate   String
   dataRilascio String
-  Employee     Employee?     @relation(fields: [employeeId], references: [id])
+  Employee     Employee?     @relation(fields: [employeeId], references: [id],onDelete: Cascade)
   employeeId   String?
   validityDays String?
   createdAt    DateTime      @default(now())
@@ -273,6 +339,12 @@ enum Status {
   pending
   ongoing
   completed
+}
+
+enum accState {
+  Approvato
+  Da_approvare
+  Non_approvata
 }
 
 enum EmpRole {
