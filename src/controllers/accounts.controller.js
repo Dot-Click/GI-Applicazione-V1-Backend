@@ -11,144 +11,71 @@ export const createAccountWithSupplier = async (req, res) => {
   try {
     const { id: adminId } = req.user;
     const { suppCode, date, ordCode, code, SAL } = req.body;
-    const reqFields = ["suppCode", "date", "ordCode", "SAL"];
-    const missingField = reqFields.find((field) => !req.body[field]);
+
+    const requiredFields = ["suppCode", "date", "ordCode", "SAL","code"];
+    const missingField = requiredFields.find((field) => !req.body[field]);
     if (missingField) {
       return res
         .status(400)
         .json({ message: `Missing required field: ${missingField}` });
     }
-    const [exist] = await Promise.allSettled([
-      prisma.accounts.findUnique({where:{code}})
-    ])
-    if(exist){
-      console.log(exist)
-      return res.status(400).json({message:"can't create duplicate accounts"})
-    }
+
     const invoice = JSON.parse(SAL);
 
-    for (let index = 0; index < invoice.length; index++) {
-      const item = invoice[index];
-      const requiredInvoiceFields = [
-        "total",
-        "discounts",
-        "roundingDiscount",
-        "agreed",
-        "sect",  // an array of invoice section
-      ];
-      const missingFields = requiredInvoiceFields.filter(
-        (field) => item[field] === undefined
-      );
+    for (const item of invoice) {
+      const requiredInvoiceFields = ["total", "discounts", "roundingDiscount", "agreed", "sect"];
+      const missingFields = requiredInvoiceFields.filter(field => item[field] === undefined);
       if (missingFields.length > 0) {
         return res.status(400).json({
-          message: `Missing required fields in invoice item: ${missingFields.join(
-            ", "
-          )}`,
+          message: `Missing required fields in invoice: ${missingFields.join(", ")}`,
         });
       }
 
       if (!Array.isArray(item.sect)) {
-        return res.status(400).json({
-          message: `Field 'sect' must be an array in invoice`,
-        });
+        return res.status(400).json({ message: `'sect' must be an array` });
       }
 
-      for (let sectIndex = 0; sectIndex < item.sect.length; sectIndex++) {
-        const section = item.sect[sectIndex];
+      for (const section of item.sect) {
         if (!section.title || !Array.isArray(section.salData)) {
           return res.status(400).json({
-            message: `Each 'sect' must have a 'title' and 'salData'`,
+            message: `Each 'sect' must have a 'title' and 'salData' array`,
           });
         }
 
-        for (
-          let dataIndex = 0;
-          dataIndex < section.salData.length;
-          dataIndex++
-        ) {
-          const data = section.salData[dataIndex];
+        for (const data of section.salData) {
           const salDataFields = [
-            "description",
-            "unitOfMeasures",
-            "eqlParts",
-            "lun",
-            "lar",
-            "alt",
-            "quantity",
-            "price",
-            "amount", // current sal ammount of every invoice
+            "description", "unitOfMeasures", "eqlParts", "lun", "lar",
+            "alt", "quantity", "price", "amount",
           ];
-          const missingDataFields = salDataFields.filter(
-            (field) => data[field] === undefined
-          );
+          const missingDataFields = salDataFields.filter(field => data[field] === undefined);
           if (missingDataFields.length > 0) {
             return res.status(400).json({
-              message: `Missing fields in salData: ${missingDataFields.join(
-                ", "
-              )}`,
+              message: `Missing fields in salData: ${missingDataFields.join(", ")}`,
             });
           }
         }
       }
     }
 
-    const files = req.files;
-    const uploadFields = [
-      "add_additional_1",
-      "add_additional_2",
-      "add_additional_3",
-    ];
+    // const files = req.files;
+    // const fileFields = ["add_additional_1", "add_additional_2", "add_additional_3"];
+    // const uploadedFiles = {};
 
-    const uploadedFiles = {};
+    // await Promise.all(
+    //   fileFields.map(async (field) => {
+    //     if (files?.[field]?.[0]) {
+    //       const cloudUrl = await cloudinaryUploader(files[field][0].path);
+    //       uploadedFiles[field] = cloudUrl.secure_url || null;
+    //     }
+    //   })
+    // );
 
-    await Promise.all(
-      uploadFields.map(async (field) => {
-        if (files?.[field]?.[0]) {
-          const cloudUrl = await cloudinaryUploader(files[field][0].path);
-          uploadedFiles[field] = cloudUrl.secure_url || null;
-        }
-      })
-    );
-
-    const [firstMatch, secondMatch]=await Promise.all([
-      prisma.accounts.findUnique({
-        where: { suppCode_ordCode:{suppCode, ordCode}, code },
-      }),
-      prisma.accounts.findUnique({
-        where: { suppCode_ordCode:{ordCode, suppCode}, code },
-      })
-    ]);
-    if (firstMatch || secondMatch) {
-      return res.status(400).json({
-        message: "Supplier & Order already linked to another account.",
-      });
-    }
 
     const account = await prisma.accounts.upsert({
       where: {
-        suppCode_ordCode:{
-          ordCode,
+        suppCode_ordCode: {
           suppCode,
-        }
-      },
-      update: {
-        sal: {
-          create: invoice.map((salItem) => ({
-            ...salItem,
-            add_additional_1: uploadedFiles.add_additional_1,
-            add_additional_2: uploadedFiles.add_additional_2,
-            add_additional_3: uploadedFiles.add_additional_3,
-            sect: {
-              create: salItem.sect.map((sect) => ({
-                title: sect.title,
-                salData: {
-                  create: sect.salData.map((data) => ({
-                    ...data,
-                  })),
-                },
-              })),
-            },
-          })),
+          ordCode,
         },
       },
       create: {
@@ -157,32 +84,112 @@ export const createAccountWithSupplier = async (req, res) => {
         ordCode,
         adminId,
         date: new Date(date),
-        sal: {
-          create: invoice.map((salItem) => ({
-            ...salItem,
-            add_additional_1: uploadedFiles.add_additional_1,
-            add_additional_2: uploadedFiles.add_additional_2,
-            add_additional_3: uploadedFiles.add_additional_3,
-            sect: {
-              create: salItem.sect.map((sect) => ({
-                title: sect.title,
-                salData: {
-                  create: sect.salData.map((data) => ({
-                    ...data,
-                  })),
-                },
-              })),
-            },
-          })),
-        },
       },
-      include: { sal: { include: { sect: { include: { salData: true } } } } },
+      update: {
+        date: new Date(date),
+      },
     });
 
-    res.status(201).json({ message: "Account and invoice created", account });
+    const responseData = {
+      ...account,
+      sal: [],
+    };
+
+    for (const salItem of invoice) {
+      const { id, sect, ...restSal } = salItem;
+
+      const sal = await prisma.sAL.upsert({
+        where: { id: id || "non_existing_id" },
+        update: {
+          ...restSal,
+        },
+        create: {
+          ...restSal,
+          accId: account.id,
+        },
+      });
+      const responseSectArray = [];
+      for (const sect of salItem.sect) {
+        const { id: salSectId, title, salData } = sect;
+
+        const createdSect = await prisma.sALsect.upsert({
+          where: { id: salSectId || "non_existing_id" },
+          update: { title },
+          create: {
+            title,
+            salId: sal.id,
+          },
+        });
+        const createdSalData = [];
+        for (const data of salData) {
+          const { id: dataId, ...restData } = data;
+          const createdData = await prisma.salData.upsert({
+            where: { id: dataId || "non_existing_id" },
+            update: { ...restData },
+            create: {
+              ...restData,
+              salSectId: createdSect.id,
+            },
+          });
+          createdSalData.push(createdData);
+        }
+        responseSectArray.push({
+          ...createdSect,
+          salData: createdSalData,
+        });
+      }
+      responseData.sal.push({
+        ...sal,
+        sect: responseSectArray,
+      });
+    }
+    
+    return res.status(201).json({ message: "Account and invoice created", responseData });
+
   } catch (error) {
     console.error("Error creating account with invoice:", error);
-    res.status(500).json({ message: "Internal Server Error", error });
+    return res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+export const fileUploadOfSalAttach = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const files = req.files;
+    const fileFields = ["add_additional_1", "add_additional_2", "add_additional_3"];
+    const uploadedFiles = {};
+
+    // Only upload and include the file if it exists
+    await Promise.all(
+      fileFields.map(async (field) => {
+        if (files?.[field]?.[0]) {
+          const cloudUrl = await cloudinaryUploader(files[field][0].path);
+          uploadedFiles[field] = cloudUrl.secure_url || null;
+        }
+      })
+    );
+
+    // Only include the fields that were uploaded in the update
+    const updateData = {};
+    for (const field of fileFields) {
+      if (uploadedFiles[field]) {
+        updateData[field] = uploadedFiles[field];
+      }
+    }
+
+    // Update only if there is at least one file uploaded
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No attachments uploaded" });
+    }
+
+    const sal = await prisma.sAL.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return res.status(200).json({ message: "SAL attachments uploaded", sal1:sal.add_additional_1,sal2: sal.add_additional_2 });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -236,23 +243,20 @@ export const getAccountWithOrder = async (req, res) => {
     if (!acc) {
       const order = await prisma.order.findUnique({
         where: { code: ordCode },
-        select: { description: true },
+        select: { description: true, code: true },
       });
-
+      if(!order) return res.status(400).json({message:"order not found"})
       return res.status(200).json({
-        message: "Account not found, returning initial values",
+        message: "Account not found, corresponding to this order",
         data: {
-          ordCode,
-          order_desc: order?.description || "No description",
-          status: AccRoles["Da_approvare"],
-          supplier_name: "",
+          ordCode: order?.code,
+          order_desc: order?.description,
           total_sal: 0,
           sal: [],
         },
       });
     }
 
-    // Transform account data if found
     const { order, supplier, sal, status, ...rest } = acc;
 
     const transformed = {
@@ -463,6 +467,9 @@ export const getAccountWithSupplierById = async (req, res) => {
       message: "found",
       data: {
         ...account,
+        current_SAL_amount: (account.current_SAL_amount?.toFixed(3) ?? "0.00")+ " €" ,
+        progressive_SAL_amount: (account.progressive_SAL_amount?.toFixed(3) ?? "0.00")+" €",
+        sal: account.sal.map((sal)=>({...sal, total: "€"+(sal.total?.toFixed(3)), discounts: "€" + (sal.discounts?.toFixed(3)), roundingDiscount: "€" + (sal.roundingDiscount?.toFixed(3)), agreed: "€" + (sal.agreed?.toFixed(3))})),
         date: formatDate(account.date),
         status: AccRoles[account.status] || account.status,
       },
@@ -471,6 +478,18 @@ export const getAccountWithSupplierById = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const generatePDF = async (req, res) => {
+  try {
+    const {aid} = req.params
+    const file = await cloudinaryUploader(req.file.path);
+    if(!aid || !file) return res.status(400).json({message:"missing required fields"})
+    await prisma.accounts.update({where:{id:aid}, data:{see_SAL: file.secure_url}})
+    return res.status(200).json({message:"PDF generated and saved !", data: file.secure_url})
+  } catch (error) {
+    return res.status(500).json({ message: error.message })
+  }
+}
 
 export const deleteAccounts = async (req, res) => {
   try {

@@ -56,6 +56,12 @@ function formatDate(date) {
   return `${day}/${month}/${year}`;
 }
 
+/**
+ * used to format numbers with 2 decimal placed and thousand separator
+ * @param {*} value 
+ * @param {*} locale 
+ * @returns 
+ */
 const formatNumberWithThousands = (value, locale = 'en-US') => {
   if (isNaN(value)) return value;
 
