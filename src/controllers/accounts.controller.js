@@ -7,6 +7,29 @@ const AccRoles = {
   Non_approvata: "Non approvata",
 };
 
+const fileUploadOfSalAttach = async (sal_id, uploadedFiles) => {
+  try {
+    const sal = await prisma.sAL.update({
+      where: { id: sal_id },
+      data: uploadedFiles,
+    });
+    return sal;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+const fileUploadOfCdpAttach = async (cdp_id, uploadedFiles) => {
+  try {
+    const sal = await prisma.cDP.update({
+      where: { id: cdp_id },
+      data: uploadedFiles,
+    });
+    return sal;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 export const createAccountWithSupplier = async (req, res) => {
   try {
     const { id: adminId } = req.user;
@@ -57,18 +80,18 @@ export const createAccountWithSupplier = async (req, res) => {
       }
     }
 
-    // const files = req.files;
-    // const fileFields = ["add_additional_1", "add_additional_2", "add_additional_3"];
-    // const uploadedFiles = {};
+    const files = req.files;
+    const fileFields = ["add_additional_1", "add_additional_2", "add_additional_3"];
+    const uploadedFiles = {};
 
-    // await Promise.all(
-    //   fileFields.map(async (field) => {
-    //     if (files?.[field]?.[0]) {
-    //       const cloudUrl = await cloudinaryUploader(files[field][0].path);
-    //       uploadedFiles[field] = cloudUrl.secure_url || null;
-    //     }
-    //   })
-    // );
+    await Promise.all(
+      fileFields.map(async (field) => {
+        if (files?.[field]?.[0]) {
+          const cloudUrl = await cloudinaryUploader(files[field][0].path);
+          uploadedFiles[field] = cloudUrl.secure_url || null;
+        }
+      })
+    );
 
 
     const account = await prisma.accounts.upsert({
@@ -97,7 +120,9 @@ export const createAccountWithSupplier = async (req, res) => {
 
     for (const salItem of invoice) {
       const { id, sect, ...restSal } = salItem;
-
+      const isCreated = !id;
+      const isUpdated = !!id;
+    
       const sal = await prisma.sAL.upsert({
         where: { id: id || "non_existing_id" },
         update: {
@@ -138,8 +163,13 @@ export const createAccountWithSupplier = async (req, res) => {
           salData: createdSalData,
         });
       }
+      const shouldUploadFiles = isCreated || (isUpdated && Object.keys(uploadedFiles).length > 0);
+      let updatedSal = sal;
+      if (shouldUploadFiles) {
+        updatedSal = await fileUploadOfSalAttach(sal.id, uploadedFiles);
+      }
       responseData.sal.push({
-        ...sal,
+        ...updatedSal,
         sect: responseSectArray,
       });
     }
@@ -149,47 +179,6 @@ export const createAccountWithSupplier = async (req, res) => {
   } catch (error) {
     console.error("Error creating account with invoice:", error);
     return res.status(500).json({ message: "Internal Server Error", error });
-  }
-};
-
-export const fileUploadOfSalAttach = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const files = req.files;
-    const fileFields = ["add_additional_1", "add_additional_2", "add_additional_3"];
-    const uploadedFiles = {};
-
-    // Only upload and include the file if it exists
-    await Promise.all(
-      fileFields.map(async (field) => {
-        if (files?.[field]?.[0]) {
-          const cloudUrl = await cloudinaryUploader(files[field][0].path);
-          uploadedFiles[field] = cloudUrl.secure_url || null;
-        }
-      })
-    );
-
-    // Only include the fields that were uploaded in the update
-    const updateData = {};
-    for (const field of fileFields) {
-      if (uploadedFiles[field]) {
-        updateData[field] = uploadedFiles[field];
-      }
-    }
-
-    // Update only if there is at least one file uploaded
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({ message: "No attachments uploaded" });
-    }
-
-    const sal = await prisma.sAL.update({
-      where: { id },
-      data: updateData,
-    });
-
-    return res.status(200).json({ message: "SAL attachments uploaded", sal1:sal.add_additional_1,sal2: sal.add_additional_2 });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -505,3 +494,168 @@ export const deleteAccounts = async (req, res) => {
     return res.status(500).json({ message: error.message })
   }
 };
+
+
+// clinti association
+
+export const createAccountWithClient = async (req, res) => {
+  try {
+    const { id: adminId } = req.user;
+    const { custCode, date, ordCode, code, CDP } = req.body;
+
+    const requiredFields = ["custCode", "date", "ordCode", "CDP","code"];
+    const missingField = requiredFields.find((field) => !req.body[field]);
+    if (missingField) {
+      return res
+        .status(400)
+        .json({ message: `Missing required field: ${missingField}` });
+    }
+    const invoice = JSON.parse(CDP);
+    
+    const requiredInvoiceFields = ["iva", "currentWorkAmountSubjectToReduction", "currentWorkAmountNotSubjectToDiscount"];
+
+    const missingFieldInCDP = requiredInvoiceFields.find((field) => !invoice[field]);
+    if (missingFieldInCDP) {
+      return res
+        .status(400)
+        .json({ message: `Missing required field: ${missingFieldInCDP}` });
+    }
+
+    const files = req.files;
+    const fileFields = ["add_additional_1", "add_additional_2", "add_additional_3"];
+    const uploadedFiles = {};
+
+    await Promise.all(
+      fileFields.map(async (field) => {
+        if (files?.[field]?.[0]) {
+          const cloudUrl = await cloudinaryUploader(files[field][0].path);
+          uploadedFiles[field] = cloudUrl.secure_url || null;
+        }
+      })
+    );
+    const account = await prisma.accounts.upsert({
+      where: {
+        custCode_ordCode: {
+          custCode,
+          ordCode,
+        },
+      },
+      create: {
+        custCode,
+        code,
+        ordCode,
+        adminId,
+        date: new Date(date),
+      },
+      update: {
+        date: new Date(date),
+      }
+    })
+    
+    const responseData = {
+      ...account,
+      cdp: [],
+    };
+    
+      const { id, ...restCdp } = invoice;
+      const isCreated = !id;
+      const isUpdated = !!id;
+    
+      const cdp = await prisma.cDP.upsert({
+        where: { id: id || "non_existing_id" },
+        update: {
+          ...restCdp,
+          iva: Number(restCdp.iva),
+          currentWorkAmountSubjectToReduction: Number(restCdp.currentWorkAmountSubjectToReduction),
+          currentWorkAmountNotSubjectToDiscount: Number(restCdp.currentWorkAmountNotSubjectToDiscount),
+        },
+        create: {
+          ...restCdp,
+          accId: account.id,
+        },
+      });
+      const shouldUploadFiles = isCreated || (isUpdated && Object.keys(uploadedFiles).length > 0);
+      let updatedCdp = cdp;
+      if (shouldUploadFiles) {
+        updatedCdp = await fileUploadOfCdpAttach(cdp.id, uploadedFiles);
+      }
+      responseData.cdp.push({...updatedCdp});
+    
+    return res.status(201).json({ message: "Account and invoice created", responseData });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+export const getAllAccountWithClient = async (req, res) => {
+  try {
+    const { ordCode } = req.body;
+    const acc = await prisma.accounts.findFirst({
+      where: { ordCode },
+      include: {
+        customer: { select: { companyName: true } },
+        order: { select:{workAmount: true,
+            advancePayment: true,iva: true, advancePayment: true,withholdingAmount: true,dipositRecovery:true} },
+        cdp: true,
+      },
+    });
+    if (!acc) return res.status(404).json({ message: "Account not found" });
+    const {
+      order,
+      client,
+      cdp,
+      status,
+      ...rest
+    } = acc;
+
+    const transformed = {
+      ...rest,
+      status: AccRoles[status] || status,
+      order,
+      client_name: client?.companyName,
+      total_cdp: cdp?.length,
+      cdp, // keep full sal if needed
+    };
+    return res.status(200).json({message:"fetched",data:transformed})
+  } catch (error) { 
+    return res.status(500).json({message: error.message})
+  }
+}
+
+export const getAccountWithClientById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let account = await prisma.accounts.findUnique({
+      where: { id },
+      omit:{sal: true},
+      include: {
+        cdp: true,
+        customer: true,
+        order: true,
+      },
+    });
+    if (!account) return res.status(404).json({ message: "Not found" });
+    return res.status(200).json({
+      message: "found",
+      data: {
+        ...account,
+        date: formatDate(account.date),
+        status: AccRoles[account.status] || account.status,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+export const generatePDF_C = async (req, res) => {
+  try {
+    const {aid} = req.params
+    const file = await cloudinaryUploader(req.file.path);
+    if(!aid || !file) return res.status(400).json({message:"missing required fields"})
+    await prisma.accounts.update({where:{id:aid}, data:{see_CDP: file.secure_url}})
+    return res.status(200).json({message:"PDF generated and saved !", data: file.secure_url})
+  } catch (error) {
+    return res.status(500).json({ message: error.message })
+  }
+}

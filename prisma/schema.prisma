@@ -125,6 +125,7 @@ model Customer {
   role        Role     @default(USER)
   admin       Admin?   @relation(fields: [adminId], references: [id])
   adminId     String?
+  account     Accounts[]
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -218,14 +219,18 @@ model empSequence {
 model Accounts {
   id           String     @id @default(uuid())
   code         String     @unique
-  supplier     Supplier   @relation(fields: [suppCode], references: [code])
-  suppCode String     
+  supplier     Supplier?   @relation(fields: [suppCode], references: [code])
+  suppCode String?   
+  customer     Customer?   @relation(fields: [custCode], references: [code])
+  custCode String?  
   wbs          String?
   date         DateTime?   @db.Date
   sal         SAL[]
+  cdp         CDP[]
   admin       Admin?      @relation(fields: [adminId], references: [id])
   adminId     String?
   see_SAL     String?
+  see_CDP     String?
   current_SAL_amount         Decimal?    @db.Decimal(10, 4)
   progressive_SAL_amount     Decimal?    @db.Decimal(10, 4)
   status      accState?  @default(Da_approvare)
@@ -234,6 +239,7 @@ model Accounts {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   @@unique([suppCode, ordCode])
+  @@unique([custCode, ordCode])
 }
 model SAL {
   id             String    @id @default(uuid())
@@ -277,6 +283,30 @@ model salData {
   amount         Decimal?   @db.Decimal(10, 4)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+}
+
+model CDP {
+  id            String    @id @default(uuid())
+  iva         Decimal?    @db.Decimal(10, 4) 
+  currentWorkAmountSubjectToReduction Decimal?    @db.Decimal(10, 4)
+  currentWorkAmountNotSubjectToDiscount Decimal?  @db.Decimal(10, 4)
+  add_additional_1   String?
+  desc_additional_1  String?  
+  add_additional_2   String?
+  desc_additional_2  String?  
+  add_additional_3   String?
+  desc_additional_3  String?
+  reducedAmount      Decimal?    @db.Decimal(10, 4)
+  account        Accounts? @relation(fields: [accId], references: [id],onDelete: Cascade)
+  accId          String?
+  currentWorksAmount Decimal?    @db.Decimal(10, 4)
+  advPayment         Decimal?    @db.Decimal(10, 4)
+  withholdingTax     Decimal?    @db.Decimal(10, 4)
+  amtPresentCDP      Decimal?    @db.Decimal(10, 4)
+  vat              Decimal?    @db.Decimal(10, 4)
+  totalAmount      Decimal?    @db.Decimal(10, 4)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 model Unilav {
   id                String        @id @default(uuid())
