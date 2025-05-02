@@ -598,6 +598,7 @@ export const getAllAccountWithClient = async (req, res) => {
             advancePayment: true,iva: true, advancePayment: true,withholdingAmount: true,dipositRecovery:true} },
         cdp: true,
       },
+      omit:{see_SAL: true, suppCode:true}
     });
     if (!acc) return res.status(404).json({ message: "Account not found" });
     const {

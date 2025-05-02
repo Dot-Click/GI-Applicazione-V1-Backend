@@ -198,7 +198,7 @@ export const createOrder = async (req, res) => {
       message: "Order created successfully.",
     });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message:"Internal Server Error",error });
   }
 };
 

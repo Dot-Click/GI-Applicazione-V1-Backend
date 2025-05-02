@@ -24,6 +24,7 @@ model Admin {
   suppliers   Supplier[]
   employees   Employee[]
   account     Accounts[]
+  invoices    Invoice[]
   orderSeq    ordSequence?
   supplierSeq supSequence?
   customerSeq custSequence?
@@ -126,6 +127,8 @@ model Customer {
   admin       Admin?   @relation(fields: [adminId], references: [id])
   adminId     String?
   account     Accounts[]
+  invoices    Invoice[]
+  ricavi      Ricavi[]
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -160,6 +163,8 @@ model Supplier {
   admin       Admin?   @relation(fields: [adminId], references: [id])
   adminId     String?
   account     Accounts[]
+  invoices    Invoice[]
+  costi       Costi[]
   orders      Order[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -354,6 +359,79 @@ model Formazone {
   validityDays String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+}
+
+model Invoice {
+  id           String        @id @default(uuid())
+  Customer                 Customer?   @relation(fields: [customerId], references: [id])
+  customerId               String?
+  supplier                 Supplier?   @relation(fields: [supplierId], references: [id])
+  supplierId               String?
+  admin       Admin?      @relation(fields: [adminId], references: [id])
+  adminId     String?             
+  docNo        String      @unique
+  vat          String?
+  name         String?
+  taxAmt       String?
+  docDate      DateTime?     @db.Date   
+  vatRate      Decimal       @db.Decimal(12,4)
+  split        String?     
+  ricavi       Ricavi[]  
+  costi        Costi[]
+  typology     String?
+  Processed    InvStatus?    @default(No)
+  type         InvType?      @default(attive) 
+  yearOfCompetence  String?
+  protocol     String?
+  attachment   String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Ricavi {
+  id           String        @id @default(uuid())
+  Customer     Customer?     @relation(fields: [customerId], references: [id])
+  customerId   String?
+  workSite     String?
+  iva          String?
+  wbs          String?
+  note         String
+  invoice      Invoice?       @relation(fields: [invId], references: [id])
+  invId        String?
+  docDate      DateTime?     @db.Date     
+  yearOfCompetence  String?
+  revAmt       Decimal       @db.Decimal(12, 4)
+  advancePayment  Decimal?    @db.Decimal(12, 4)
+  withHoldAmt   Decimal?      @db.Decimal(12, 4)           
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+model Costi {
+  id           String        @id @default(uuid())
+  supplier     Supplier?     @relation(fields: [supplierId], references: [id])
+  supplierId   String?
+  iva          String?
+  workSite     String?
+  wbs          String?
+  docDate      DateTime?     @db.Date     
+  yearOfCompetence  String?
+  note         String
+  invoice      Invoice?       @relation(fields: [invId], references: [id])
+  invId        String?
+  revAmt       Decimal?       @db.Decimal(12, 4)
+  advancePayment  Decimal?    @db.Decimal(12, 4)
+  withHoldAmt   Decimal?      @db.Decimal(12, 4)           
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+enum InvType {
+  attive
+  passive
+}
+enum InvStatus {
+  Si 
+  No
 }
 
 enum OrderState {
