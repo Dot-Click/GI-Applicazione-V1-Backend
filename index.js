@@ -8,6 +8,7 @@ import customerRouter from "./src/routes/customer.routes.js";
 import supplierRouter from "./src/routes/supplier.routes.js";
 import employeeRouter from "./src/routes/employee.routes.js";
 import accountRouter  from "./src/routes/account.routes.js"
+import fattureRouter  from "./src/routes/fatture.routes.js"
 import swaggerDocs from "./src/lib/swagger.js";
 import { cloudinaryConfig } from "./src/lib/utils.js";
 import { loggerMiddleware } from "./src/middlewares/logger.middleware.js";
@@ -35,6 +36,7 @@ app.use("/api/customer", customerRouter);
 app.use("/api/supplier", supplierRouter);
 app.use("/api/employee", employeeRouter)
 app.use("/api/account", accountRouter)
+app.use("/api/fatture",fattureRouter)
 
 swaggerDocs(app);
 

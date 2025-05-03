@@ -372,14 +372,14 @@ model Invoice {
   docNo        String      @unique
   vat          String?
   name         String?
-  taxAmt       String?
+  taxAmt       Decimal?      @db.Decimal(12,4)
   docDate      DateTime?     @db.Date   
   vatRate      Decimal       @db.Decimal(12,4)
   split        String?     
   ricavi       Ricavi[]  
   costi        Costi[]
   typology     String?
-  Processed    InvStatus?    @default(No)
+  processed    InvStatus?    @default(No)
   type         InvType?      @default(attive) 
   yearOfCompetence  String?
   protocol     String?
