@@ -25,6 +25,8 @@ model Admin {
   employees   Employee[]
   account     Accounts[]
   invoices    Invoice[]
+  ricavis     Ricavi[]
+  costis      Costi[]
   orderSeq    ordSequence?
   supplierSeq supSequence?
   customerSeq custSequence?
@@ -398,6 +400,8 @@ model Ricavi {
   note         String
   invoice      Invoice?       @relation(fields: [invId], references: [id])
   invId        String?
+  admin       Admin?      @relation(fields: [adminId], references: [id])
+  adminId     String? 
   docDate      DateTime?     @db.Date     
   yearOfCompetence  String?
   revAmt       Decimal       @db.Decimal(12, 4)
@@ -417,6 +421,8 @@ model Costi {
   yearOfCompetence  String?
   note         String
   invoice      Invoice?       @relation(fields: [invId], references: [id])
+  admin       Admin?      @relation(fields: [adminId], references: [id])
+  adminId     String?          
   invId        String?
   revAmt       Decimal?       @db.Decimal(12, 4)
   advancePayment  Decimal?    @db.Decimal(12, 4)
