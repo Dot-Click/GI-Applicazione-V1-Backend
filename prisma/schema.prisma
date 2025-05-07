@@ -396,6 +396,7 @@ model Ricavi {
   customerId   String?
   workSite     String?
   iva          String?
+  docNo        String        @unique
   wbs          String?
   note         String
   invoice      Invoice?       @relation(fields: [invId], references: [id])
@@ -415,6 +416,7 @@ model Costi {
   supplier     Supplier?     @relation(fields: [supplierId], references: [id])
   supplierId   String?
   iva          String?
+  docNo        String        @unique
   workSite     String?
   wbs          String?
   docDate      DateTime?     @db.Date     
