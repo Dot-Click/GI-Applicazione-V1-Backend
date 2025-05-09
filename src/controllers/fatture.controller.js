@@ -158,6 +158,8 @@ export const createRicavi = async (req, res) => {
         .status(400)
         .json({ message: `Missing required field: ${missingField}` });
     }
+    const already = await prisma.ricavi.findUnique({where:{docNo}})
+    if(already) return res.status(400).json({message:"ricavi already exist"})
     const ricavi = await prisma.ricavi.create({
       data: {
         iva,
@@ -220,6 +222,8 @@ export const createCosti = async (req, res) => {
         .status(400)
         .json({ message: `Missing required field: ${missingField}` });
     }
+    const already = await prisma.costi.findUnique({where:{docNo}})
+    if(already) return res.status(400).json({message:"costi already exist"})
     const costi = await prisma.costi.create({
       data: {
         iva,
@@ -250,19 +254,40 @@ export const createCosti = async (req, res) => {
 export const getAllRicavis = async (req, res)=> {
   try {
     const {id} = req.user
-    let ricavis = await prisma.ricavi.findMany({where:{adminId:id},include:{Customer:{include:{invoices:{select:{docDate:true,docNo:true}}}}}})
-    ricavis = ricavis.map((obj)=>({...obj, customerName:obj.Customer.companyName,invoice:obj.Customer.invoices})).map(({ Customer, ...rest }) => rest);
+    let ricavis = await prisma.ricavi.findMany({where:{adminId:id},include:{Customer:{select:{companyName:true}}}})
+    ricavis = ricavis.map((obj)=>({...obj, customerName:obj.Customer.companyName,docDate:formatDate(obj.docDate)})).map(({ Customer, ...rest }) => rest);
     return res.status(200).json({message:"fetched!", data:ricavis})
   } catch (error) {
     return res.status(500).json({message:error.message})
   }
 }
+
+export const getRicavi = async (req, res) => {
+  try {
+    const {id} = req.params
+    const ricavi = await prisma.ricavi.findUnique({where:{id},include:{Customer:{select:{companyName:true,invoices:{select:{docNo:true}}}}}})
+    return res.status(200).json({message:"fetched",data:{...ricavi,customerName:ricavi.Customer.companyName,docDate:formatDate(ricavi.docDate)}})
+  } catch (error) {
+    return res.status(500).json({message:error.message})
+  }
+}
+
 export const getAllCostis = async (req, res)=> {
   try {
     const {id} = req.user
     let costis = await prisma.costi.findMany({where:{adminId:id},include:{supplier:{include:{invoices:{select:{docDate:true,docNo:true}}}}}})
-    costis = costis.map((obj)=>({...obj,supplierName: obj.supplier.companyName,invoice:obj.supplier.invoices,docDate:formatDate(obj.docDate)})).map(({ supplier, ...rest }) => rest);
+    costis = costis.map((obj)=>({...obj,supplierName: obj.supplier.companyName,docDate:formatDate(obj.docDate)})).map(({ supplier, ...rest }) => rest);
     return res.status(200).json({message:"fetched!", data:costis})
+  } catch (error) {
+    return res.status(500).json({message:error.message})
+  }
+}
+
+export const getCosti = async (req, res) => {
+  try {
+    const {id} = req.params
+    const costi = await prisma.costi.findUnique({where:{id},include:{supplier:{select:{companyName:true,invoices:{select:{docNo:true}}}}}})
+    return res.status(200).json({message:"fetched",data:{...costi,supplierName:costi.supplier.companyName,docDate:formatDate(costi.docDate)}})
   } catch (error) {
     return res.status(500).json({message:error.message})
   }
