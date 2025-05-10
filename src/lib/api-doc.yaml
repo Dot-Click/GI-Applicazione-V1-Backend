@@ -6343,3 +6343,653 @@ paths:
                   message:
                     type: string
                     example: "Internal Server Error"
+  
+  # Fatture 
+  /api/fatture/create/active:
+    post:
+      tags:
+        - Invoices
+      summary: Create an active invoice
+      description: Create a new active invoice (requires ADMIN role)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - customerName
+                - vat
+                - name
+                - taxAmt
+                - docDate
+                - vatRate
+                - split
+                - docNo
+                - typology
+                - yearOfCompetence
+                - protocol
+                - file
+              properties:
+                customerName:
+                  type: string
+                  description: Name of the customer
+                vat:
+                  type: string
+                  description: VAT number
+                name:
+                  type: string
+                  description: Invoice name
+                taxAmt:
+                  type: number
+                  description: Tax amount
+                docDate:
+                  type: string
+                  format: date
+                  description: Document date (YYYY-MM-DD)
+                vatRate:
+                  type: number
+                  description: VAT rate
+                split:
+                  type: string
+                  description: Split information
+                typology:
+                  type: string
+                  description: Invoice typology
+                yearOfCompetence:
+                  type: string
+                  description: Year of competence
+                protocol:
+                  type: string
+                  description: Protocol number
+                docNo:
+                  type: string
+                  description: Document number (must be unique)
+                type:
+                  type: string
+                  description: Invoice type
+                Processed:
+                  type: boolean
+                  description: Whether the invoice is processed
+                file:
+                  type: string
+                  format: binary
+                  description: Invoice attachment file
+      responses:
+        '200':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "invoice created"
+        '400':
+          description: Bad request (missing fields or duplicate docNo)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Missing required field: customerName"
+        '401':
+          description: Unauthorized (missing or invalid token)
+        '403':
+          description: Forbidden (user doesn't have ADMIN role)
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error message"
+
+  /api/fatture/create/passive:
+   post:
+      tags:
+        - Invoices
+      summary: Create a passive invoice
+      description: Create a new passive invoice (requires ADMIN role)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - supplierName
+                - vat
+                - name
+                - taxAmt
+                - docDate
+                - vatRate
+                - split
+                - docNo
+                - typology
+                - yearOfCompetence
+                - protocol
+                - file
+              properties:
+                supplierName:
+                  type: string
+                  description: Name of the supplier
+                vat:
+                  type: string
+                  description: VAT number
+                name:
+                  type: string
+                  description: Invoice name
+                taxAmt:
+                  type: number
+                  description: Tax amount
+                docDate:
+                  type: string
+                  format: date
+                  description: Document date (YYYY-MM-DD)
+                vatRate:
+                  type: number
+                  description: VAT rate
+                split:
+                  type: string
+                  description: Split information
+                typology:
+                  type: string
+                  description: Invoice typology
+                yearOfCompetence:
+                  type: string
+                  description: Year of competence
+                protocol:
+                  type: string
+                  description: Protocol number
+                docNo:
+                  type: string
+                  description: Document number (must be unique)
+                type:
+                  type: string
+                  description: Invoice type
+                Processed:
+                  type: boolean
+                  description: Whether the invoice is processed
+                file:
+                  type: string
+                  format: binary
+                  description: Invoice attachment file
+      responses:
+        '200':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "invoice created"
+        '400':
+          description: Bad request (missing fields or duplicate docNo)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    examples:
+                      missingField: "Missing required field: supplierName"
+                      duplicateDoc: "already exist"
+        '401':
+          description: Unauthorized (missing or invalid token)
+        '403':
+          description: Forbidden (user doesn't have ADMIN role)
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error message" 
+                   
+  /api/fatture/active: 
+   get:
+      tags:
+        - Invoices
+      summary: Get all active invoices
+      description: Retrieve all active invoices for the authenticated ADMIN user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved active invoices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "fetched!"
+        '401':
+          description: Unauthorized (missing or invalid token)
+        '403':
+          description: Forbidden (user doesn't have ADMIN role)
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error message"     
+
+  /api/fatture/passive:
+    get:
+      tags:
+        - Invoices
+      summary: Get all passive invoices for the authenticated admin
+      description: Retrieves all passive invoices associated with the authenticated admin. Only accessible by users with the "ADMIN" role.
+      operationId: getAllFatturePassiva
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Passive invoices fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: fetched!
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: abc123
+                        type:
+                          type: string
+                          example: passive
+                        amount:
+                          type: number
+                          example: 1234.56
+                        supplierName:
+                          type: string
+                          example: XYZ Supplies Inc.
+                        # Add other relevant invoice fields here
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error message
+
+  /api/fatture/active/{id}:
+    get:
+      tags:
+        - Invoices
+      summary: Get active invoice by ID
+      description: Retrieves a single active invoice by its ID. Only accessible by users with the "ADMIN" role.
+      operationId: getFattureActive
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the invoice
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Active invoice found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: found
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 123
+                      type:
+                        type: string
+                        example: attive
+                      amount:
+                        type: number
+                        example: 2500.50
+                      customerName:
+                        type: string
+                        example: ACME Corporation
+                      # Include other invoice fields as necessary
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error message
+
+  /api/fatture/passive/{id}:
+    get:
+      tags:
+        - Invoices
+      summary: Get passive invoice by ID
+      description: Retrieves a single passive invoice by its ID. Only accessible by users with the "ADMIN" role.
+      operationId: getFatturePassive
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the passive invoice
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Passive invoice found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: found
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: inv_456
+                      type:
+                        type: string
+                        example: passive
+                      amount:
+                        type: number
+                        example: 999.99
+                      supplierName:
+                        type: string
+                        example: ABC Traders Ltd.
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error message 
+    
+  /api/fatture/create/ricavi:
+    post:
+      tags:
+        - Invoices
+      summary: Create a new ricavi entry
+      description: Creates a new ricavi (revenue) document. Only accessible by users with the "ADMIN" role.
+      operationId: createRicavi
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customerName
+                - wbs
+                - iva
+                - workSite
+                - note
+                - docDate
+                - docNo
+                - yearOfCompetence
+                - revAmt
+                - advancePayment
+                - withHoldAmt
+              properties:
+                customerName:
+                  type: string
+                  example: ABC Corp
+                wbs:
+                  type: string
+                  example: WBS-001
+                iva:
+                  type: number
+                  example: 22
+                workSite:
+                  type: string
+                  example: Rome
+                note:
+                  type: string
+                  example: Revenue for March
+                docDate:
+                  type: string
+                  format: date
+                  example: 2025-05-10
+                docNo:
+                  type: string
+                  example: DOC2025-01
+                yearOfCompetence:
+                  type: integer
+                  example: 2025
+                revAmt:
+                  type: number
+                  example: 10000.0
+                advancePayment:
+                  type: number
+                  example: 1000.0
+                withHoldAmt:
+                  type: number
+                  example: 500.0
+      responses:
+        '200':
+          description: Ricavi created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: created!
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: ricavi_123
+                      docNo:
+                        type: string
+                        example: DOC2025-01
+                      Customer:
+                        type: object
+                        properties:
+                          account:
+                            type: string
+                            example: 123456789
+                      # Other ricavi fields can be added here
+        '400':
+          description: Bad request - missing field or ricavi already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing required field docNo
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Something went wrong
+
+  /api/fatture/create/costi:
+    post:
+      tags:
+        - Invoices
+      summary: Create a new costi entry
+      description: Creates a new costi (cost/expense) document. Only accessible by users with the "ADMIN" role.
+      operationId: createCosti
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - supplierName
+                - wbs
+                - iva
+                - workSite
+                - note
+                - docDate
+                - docNo
+                - yearOfCompetence
+                - revAmt
+                - advancePayment
+                - withHoldAmt
+              properties:
+                supplierName:
+                  type: string
+                  example: XYZ Supplies
+                wbs:
+                  type: string
+                  example: WBS-002
+                iva:
+                  type: number
+                  example: 22
+                workSite:
+                  type: string
+                  example: Milan
+                note:
+                  type: string
+                  example: Expense for equipment
+                docDate:
+                  type: string
+                  format: date
+                  example: 2025-05-10
+                docNo:
+                  type: string
+                  example: COSTI2025-01
+                yearOfCompetence:
+                  type: integer
+                  example: 2025
+                revAmt:
+                  type: number
+                  example: 8000.0
+                advancePayment:
+                  type: number
+                  example: 2000.0
+                withHoldAmt:
+                  type: number
+                  example: 300.0
+      responses:
+        '200':
+          description: Costi created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: created!
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: costi_456
+                      docNo:
+                        type: string
+                        example: COSTI2025-01
+                      supplier:
+                        type: object
+                        properties:
+                          invoices:
+                            type: array
+                            items:
+                              type: object
+                      # Other costi fields can be added here
+        '400':
+          description: Bad request - missing field or costi already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing required field docNo
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Something went wrong                  
