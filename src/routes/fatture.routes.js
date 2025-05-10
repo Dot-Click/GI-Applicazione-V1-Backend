@@ -1,14 +1,17 @@
 import { Router } from "express";
-import { createCosti, createFattureActive, createRicavi, getAllCostis, getAllFattureActive, getAllRicavis, getCosti, getFattureActive, getRicavi } from "../controllers/fatture.controller.js";
+import { createCosti, createFattureActive, createFatturePassive, createRicavi, getAllCostis, getAllFattureActive, getAllFatturePassiva, getAllRicavis, getCosti, getFattureActive, getFatturePassive, getRicavi } from "../controllers/fatture.controller.js";
 import { Auth } from "../middlewares/auth.middleware.js";
 import { checkRole } from "../middlewares/verif.middleware.js";
 import { singleUpload } from "../middlewares/multer.middleware.js";
 
 const router = Router()
 
-router.post("/create",Auth, checkRole(["ADMIN"]),singleUpload("active"),createFattureActive)
+router.post("/create/active",Auth, checkRole(["ADMIN"]),singleUpload("active"),createFattureActive)
+router.post("/create/passive",Auth, checkRole(["ADMIN"]),singleUpload("passive"),createFatturePassive)
 router.get("/active",Auth, checkRole(["ADMIN"]), getAllFattureActive)
+router.get("/passive",Auth, checkRole(["ADMIN"]), getAllFatturePassiva)
 router.get("/active/:id",Auth, checkRole(["ADMIN"]), getFattureActive)
+router.get("/passive/:id", Auth, checkRole(["ADMIN"]), getFatturePassive)
 router.get("/ricavi/:id",Auth, checkRole(["ADMIN"]),getRicavi)
 router.get("/costi/:id",Auth, checkRole(["ADMIN"]),getCosti)
 router.get("/ricavis",Auth,checkRole(["ADMIN"]), getAllRicavis)

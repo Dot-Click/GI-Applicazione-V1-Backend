@@ -56,6 +56,7 @@ export const createFattureActive = async (req, res) => {
         vatRate,
         split,
         typology,
+        type: "attive",
         yearOfCompetence,
         protocol,
         docNo,
@@ -78,6 +79,84 @@ export const createFattureActive = async (req, res) => {
   }
 };
 
+export const createFatturePassive = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const {
+      supplierName,
+      vat,
+      name,
+      taxAmt,
+      docDate,
+      vatRate,
+      split,
+      typology,
+      yearOfCompetence,
+      protocol,
+      type,
+      Processed,
+      docNo,
+    } = req.body;
+
+    const requiredFields = [
+      "supplierName",
+      "vat",
+      "name",
+      "taxAmt",
+      "docDate",
+      "vatRate",
+      "split",
+      "docNo",
+      "typology",
+      "yearOfCompetence",
+      "protocol",
+    ];
+
+    const missingField = requiredFields.find((field) => !req.body[field]);
+    if (missingField) {
+      return res
+        .status(400)
+        .json({ message: `Missing required field: ${missingField}` });
+    }
+    const exits = await prisma.invoice.findUnique({ where: { docNo } });
+    if (exits) return res.status(400).json({ message: "already exist" });
+
+    const file = await cloudinaryUploader(req.file.path);
+
+    const fatture = await prisma.invoice.create({
+      data: {
+        vat,
+        name,
+        type,
+        Processed,
+        taxAmt,
+        docDate: new Date(docDate),
+        vatRate,
+        split,
+        type: "passive",
+        typology,
+        yearOfCompetence,
+        protocol,
+        docNo,
+        attachment: file?.secure_url,
+        admin: {
+          connect: { id },
+        },
+        supplier: {
+          connect: {
+            companyName: supplierName,
+          },
+        },
+      },
+      omit: { supplierId: true },
+    });
+
+    return res.status(200).json({ message: "invoice created", fatture });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
 export const getAllFattureActive = async (req, res) => {
   try {
     const { id } = req.user;
@@ -98,12 +177,32 @@ export const getAllFattureActive = async (req, res) => {
   }
 };
 
+export const getAllFatturePassiva = async (req, res) => {
+  try {
+    const { id } = req.user;
+    let passiveFatture = await prisma.invoice.findMany({
+      where: { adminId: id, type: "passive" },
+      include: { supplier: { select: { companyName: true } } },
+      omit: { customerId: true },
+    });
+    passiveFatture = passiveFatture
+      .map((fatture) => ({
+        ...fatture,
+        supplierName: fatture?.supplier?.companyName,
+      }))
+      .map(({ supplier, ...rest }) => rest);
+    return res.status(200).json({ message: "fetched!", data: passiveFatture });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 export const getFattureActive = async (req, res) => {
   try {
     const { id } = req.params;
 
     const activeFatture = await prisma.invoice.findUnique({
-      where: { id },
+      where: { id, type:"attive" },
       include: { Customer: { select: { companyName: true } } },
     });
 
@@ -115,6 +214,31 @@ export const getFattureActive = async (req, res) => {
     const result = {
       ...rest,
       customerName: Customer?.companyName || null,
+    };
+
+    return res.status(200).json({ message: "found", data: result });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getFatturePassive = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const passiveFatture = await prisma.invoice.findUnique({
+      where: { id, type:"passive" },
+      include: { supplier: { select: { companyName: true } } },
+    });
+
+    if (!passiveFatture) {
+      return res.status(404).json({ message: "not found" });
+    }
+
+    const { supplier, ...rest } = passiveFatture;
+    const result = {
+      ...rest,
+      supplierName: supplier?.companyName || null,
     };
 
     return res.status(200).json({ message: "found", data: result });
