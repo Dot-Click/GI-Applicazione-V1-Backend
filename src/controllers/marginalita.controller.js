@@ -70,7 +70,7 @@ export const getAllmarginalities = async (req, res) => {
           obj.Customer.ricavi
             .reduce((sum, curr) => sum + Number(curr.revAmt), 0)
             .toString() || "0",
-        revId: obj.Customer.ricavi.map((obj) => ({ id: obj.id })),
+        revId: obj.Customer?.ricavi?.map((obj) => ({ id: obj.id })),
         totaCostAmt:
           obj.supplier?.costi
             ?.reduce((sum, curr) => sum + Number(curr.revAmt), 0)

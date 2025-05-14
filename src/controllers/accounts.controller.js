@@ -401,7 +401,7 @@ export const getAllAccountWithSuppliers = async (req, res) => {
   try {
     const { id: adminId } = req.user;
     let acc = await prisma.accounts.findMany({
-      where: { adminId },
+      where: { adminId,NOT:{suppCode:null} },
       include: {
         supplier: true,
         order: true,
@@ -421,11 +421,13 @@ export const getAllAccountWithSuppliers = async (req, res) => {
         ...item,
         status: AccRoles[item.status] || item.status,
         date: formatDate(item.date),
-        supplierName: item.supplier.companyName,
+        supplierName: item.supplier?.companyName,
         ordDesc: item.order.description,
+        workAmount: item.order.workAmount,
         total_sal: item.sal.length,
+        // progressive_SAL_amount: item.sal.reduce((sum, salItem) => sum + parseFloat(salItem.agreed || 0),0)
       }))
-      .map(({ sal, supplier, order, ...rest }) => rest);
+      .map(({ sal, supplier, order,custCode,see_CDP,current_SAL_amount,progressive_SAL_amount, ...rest }) => rest);
     return res
       .status(200)
       .json({ message: "account with suppliers fetched", data: acc });
@@ -457,7 +459,7 @@ export const getAccountWithSupplierById = async (req, res) => {
       data: {
         ...account,
         current_SAL_amount: (account.current_SAL_amount?.toFixed(3) ?? "0.00")+ " €" ,
-        progressive_SAL_amount: (account.progressive_SAL_amount?.toFixed(3) ?? "0.00")+" €",
+        progressive_SAL_amount: account.sal.reduce((sum, salItem) => sum + parseFloat(salItem.agreed || 0),0).toFixed(3)+"€",
         sal: account.sal.map((sal)=>({...sal, total: "€"+(sal.total?.toFixed(3)), discounts: "€" + (sal.discounts?.toFixed(3)), roundingDiscount: "€" + (sal.roundingDiscount?.toFixed(3)), agreed: "€" + (sal.agreed?.toFixed(3))})),
         date: formatDate(account.date),
         status: AccRoles[account.status] || account.status,
@@ -560,6 +562,8 @@ export const createAccountWithClient = async (req, res) => {
       const { id, ...restCdp } = invoice;
       const isCreated = !id;
       const isUpdated = !!id;
+
+      // const calculateKeys = { currentWorksAmount,advPayment,amtPresentCDP,vat,totalAmount }  want to calculate these cdps fields based on upcoming three fields named as iva, currentWorkAmountSubjectToReduction, currentWorkAmountNotSubjectToDiscount
     
       const cdp = await prisma.cDP.upsert({
         where: { id: id || "non_existing_id" },
@@ -589,37 +593,34 @@ export const createAccountWithClient = async (req, res) => {
 
 export const getAllAccountWithClient = async (req, res) => {
   try {
-    const { ordCode } = req.body;
-    const acc = await prisma.accounts.findFirst({
-      where: { ordCode },
+    const { id: adminId } = req.user;
+    let acc = await prisma.accounts.findMany({
+      where: { adminId,NOT:{custCode:null} },
       include: {
-        customer: { select: { companyName: true } },
-        order: { select:{workAmount: true,
-            advancePayment: true,iva: true, advancePayment: true,withholdingAmount: true,dipositRecovery:true} },
-        cdp: true,
+        customer: true,
+        order: true,
+        cdp: {
+          include: true
+        },
       },
-      omit:{see_SAL: true, suppCode:true}
     });
-    if (!acc) return res.status(404).json({ message: "Account not found" });
-    const {
-      order,
-      client,
-      cdp,
-      status,
-      ...rest
-    } = acc;
-
-    const transformed = {
-      ...rest,
-      status: AccRoles[status] || status,
-      order,
-      client_name: client?.companyName,
-      total_cdp: cdp?.length,
-      cdp, // keep full sal if needed
-    };
-    return res.status(200).json({message:"fetched",data:transformed})
-  } catch (error) { 
-    return res.status(500).json({message: error.message})
+    acc = acc
+      .map((item) => ({
+        ...item,
+        status: AccRoles[item.status] || item.status,
+        date: formatDate(item.date),
+        customerName: item.customer?.companyName,
+        ordDesc: item.order.description,
+        workAmount: item.order.workAmount,
+        total_cdp: item.cdp.length,
+        // progressive_SAL_amount: item.sal.reduce((sum, salItem) => sum + parseFloat(salItem.agreed || 0),0)
+      }))
+      .map(({ cdp, customer, order,suppCode,see_SAL,current_SAL_amount,progressive_SAL_amount, ...rest }) => rest);
+    return res
+      .status(200)
+      .json({ message: "account with customers fetched", data: acc });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 }
 
@@ -628,20 +629,37 @@ export const getAccountWithClientById = async (req, res) => {
     const { id } = req.params;
     let account = await prisma.accounts.findUnique({
       where: { id },
-      omit:{sal: true},
       include: {
         cdp: true,
-        customer: true,
-        order: true,
+        sal: { select: { id: true } },
+        customer: { select: { companyName: true } },
+        order: {
+          select: {
+            dipositRecovery: true,
+            workAmount: true,
+            advancePayment: true,
+            withholdingAmount: true,
+            description: true,
+            iva: true,
+          },
+        },
       },
     });
     if (!account) return res.status(404).json({ message: "Not found" });
+
+    const transformed = {
+      ...account,
+      total_SAL: account.sal?.length || 0,
+    };
+
+    delete transformed.sal;
+
     return res.status(200).json({
       message: "found",
       data: {
-        ...account,
-        date: formatDate(account.date),
-        status: AccRoles[account.status] || account.status,
+        ...transformed,
+        date: formatDate(transformed.date),
+        status: AccRoles[transformed.status] || transformed.status,
       },
     });
   } catch (error) {
