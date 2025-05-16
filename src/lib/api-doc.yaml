@@ -6257,6 +6257,229 @@ paths:
                     type: string
                     example: "Internal Server Error"
   
+  /api/account/customer: 
+   get:
+      summary: Get all accounts with associated customers
+      tags:
+        - Accounts
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully fetched accounts with customers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: account with customers fetched
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: acc_123
+                        adminId:
+                          type: string
+                          example: admin_123
+                        status:
+                          type: string
+                          example: Active
+                        date:
+                          type: string
+                          example: 2025-05-16
+                        customerName:
+                          type: string
+                          example: ABC Corp
+                        ordDesc:
+                          type: string
+                          example: Website redesign
+                        workAmount:
+                          type: number
+                          example: 12000
+                        total_cdp:
+                          type: integer
+                          example: 3
+        '401':
+          description: Unauthorized - Invalid or missing token
+        '403':
+          description: Forbidden - User does not have ADMIN role
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
+
+  /api/account/customer/{id}:
+    get:
+      summary: Get account with customer details by ID
+      tags:
+        - Accounts
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The unique ID of the account
+          schema:
+            type: string
+            example: acc_abc123
+      responses:
+        '200':
+          description: Successfully fetched account with customer details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: found
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: acc_abc123
+                      adminId:
+                        type: string
+                        example: admin_123
+                      status:
+                        type: string
+                        example: Active
+                      date:
+                        type: string
+                        example: 2025-05-16
+                      customer:
+                        type: object
+                        properties:
+                          companyName:
+                            type: string
+                            example: ABC Corp
+                      order:
+                        type: object
+                        properties:
+                          dipositRecovery:
+                            type: number
+                            example: 2000
+                          workAmount:
+                            type: number
+                            example: 10000
+                          advancePayment:
+                            type: number
+                            example: 3000
+                          withholdingAmount:
+                            type: number
+                            example: 500
+                          description:
+                            type: string
+                            example: Web app development
+                          iva:
+                            type: number
+                            example: 19
+                      cdp:
+                        type: array
+                        items:
+                          type: object
+                          example:
+                            id: cdp_1
+                            name: Document A
+                      total_SAL:
+                        type: integer
+                        example: 5
+        '401':
+          description: Unauthorized - Invalid or missing token
+        '403':
+          description: Forbidden - User does not have ADMIN role
+        '404':
+          description: Not found - Account does not exist
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error    
+
+  /api/account/customer/pdf/{aid}:
+    patch:
+      summary: Upload and save a generated PDF URL to an account
+      tags:
+        - Accounts
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: aid
+          required: true
+          description: Account ID to associate the uploaded PDF
+          schema:
+            type: string
+            example: acc_abc123
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                cdp:
+                  type: string
+                  format: binary
+                  description: The PDF file to upload
+      responses:
+        '200':
+          description: PDF uploaded and account updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: PDF generated and saved !
+                  data:
+                    type: string
+                    format: uri
+                    example: https://res.cloudinary.com/demo/image/upload/v1234567890/sample.pdf
+        '400':
+          description: Missing required fields (account ID or file)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: missing required fields
+        '401':
+          description: Unauthorized - Invalid or missing token
+        '403':
+          description: Forbidden - User does not have ADMIN role
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+
   /api/account/order:
     get:
       summary: Get account with order information by order code
