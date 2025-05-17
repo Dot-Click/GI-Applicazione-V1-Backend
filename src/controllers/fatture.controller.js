@@ -148,7 +148,7 @@ export const createFatturePassive = async (req, res) => {
           },
         },
       },
-      omit: { supplierId: true },
+      omit: { customerId: true },
     });
 
     return res.status(200).json({ message: "invoice created", fatture });
@@ -203,7 +203,8 @@ export const getFattureActive = async (req, res) => {
 
     const activeFatture = await prisma.invoice.findUnique({
       where: { id, type:"attive" },
-      include: { Customer: { select: { companyName: true } } },
+      include: { Customer: { select: { companyName: true, account: {select:{cdp:true,date:true, see_CDP:true, wbs:true, order:{select:{description:true, workAmount:true}}}} } } },
+      omit:{supplierId:true}
     });
 
     if (!activeFatture) {
@@ -211,8 +212,19 @@ export const getFattureActive = async (req, res) => {
     }
 
     const { Customer, ...rest } = activeFatture;
+    const allSals = Customer.account.flatMap(acc => acc.cdp);
+    const cdpLength = allSals.length;
+
+    
+    const firstAccount = Customer.account[0];
+    const description = firstAccount?.order?.description || null;
+    const dateAcc = firstAccount?.date || null
     const result = {
       ...rest,
+      cdpLength,
+      ordDesc: description,
+      accDate: formatDate(dateAcc),
+      cdp: firstAccount.cdp,
       customerName: Customer?.companyName || null,
     };
 
@@ -228,20 +240,37 @@ export const getFatturePassive = async (req, res) => {
 
     const passiveFatture = await prisma.invoice.findUnique({
       where: { id, type:"passive" },
-      include: { supplier: { select: { companyName: true } } },
+      include: { supplier: { select: { companyName: true, account: {select:{sal:true,progressive_SAL_amount:true,date:true, see_SAL:true, wbs:true, order:{select:{description:true, workAmount:true}}}} } } },
+      omit:{customerId:true}
     });
 
     if (!passiveFatture) {
       return res.status(404).json({ message: "not found" });
     }
-
+    
     const { supplier, ...rest } = passiveFatture;
+    
+    const allSals = supplier.account.flatMap(acc => acc.sal);
+    const salLength = allSals.length;
+    const totalAgreedCost = allSals.reduce((sum, sal) => sum + Number(sal.agreed || 0), 0);
+
+    
+    const firstAccount = supplier.account[0];
+    const description = firstAccount?.order?.description || null;
+    const dateAcc = firstAccount?.date || null ;
     const result = {
       ...rest,
-      supplierName: supplier?.companyName || null,
+      salLength,
+      totalAgreedCost,
+      supplierName: supplier.companyName || null,
+      ordDesc: description,
+      accDate: formatDate(dateAcc),
+      sals: firstAccount.sal
     };
-
-    return res.status(200).json({ message: "found", data: result });
+    return res.status(200).json({
+      message: "found",
+      data: result
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -414,5 +443,19 @@ export const getCosti = async (req, res) => {
     return res.status(200).json({message:"fetched",data:{...costi,supplierName:costi.supplier.companyName,docDate:formatDate(costi.docDate)}})
   } catch (error) {
     return res.status(500).json({message:error.message})
+  }
+}
+
+export const deleteFattures = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids) return res.status(400).json({ message: "Bad request" });
+    const cust = await prisma.invoice.deleteMany({
+      where: { id: { in: ids } },
+    });
+    if (!cust.count) return res.status(404).json({ message: "ids not found" });
+    return res.status(200).json({ message: "fatture deleted deleted!" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 }

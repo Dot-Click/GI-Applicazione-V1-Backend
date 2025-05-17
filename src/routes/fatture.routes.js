@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCosti, createFattureActive, createFatturePassive, createRicavi, getAllCostis, getAllFattureActive, getAllFatturePassiva, getAllRicavis, getCosti, getFattureActive, getFatturePassive, getRicavi } from "../controllers/fatture.controller.js";
+import { createCosti, createFattureActive, createFatturePassive, createRicavi, deleteFattures, getAllCostis, getAllFattureActive, getAllFatturePassiva, getAllRicavis, getCosti, getFattureActive, getFatturePassive, getRicavi } from "../controllers/fatture.controller.js";
 import { Auth } from "../middlewares/auth.middleware.js";
 import { checkRole } from "../middlewares/verif.middleware.js";
 import { singleUpload } from "../middlewares/multer.middleware.js";
@@ -18,5 +18,6 @@ router.get("/ricavis",Auth,checkRole(["ADMIN"]), getAllRicavis)
 router.get("/costis",Auth,checkRole(["ADMIN"]), getAllCostis)
 router.post("/create/ricavi", Auth, checkRole(["ADMIN"]), createRicavi)
 router.post("/create/costi", Auth, checkRole(["ADMIN"]), createCosti)
+router.delete("/delete", Auth, checkRole(["ADMIN"]), deleteFattures)
 
 export default router
