@@ -214,7 +214,7 @@ export const getFattureActive = async (req, res) => {
     const { Customer, ...rest } = activeFatture;
     const allSals = Customer.account.flatMap(acc => acc.cdp);
     const cdpLength = allSals.length;
-
+  
     
     const firstAccount = Customer.account[0];
     const description = firstAccount?.order?.description || null;
