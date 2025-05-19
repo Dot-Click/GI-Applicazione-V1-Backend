@@ -415,6 +415,9 @@ export const getAllAccountWithSuppliers = async (req, res) => {
           },
         },
       },
+      orderBy: {
+            createdAt: "desc",
+          }
     });
     acc = acc
       .map((item) => ({
@@ -603,6 +606,7 @@ export const getAllAccountWithClient = async (req, res) => {
           include: true
         },
       },
+      orderBy:{createdAt:'desc'}
     });
     acc = acc
       .map((item) => ({

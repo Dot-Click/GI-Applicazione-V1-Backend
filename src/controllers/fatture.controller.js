@@ -203,7 +203,7 @@ export const getFattureActive = async (req, res) => {
 
     const activeFatture = await prisma.invoice.findUnique({
       where: { id, type:"attive" },
-      include: { Customer: { select: { companyName: true, account: {select:{cdp:true,date:true, see_CDP:true, wbs:true, order:{select:{description:true, workAmount:true}}}} } } },
+      include: { Customer: { select: { companyName: true, account: {select:{cdp:true,date:true,status:true, see_CDP:true, wbs:true, order:{select:{description:true, workAmount:true}}}} } } },
       omit:{supplierId:true}
     });
 
@@ -224,8 +224,9 @@ export const getFattureActive = async (req, res) => {
       cdpLength,
       ordDesc: description,
       accDate: formatDate(dateAcc),
-      cdp: firstAccount.cdp,
       customerName: Customer?.companyName || null,
+      status: firstAccount.status,
+      cdp: firstAccount.cdp,
     };
 
     return res.status(200).json({ message: "found", data: result });
@@ -240,7 +241,7 @@ export const getFatturePassive = async (req, res) => {
 
     const passiveFatture = await prisma.invoice.findUnique({
       where: { id, type:"passive" },
-      include: { supplier: { select: { companyName: true, account: {select:{sal:true,progressive_SAL_amount:true,date:true, see_SAL:true, wbs:true, order:{select:{description:true, workAmount:true}}}} } } },
+      include: { supplier: { select: { companyName: true, account: {select:{sal:true,progressive_SAL_amount:true,date:true,status: true, see_SAL:true, wbs:true, order:{select:{description:true, workAmount:true}}}} } } },
       omit:{customerId:true}
     });
 
@@ -265,6 +266,7 @@ export const getFatturePassive = async (req, res) => {
       supplierName: supplier.companyName || null,
       ordDesc: description,
       accDate: formatDate(dateAcc),
+      status: firstAccount.status,
       sals: firstAccount.sal
     };
     return res.status(200).json({

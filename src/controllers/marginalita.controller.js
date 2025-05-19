@@ -100,33 +100,67 @@ export const getMarginalitaOfOrder = async (req, res) => {
       select: {
         id: true,
         dipositRecovery: true,
+        description: true,
         workAmount: true,
-        supplier: { select: { costi: {select:{revAmt:true,advancePayment:true}} } },
-        Customer: { select: { ricavi: {select:{revAmt:true,advancePayment:true}} } },
+        supplier: {
+          select: { costi: { select: { revAmt: true, advancePayment: true } } },
+        },
+        Customer: {
+          select: {
+            ricavi: { select: { revAmt: true, advancePayment: true } },
+          },
+        },
       },
     });
-    return res.status(200).json({ message: "fetched!", data: marginalita });
+    const ricavi = marginalita.Customer?.ricavi.reduce(
+      (sum, r) => sum + Number(r.revAmt),
+      0
+    );
+    const costi = marginalita.supplier?.costi.reduce(
+      (sum, c) => sum + Number(c.revAmt),
+      0
+    );
+
+    const marginalitaVal = ricavi - costi;
+    const percentMarginalita =
+      ricavi !== 0 ? (marginalitaVal / ricavi) * 100 : 0;
+
+    const dipositRecovery = Number(marginalita.dipositRecovery);
+    const workAmount = Number(marginalita.workAmount);
+    const percentAvanzamento =
+      workAmount !== 0 ? (dipositRecovery / workAmount) * 100 : 0;
+    return res.status(200).json({
+      message: "fetched!",
+      data: {
+        ...marginalita,
+        ricaviTotal: ricavi.toFixed(3)+"€",
+        costiTotal: costi.toFixed(3)+"€",
+        margVal: marginalitaVal.toFixed(3)+"€",
+        percentMarginalita: percentMarginalita < 0 ? '0.00%' : percentMarginalita.toFixed(2)+'%',
+        percentAvanzamento: percentAvanzamento < 0 ? '0.00%' : percentAvanzamento.toFixed(2)+'%',
+      },
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
 
 export const getMarginalitaOfRicavi = async (req, res) => {
-    try {
-        const {id} =req.user
-        const ricavi= await prisma.ricavi.findMany({where:{adminId:id}})
-        return res.status(200).json({message:"fetched!",data:ricavi})
-    } catch (error) {
-        return res.status(500).json({message:error.message})
-    }
-}
+  try {
+    const { id } = req.user;
+    const ricavi = await prisma.ricavi.findMany({ where: { adminId: id } });
+    return res.status(200).json({ message: "fetched!", data: ricavi });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
 
 export const getMarginalitaOfCosti = async (req, res) => {
-    try {
-        const {id} =req.user
-        const costi= await prisma.costi.findMany({where:{adminId:id}})
-        return res.status(200).json({message:"fetched!",data:costi})
-    } catch (error) {
-        return res.status(500).json({message:error.message})
-    }
-}
+  try {
+    const { id } = req.user;
+    const costi = await prisma.costi.findMany({ where: { adminId: id } });
+    return res.status(200).json({ message: "fetched!", data: costi });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
