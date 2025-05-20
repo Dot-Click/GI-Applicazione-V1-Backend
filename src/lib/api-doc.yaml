@@ -7106,6 +7106,94 @@ paths:
                     type: string
                     example: Something went wrong
 
+  /api/fatture/ricavis:
+    get:
+      summary: Get all Ricavis
+      tags:
+        - Invoices
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Ricavis fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: fetched!
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        customerId:
+                          type: string
+                          format: uuid
+                        workSite:
+                          type: string
+                        iva:
+                          type: string
+                        docNo:
+                          type: string
+                        wbs:
+                          type: string
+                        note:
+                          type: string
+                        invId:
+                          type: string
+                          nullable: true
+                        adminId:
+                          type: string
+                          format: uuid
+                        docDate:
+                          type: string
+                          example: 05/01/2026
+                        yearOfCompetence:
+                          type: string
+                          example: "2024"
+                        revAmt:
+                          type: string
+                        advancePayment:
+                          type: string
+                        withHoldAmt:
+                          type: string
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+                        customerName:
+                          type: string
+              example:
+                message: fetched!
+                data:
+                  - id: e65697df-0491-47e2-952e-632e98c4699d
+                    customerId: f0898dfc-eb49-4601-93fa-6029e1e0ec82
+                    workSite: AWS EU (Paris) Region, 15 Rue de la Vanne, 92120 Montrouge, France
+                    iva: TX663829DHHD78
+                    docNo: "1076"
+                    wbs: construction by gi-costruzioni
+                    note: Invoice for cloud services - Q2 2024
+                    invId: null
+                    adminId: 0c18c765-cce6-49d1-9a25-936974b52e6f
+                    docDate: 05/01/2026
+                    yearOfCompetence: "2024"
+                    revAmt: "125000"
+                    advancePayment: "30000"
+                    withHoldAmt: "1875"
+                    createdAt: 2025-05-07T21:05:56.685Z
+                    updatedAt: 2025-05-07T21:05:56.685Z
+                    customerName: amazone
+        '500':
+          description: Server error
+  
   /api/fatture/create/costi:
     post:
       tags:
@@ -7195,7 +7283,7 @@ paths:
                             type: array
                             items:
                               type: object
-                      # Other costi fields can be added here
+
         '400':
           description: Bad request - missing field or costi already exists
           content:
@@ -7216,6 +7304,86 @@ paths:
                   message:
                     type: string
                     example: Something went wrong            
+  
+  /api/fatture/costis:
+    get:
+      summary: Get all Costis
+      tags:
+        - Invoices
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Costis fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: fetched!
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: a1b2c3d4-e5f6-7890-abcd-1234567890ef
+                        supplierId:
+                          type: string
+                          format: uuid
+                          example: b9f7a2e1-c6d4-4d8b-9f30-66f1a63f932b
+                        supplierName:
+                          type: string
+                          example: ACME Construction
+                        workSite:
+                          type: string
+                          example: Site B, 17 Rue des Fleurs, 75015 Paris, France
+                        iva:
+                          type: string
+                          example: TX445566KKLL89
+                        docNo:
+                          type: string
+                          example: CST-0001
+                        wbs:
+                          type: string
+                          example: foundation excavation
+                        note:
+                          type: string
+                          example: Cost invoice for heavy equipment rental - March 2024
+                        docDate:
+                          type: string
+                          format: date
+                          example: 2024-03-15
+                        yearOfCompetence:
+                          type: string
+                          example: 2024
+                        costAmount:
+                          type: string
+                          example: "42000"
+                        vat:
+                          type: string
+                          example: "8400"
+                        retentionAmt:
+                          type: string
+                          example: "1000"
+                        adminId:
+                          type: string
+                          format: uuid
+                          example: 0c18c765-cce6-49d1-9a25-936974b52e6f
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: 2025-05-19T21:00:00.000Z
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: 2025-05-19T21:00:00.000Z
+        '500':
+          description: Server error
 
   /api/fatture/delete:
     delete:
