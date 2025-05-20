@@ -35,6 +35,20 @@ import prisma from "../../prisma/prisma.js";
 //   }
 // };
 
+/* formulas
+ 1. Marginalità (Profit in €)
+    Marginalità = Ricavi Totali − Costi Totali
+
+ 2. Percent Marginalità (%)
+    Percent Marginalità (%) = (Marginalità / Ricavi Totali) × 100, where Ricavi Totali ≠ 0
+
+ 3. Percent Avanzamento Lavori (Progress %)
+    Percent Avanzamento = (dipositRecovery / workAmount) × 100, where workAmount ≠ 0
+
+  - Ricavi Totali: Sum of all revenues (Customer revAmt)
+  - Costi Totali: Sum of all costs (Supplier revAmt)
+*/
+
 export const getAllmarginalities = async (req, res) => {
   try {
     const { id } = req.user;
@@ -62,21 +76,44 @@ export const getAllmarginalities = async (req, res) => {
     });
 
     data = data
-      .map((obj) => ({
-        ...obj,
-        customerName: obj.Customer.companyName,
-        supplierName: obj.supplier?.companyName,
-        totalRevAmt:
-          obj.Customer.ricavi
-            .reduce((sum, curr) => sum + Number(curr.revAmt), 0)
-            .toString() || "0",
-        revId: obj.Customer?.ricavi?.map((obj) => ({ id: obj.id })),
-        totaCostAmt:
-          obj.supplier?.costi
-            ?.reduce((sum, curr) => sum + Number(curr.revAmt), 0)
-            .toString() || "0",
-        cosId: obj.supplier?.costi?.map((obj) => ({ id: obj.id })),
-      }))
+      .map((obj) => {
+        const totalRevAmt = obj.Customer.ricavi.reduce(
+          (sum, curr) => sum + Number(curr.revAmt),
+          0
+        );
+
+        const totalCostAmt = obj.supplier?.costi?.reduce(
+          (sum, curr) => sum + Number(curr.revAmt),
+          0
+        ) || 0;
+
+        const marginalitaVal = totalRevAmt - totalCostAmt;
+        const percentMarginalita =
+          totalRevAmt !== 0 ? (marginalitaVal / totalRevAmt) * 100 : 0;
+
+        const dipositRecovery = Number(obj.dipositRecovery);
+        const workAmount = Number(obj.workAmount);
+        const percentAvanzamentoRaw =
+          workAmount !== 0 ? (dipositRecovery / workAmount) * 100 : 0;
+        const percentAvanzamento = Math.min(percentAvanzamentoRaw, 100);
+
+        return {
+          ...obj,
+          customerName: obj.Customer.companyName,
+          supplierName: obj.supplier?.companyName,
+          totalRevAmt: totalRevAmt.toFixed(3) + "€",
+          totalCostAmt: totalCostAmt.toFixed(3) + "€",
+          marginalitaVal: marginalitaVal.toFixed(3) + "€",
+          percentMarginalita:
+            percentMarginalita < 0
+              ? "0.00%"
+              : percentMarginalita.toFixed(2) + "%",
+          percentAvanzamento:
+            percentAvanzamento < 0
+              ? "0.00%"
+              : percentAvanzamento.toFixed(2) + "%",
+        };
+      })
       .map(({ Customer, supplier, ...rest }) => rest);
 
     return res.status(200).json({
@@ -103,11 +140,11 @@ export const getMarginalitaOfOrder = async (req, res) => {
         description: true,
         workAmount: true,
         supplier: {
-          select: { costi: { select: { revAmt: true, advancePayment: true } } },
+          select: {costi: true},
         },
         Customer: {
           select: {
-            ricavi: { select: { revAmt: true, advancePayment: true } },
+            ricavi: true,
           },
         },
       },
@@ -133,11 +170,11 @@ export const getMarginalitaOfOrder = async (req, res) => {
       message: "fetched!",
       data: {
         ...marginalita,
-        ricaviTotal: ricavi.toFixed(3)+"€",
-        costiTotal: costi.toFixed(3)+"€",
+        ricaviTotal: ricavi?.toFixed(3)+"€",
+        costiTotal: costi?.toFixed(3)+"€",
         margVal: marginalitaVal.toFixed(3)+"€",
-        percentMarginalita: percentMarginalita < 0 ? '0.00%' : percentMarginalita.toFixed(2)+'%',
-        percentAvanzamento: percentAvanzamento < 0 ? '0.00%' : percentAvanzamento.toFixed(2)+'%',
+        percentMarginalita: percentMarginalita < 0 ? '0.00%' : percentMarginalita?.toFixed(2)+'%',
+        percentAvanzamento: percentAvanzamento < 0 ? '0.00%' : percentAvanzamento?.toFixed(2)+'%',
       },
     });
   } catch (error) {
