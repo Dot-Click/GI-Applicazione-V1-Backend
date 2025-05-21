@@ -461,3 +461,31 @@ export const deleteFattures = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 }
+
+export const deleteRicavi = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids) return res.status(400).json({ message: "Bad request" });
+    const cust = await prisma.ricavi.deleteMany({
+      where: { id: { in: ids } },
+    });
+    if (!cust.count) return res.status(404).json({ message: "ids not found" });
+    return res.status(200).json({ message: "ricavi deleted!" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+export const deleteCosti = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids) return res.status(400).json({ message: "Bad request" });
+    const cust = await prisma.costi.deleteMany({
+      where: { id: { in: ids } },
+    });
+    if (!cust.count) return res.status(404).json({ message: "ids not found" });
+    return res.status(200).json({ message: "costi deleted!" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
