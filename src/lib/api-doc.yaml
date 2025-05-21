@@ -6480,7 +6480,7 @@ paths:
                     type: string
                     example: Internal server error
 
-  /api/account/order:
+  /api/account/order/{ordCode}:
     get:
       summary: Get account with order information by order code
       description: |

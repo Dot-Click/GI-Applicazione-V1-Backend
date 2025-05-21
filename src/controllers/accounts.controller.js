@@ -210,14 +210,15 @@ export const createAccountWithSupplier = async (req, res) => {
 // }
 export const getAccountWithOrder = async (req, res) => {
   try {
-    const { ordCode } = req.body;
+    const { ordCode } = req.params;
 
     // Try fetching the account first
     const acc = await prisma.accounts.findFirst({
       where: { ordCode },
       include: {
         supplier: { select: { companyName: true } },
-        order: { select: { description: true } },
+        customer: { select: { companyName: true } },
+        order: { select: { description: true, dipositRecovery: true, code:true, withholdingAmount: true, workAmount:true, iva: true, advancePayment: true } },
         sal: {
           include: {
             sect: {
@@ -225,6 +226,7 @@ export const getAccountWithOrder = async (req, res) => {
             },
           },
         },
+        cdp:true
       },
     });
 
@@ -246,16 +248,40 @@ export const getAccountWithOrder = async (req, res) => {
       });
     }
 
-    const { order, supplier, sal, status, ...rest } = acc;
-
+    const { order, supplier,customer, sal, cdp, status, ...rest } = acc;
+    const calulated_stuff = {
+      // supplier side 
+      progressiveSALAmount: sal.reduce((sum, salItem) => sum + parseFloat(salItem.agreed || 0),0),
+      // client side 
+      contractAmount: order.workAmount,
+      advancePayment: order.advancePayment,
+      progressiveNetAmount: (order.workAmount - order.withholdingAmount).toFixed(2),
+      depositBalance: ((order.dipositRecovery * order.workAmount) / 100).toFixed(2),
+      withholdings: order.withholdingAmount,
+      depositRecovery: order.dipositRecovery,
+      discount: order.dipositRecovery - order.withholdingAmount,
+      reducedAmount: order.workAmount - order.advancePayment,
+      currentWorksAmount: order.workAmount,
+      advancePayment: order.advancePayment,
+      withholdingTax: order.withholdingAmount,
+      amtPresentCDP: cdp.reduce((sum, cdpItem) => sum + parseFloat(cdpItem.currentWorkAmountNotSubjectToDiscount || 0),0),
+      vatAmt: (order.workAmount * parseFloat(order.iva || 0)) / 100,
+      totalToBePaid: (order.workAmount + ((order.workAmount * parseFloat(order.iva || 0)) / 100)) - order.advancePayment - order.withholdingAmount
+    }
+    
     const transformed = {
       ...rest,
       order_desc: order?.description || "",
+      order_code: order.code,
       supplier_name: supplier?.companyName || "",
+      customer_name: customer?.companyName || "",
       status: AccRoles[status] || status,
       date: formatDate(acc.date),
       total_sal: sal.length,
+      total_cdp: cdp.length,
       sal,
+      calulated_stuff,
+      cdp
     };
 
     return res.status(200).json({ message: "fetched", data: transformed });
@@ -500,15 +526,12 @@ export const deleteAccounts = async (req, res) => {
   }
 };
 
-
-// clinti association
-
 export const createAccountWithClient = async (req, res) => {
   try {
     const { id: adminId } = req.user;
     const { custCode, date, ordCode, code, CDP } = req.body;
 
-    const requiredFields = ["custCode", "date", "ordCode", "CDP","code"];
+    const requiredFields = ["custCode", "date", "ordCode", "CDP", "code"];
     const missingField = requiredFields.find((field) => !req.body[field]);
     if (missingField) {
       return res
@@ -516,9 +539,11 @@ export const createAccountWithClient = async (req, res) => {
         .json({ message: `Missing required field: ${missingField}` });
     }
     const invoice = JSON.parse(CDP);
-    
-    const requiredInvoiceFields = ["iva", "currentWorkAmountSubjectToReduction", "currentWorkAmountNotSubjectToDiscount"];
-
+    const requiredInvoiceFields = [
+      "iva",
+      "currentWorkAmountSubjectToReduction",
+      "currentWorkAmountNotSubjectToDiscount",
+    ];
     const missingFieldInCDP = requiredInvoiceFields.find((field) => !invoice[field]);
     if (missingFieldInCDP) {
       return res
@@ -535,6 +560,8 @@ export const createAccountWithClient = async (req, res) => {
         if (files?.[field]?.[0]) {
           const cloudUrl = await cloudinaryUploader(files[field][0].path);
           uploadedFiles[field] = cloudUrl.secure_url || null;
+        } else {
+          uploadedFiles[field] = null;
         }
       })
     );
@@ -554,45 +581,95 @@ export const createAccountWithClient = async (req, res) => {
       },
       update: {
         date: new Date(date),
-      }
-    })
-    
+      },
+    });
+
     const responseData = {
       ...account,
       cdp: [],
     };
-    
-      const { id, ...restCdp } = invoice;
-      const isCreated = !id;
-      const isUpdated = !!id;
 
-      // const calculateKeys = { currentWorksAmount,advPayment,amtPresentCDP,vat,totalAmount }  want to calculate these cdps fields based on upcoming three fields named as iva, currentWorkAmountSubjectToReduction, currentWorkAmountNotSubjectToDiscount
-    
-      const cdp = await prisma.cDP.upsert({
-        where: { id: id || "non_existing_id" },
-        update: {
-          ...restCdp,
-          iva: Number(restCdp.iva),
-          currentWorkAmountSubjectToReduction: Number(restCdp.currentWorkAmountSubjectToReduction),
-          currentWorkAmountNotSubjectToDiscount: Number(restCdp.currentWorkAmountNotSubjectToDiscount),
-        },
-        create: {
-          ...restCdp,
-          accId: account.id,
-        },
-      });
-      const shouldUploadFiles = isCreated || (isUpdated && Object.keys(uploadedFiles).length > 0);
-      let updatedCdp = cdp;
-      if (shouldUploadFiles) {
-        updatedCdp = await fileUploadOfCdpAttach(cdp.id, uploadedFiles);
-      }
-      responseData.cdp.push({...updatedCdp});
-    
+    const { id, ...restCdp } = invoice;
+    const isCreated = !id;
+    const isUpdated = !!id;
+
+    const iva = parseFloat(restCdp.iva);
+    const subjectToReduction = parseFloat(restCdp.currentWorkAmountSubjectToReduction);
+    const notSubjectToDiscount = parseFloat(restCdp.currentWorkAmountNotSubjectToDiscount);
+
+    const order = await prisma.order.findUnique({
+      where: { code:ordCode },
+      select: {
+        advancePayment: true,
+        dipositRecovery: true,
+        withholdingAmount: true,
+        workAmount: true,
+        iva: true
+      },
+    });
+
+    const advancePayment = parseFloat(order?.advancePayment || 0);
+    const dipositRecovery = parseFloat(order?.dipositRecovery || 0);
+    const withholdingAmount = parseFloat(order?.withholdingAmount || 0);
+
+    const reducedAmount = subjectToReduction;
+    const currentWorksAmount = parseFloat(order?.workAmount);
+    const amtPresentCDP =
+      currentWorksAmount - advancePayment - withholdingAmount - dipositRecovery;
+    const vat = (amtPresentCDP * iva) / 100;
+    const totalAmount = amtPresentCDP + vat;
+
+    const cdp = await prisma.cDP.upsert({
+      where: { id: id || "non_existing_id" },
+      update: {
+        ...restCdp,
+        iva,
+        currentWorkAmountSubjectToReduction: subjectToReduction,
+        currentWorkAmountNotSubjectToDiscount: notSubjectToDiscount,
+        reducedAmount,
+        currentWorksAmount,
+        advPayment: advancePayment,
+        withholdingTax: withholdingAmount,
+        amtPresentCDP,
+        vat,
+        totalAmount,
+      },
+      create: {
+        ...restCdp,
+        accId: account.id,
+        iva,
+        currentWorkAmountSubjectToReduction: subjectToReduction,
+        currentWorkAmountNotSubjectToDiscount: notSubjectToDiscount,
+        reducedAmount,
+        currentWorksAmount,
+        advPayment: advancePayment,
+        withholdingTax: withholdingAmount,
+        amtPresentCDP,
+        vat,
+        totalAmount,
+      },
+    });
+
+    const shouldUploadFiles = isCreated || (isUpdated && Object.keys(uploadedFiles).length > 0);
+
+    let updatedCdp = cdp;
+    if (shouldUploadFiles) {
+      updatedCdp = await fileUploadOfCdpAttach(cdp.id, uploadedFiles);
+    }
+
+    responseData.cdp.push({
+      ...updatedCdp,
+      add_additional_1: uploadedFiles.add_additional_1 || updatedCdp.add_additional_1,
+      add_additional_2: uploadedFiles.add_additional_2 || updatedCdp.add_additional_2,
+      add_additional_3: uploadedFiles.add_additional_3 || updatedCdp.add_additional_3,
+    });
+
     return res.status(201).json({ message: "Account and invoice created", responseData });
   } catch (error) {
+    console.error("Error in createAccountWithClient:", error);
     return res.status(500).json({ message: error.message });
   }
-}
+};
 
 export const getAllAccountWithClient = async (req, res) => {
   try {

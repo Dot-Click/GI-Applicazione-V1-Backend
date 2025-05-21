@@ -13,7 +13,7 @@ router.patch("customer/pdf/:aid", Auth, checkRole(["ADMIN"]),singleUpload("cdp")
 
 router.post("/create/supplier",Auth, checkRole(["ADMIN"]),upload, createAccountWithSupplier)
 router.get("/supplier", Auth, checkRole(["ADMIN"]), getAllAccountWithSuppliers)
-router.get("/order", Auth, checkRole(["ADMIN"]), getAccountWithOrder)
+router.get("/order/:ordCode", Auth, checkRole(["ADMIN"]), getAccountWithOrder)
 router.get("/supplier/:id",Auth, checkRole(["ADMIN"]), getAccountWithSupplierById)
 router.patch("/update/:id", Auth, checkRole(["ADMIN"]),upload, updateAccountWithSupplier)
 // router.patch("/salFileUpload/:id", Auth, checkRole(["ADMIN"]),upload, fileUploadOfSalAttach)
