@@ -1,5 +1,5 @@
 import prisma from "../../prisma/prisma.js";
-import { cloudinaryUploader, formatDate } from "../lib/utils.js";
+import { cloudinaryUploader, formatDate, formatNumberWithThousands } from "../lib/utils.js";
 
 const AccRoles = {
   Approvato: "Approvato",
@@ -452,7 +452,7 @@ export const getAllAccountWithSuppliers = async (req, res) => {
         date: formatDate(item.date),
         supplierName: item.supplier?.companyName,
         ordDesc: item.order.description,
-        workAmount: item.order.workAmount+"€",
+        workAmount: formatNumberWithThousands(Number(item.order.workAmount.toFixed(2)))+"€",
         total_sal: item.sal.length,
         // progressive_SAL_amount: item.sal.reduce((sum, salItem) => sum + parseFloat(salItem.agreed || 0),0)
       }))
@@ -692,7 +692,7 @@ export const getAllAccountWithClient = async (req, res) => {
         date: formatDate(item.date),
         customerName: item.customer?.companyName,
         ordDesc: item.order.description,
-        workAmount: item.order.workAmount+"€",
+        workAmount: formatNumberWithThousands(Number(item.order.workAmount.toFixed(2)))+"€",
         total_cdp: item.cdp.length,
         // progressive_SAL_amount: item.sal.reduce((sum, salItem) => sum + parseFloat(salItem.agreed || 0),0)
       }))

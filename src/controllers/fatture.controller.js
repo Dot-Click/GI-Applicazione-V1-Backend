@@ -1,5 +1,5 @@
 import prisma from "../../prisma/prisma.js";
-import { cloudinaryUploader, formatDate } from "../lib/utils.js";
+import { cloudinaryUploader, formatDate, formatNumberWithThousands } from "../lib/utils.js";
 
 export const createFattureActive = async (req, res) => {
   try {
@@ -155,7 +155,7 @@ export const createFatturePassive = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-}
+};
 
 export const getAllFattureActive = async (req, res) => {
   try {
@@ -168,6 +168,8 @@ export const getAllFattureActive = async (req, res) => {
     activeFattures = activeFattures
       .map((fatture) => ({
         ...fatture,
+        docDate: formatDate(fatture.docDate),
+        taxAmt: formatNumberWithThousands(Number(fatture.taxAmt.toFixed(2)))+"€",
         customerName: fatture.Customer.companyName,
       }))
       .map(({ Customer, ...rest }) => rest);
@@ -188,6 +190,8 @@ export const getAllFatturePassiva = async (req, res) => {
     passiveFatture = passiveFatture
       .map((fatture) => ({
         ...fatture,
+        docDate: formatDate(fatture.docDate),
+        taxAmt: formatNumberWithThousands(Number(fatture.taxAmt.toFixed(2)))+"€",
         supplierName: fatture?.supplier?.companyName,
       }))
       .map(({ supplier, ...rest }) => rest);
@@ -202,9 +206,25 @@ export const getFattureActive = async (req, res) => {
     const { id } = req.params;
 
     const activeFatture = await prisma.invoice.findUnique({
-      where: { id, type:"attive" },
-      include: { Customer: { select: { companyName: true, account: {select:{cdp:true,date:true,status:true, see_CDP:true, wbs:true, order:{select:{description:true, workAmount:true}}}} } } },
-      omit:{supplierId:true}
+      where: { id, type: "attive" },
+      include: {
+        Customer: {
+          select: {
+            companyName: true,
+            account: {
+              select: {
+                cdp: true,
+                date: true,
+                status: true,
+                see_CDP: true,
+                wbs: true,
+                order: { select: { description: true, workAmount: true } },
+              },
+            },
+          },
+        },
+      },
+      omit: { supplierId: true },
     });
 
     if (!activeFatture) {
@@ -212,13 +232,12 @@ export const getFattureActive = async (req, res) => {
     }
 
     const { Customer, ...rest } = activeFatture;
-    const allSals = Customer.account.flatMap(acc => acc.cdp);
+    const allSals = Customer.account.flatMap((acc) => acc.cdp);
     const cdpLength = allSals.length;
-  
-    
+
     const firstAccount = Customer.account[0];
     const description = firstAccount?.order?.description || null;
-    const dateAcc = firstAccount?.date || null
+    const dateAcc = firstAccount?.date || null;
     const result = {
       ...rest,
       cdpLength,
@@ -240,25 +259,44 @@ export const getFatturePassive = async (req, res) => {
     const { id } = req.params;
 
     const passiveFatture = await prisma.invoice.findUnique({
-      where: { id, type:"passive" },
-      include: { supplier: { select: { companyName: true, account: {select:{sal:true,progressive_SAL_amount:true,date:true,status: true, see_SAL:true, wbs:true, order:{select:{description:true, workAmount:true}}}} } } },
-      omit:{customerId:true}
+      where: { id, type: "passive" },
+      include: {
+        supplier: {
+          select: {
+            companyName: true,
+            account: {
+              select: {
+                sal: true,
+                progressive_SAL_amount: true,
+                date: true,
+                status: true,
+                see_SAL: true,
+                wbs: true,
+                order: { select: { description: true, workAmount: true } },
+              },
+            },
+          },
+        },
+      },
+      omit: { customerId: true },
     });
 
     if (!passiveFatture) {
       return res.status(404).json({ message: "not found" });
     }
-    
-    const { supplier, ...rest } = passiveFatture;
-    
-    const allSals = supplier.account.flatMap(acc => acc.sal);
-    const salLength = allSals.length;
-    const totalAgreedCost = allSals.reduce((sum, sal) => sum + Number(sal.agreed || 0), 0);
 
-    
+    const { supplier, ...rest } = passiveFatture;
+
+    const allSals = supplier.account.flatMap((acc) => acc.sal);
+    const salLength = allSals.length;
+    const totalAgreedCost = allSals.reduce(
+      (sum, sal) => sum + Number(sal.agreed || 0),
+      0
+    );
+
     const firstAccount = supplier.account[0];
     const description = firstAccount?.order?.description || null;
-    const dateAcc = firstAccount?.date || null ;
+    const dateAcc = firstAccount?.date || null;
     const result = {
       ...rest,
       salLength,
@@ -267,11 +305,11 @@ export const getFatturePassive = async (req, res) => {
       ordDesc: description,
       accDate: formatDate(dateAcc),
       status: firstAccount.status,
-      sals: firstAccount.sal
+      sals: firstAccount.sal,
     };
     return res.status(200).json({
       message: "found",
-      data: result
+      data: result,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -280,7 +318,7 @@ export const getFatturePassive = async (req, res) => {
 
 export const createRicavi = async (req, res) => {
   try {
-    const {id} = req.user
+    const { id } = req.user;
     const requiredFields = [
       "customerName",
       "wbs",
@@ -313,8 +351,9 @@ export const createRicavi = async (req, res) => {
         .status(400)
         .json({ message: `Missing required field: ${missingField}` });
     }
-    const already = await prisma.ricavi.findUnique({where:{docNo}})
-    if(already) return res.status(400).json({message:"ricavi already exist"})
+    const already = await prisma.ricavi.findUnique({ where: { docNo } });
+    if (already)
+      return res.status(400).json({ message: "ricavi already exist" });
     const ricavi = await prisma.ricavi.create({
       data: {
         iva,
@@ -327,14 +366,14 @@ export const createRicavi = async (req, res) => {
         note,
         withHoldAmt,
         wbs,
-        admin:{
-          connect: { id }
+        admin: {
+          connect: { id },
         },
         Customer: {
           connect: { companyName: customerName },
         },
       },
-      include:{Customer:{select:{account:true}}}
+      include: { Customer: { select: { account: true } } },
     });
     return res.status(200).json({ message: "created!", data: ricavi });
   } catch (error) {
@@ -343,7 +382,7 @@ export const createRicavi = async (req, res) => {
 };
 
 export const createCosti = async (req, res) => {
-  const {id} = req.user
+  const { id } = req.user;
   try {
     const requiredFields = [
       "supplierName",
@@ -377,8 +416,9 @@ export const createCosti = async (req, res) => {
         .status(400)
         .json({ message: `Missing required field: ${missingField}` });
     }
-    const already = await prisma.costi.findUnique({where:{docNo}})
-    if(already) return res.status(400).json({message:"costi already exist"})
+    const already = await prisma.costi.findUnique({ where: { docNo } });
+    if (already)
+      return res.status(400).json({ message: "costi already exist" });
     const costi = await prisma.costi.create({
       data: {
         iva,
@@ -391,62 +431,122 @@ export const createCosti = async (req, res) => {
         note,
         withHoldAmt,
         wbs,
-        admin:{
-          connect: { id }
+        admin: {
+          connect: { id },
         },
         supplier: {
           connect: { companyName: supplierName },
         },
       },
-      include:{supplier:{select:{invoices:true}}}
+      include: { supplier: { select: { invoices: true } } },
     });
     return res.status(200).json({ message: "created!", data: costi });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-}
+};
 
-export const getAllRicavis = async (req, res)=> {
+export const getAllRicavis = async (req, res) => {
   try {
-    const {id} = req.user
-    let ricavis = await prisma.ricavi.findMany({where:{adminId:id},include:{Customer:{select:{companyName:true}}}})
-    ricavis = ricavis.map((obj)=>({...obj, customerName:obj.Customer.companyName,docDate:formatDate(obj.docDate)})).map(({ Customer, ...rest }) => rest);
-    return res.status(200).json({message:"fetched!", data:ricavis})
+    const { id } = req.user;
+    let ricavis = await prisma.ricavi.findMany({
+      where: { adminId: id },
+      include: { Customer: { select: { companyName: true } } },
+    });
+    ricavis = ricavis
+      .map((obj) => ({
+        ...obj,
+        customerName: obj.Customer.companyName,
+        revAmt: formatNumberWithThousands(Number(obj.revAmt.toFixed(2)))+"€",
+        withHoldAmt: formatNumberWithThousands(Number(obj.withHoldAmt.toFixed(2)))+"€",
+        advancePayment: formatNumberWithThousands(Number(obj.advancePayment.toFixed(2)))+"€",
+        docDate: formatDate(obj.docDate),
+      }))
+      .map(({ Customer, ...rest }) => rest);
+    return res.status(200).json({ message: "fetched!", data: ricavis });
   } catch (error) {
-    return res.status(500).json({message:error.message})
+    return res.status(500).json({ message: error.message });
   }
-}
+};
 
 export const getRicavi = async (req, res) => {
   try {
-    const {id} = req.params
-    const ricavi = await prisma.ricavi.findUnique({where:{id},include:{Customer:{select:{companyName:true,invoices:{select:{docNo:true}}}}}})
-    return res.status(200).json({message:"fetched",data:{...ricavi,customerName:ricavi.Customer.companyName,docDate:formatDate(ricavi.docDate)}})
+    const { id } = req.params;
+    const ricavi = await prisma.ricavi.findUnique({
+      where: { id },
+      include: {
+        Customer: {
+          select: { companyName: true, invoices: { select: { docNo: true } } },
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json({
+        message: "fetched",
+        data: {
+          ...ricavi,
+          customerName: ricavi.Customer.companyName,
+          docDate: formatDate(ricavi.docDate),
+        },
+      });
   } catch (error) {
-    return res.status(500).json({message:error.message})
+    return res.status(500).json({ message: error.message });
   }
-}
+};
 
-export const getAllCostis = async (req, res)=> {
+export const getAllCostis = async (req, res) => {
   try {
-    const {id} = req.user
-    let costis = await prisma.costi.findMany({where:{adminId:id},include:{supplier:{include:{invoices:{select:{docDate:true,docNo:true}}}}}})
-    costis = costis.map((obj)=>({...obj,supplierName: obj.supplier.companyName,docDate:formatDate(obj.docDate)})).map(({ supplier, ...rest }) => rest);
-    return res.status(200).json({message:"fetched!", data:costis})
+    const { id } = req.user;
+    let costis = await prisma.costi.findMany({
+      where: { adminId: id },
+      include: {
+        supplier: {
+          include: { invoices: { select: { docDate: true, docNo: true } } },
+        },
+      },
+    });
+    costis = costis
+      .map((obj) => ({
+        ...obj,
+        supplierName: obj.supplier.companyName,
+        revAmt: formatNumberWithThousands(Number(obj.revAmt.toFixed(2)))+"€",
+        withHoldAmt: formatNumberWithThousands(Number(obj.withHoldAmt.toFixed(2)))+"€",
+        advancePayment: formatNumberWithThousands(Number(obj.advancePayment.toFixed(2)))+"€",
+        docDate: formatDate(obj.docDate),
+      }))
+      .map(({ supplier, ...rest }) => rest);
+    return res.status(200).json({ message: "fetched!", data: costis });
   } catch (error) {
-    return res.status(500).json({message:error.message})
+    return res.status(500).json({ message: error.message });
   }
-}
+};
 
 export const getCosti = async (req, res) => {
   try {
-    const {id} = req.params
-    const costi = await prisma.costi.findUnique({where:{id},include:{supplier:{select:{companyName:true,invoices:{select:{docNo:true}}}}}})
-    return res.status(200).json({message:"fetched",data:{...costi,supplierName:costi.supplier.companyName,docDate:formatDate(costi.docDate)}})
+    const { id } = req.params;
+    const costi = await prisma.costi.findUnique({
+      where: { id },
+      include: {
+        supplier: {
+          select: { companyName: true, invoices: { select: { docNo: true } } },
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json({
+        message: "fetched",
+        data: {
+          ...costi,
+          supplierName: costi.supplier.companyName,
+          docDate: formatDate(costi.docDate),
+        },
+      });
   } catch (error) {
-    return res.status(500).json({message:error.message})
+    return res.status(500).json({ message: error.message });
   }
-}
+};
 
 export const deleteFattures = async (req, res) => {
   try {
@@ -460,7 +560,7 @@ export const deleteFattures = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-}
+};
 
 export const deleteRicavi = async (req, res) => {
   try {
@@ -474,7 +574,7 @@ export const deleteRicavi = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-}
+};
 
 export const deleteCosti = async (req, res) => {
   try {
@@ -488,4 +588,4 @@ export const deleteCosti = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-}
+};
