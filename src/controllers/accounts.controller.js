@@ -692,7 +692,7 @@ export const getAllAccountWithClient = async (req, res) => {
         date: formatDate(item.date),
         customerName: item.customer?.companyName,
         ordDesc: item.order.description,
-        workAmount: formatNumberWithThousands(Number(item.order.workAmount.toFixed(2)))+"€",
+        workAmount: formatNumberWithThousands(Number(item.order.workAmount.toFixed(2)))+ "€",
         total_cdp: item.cdp.length,
         // progressive_SAL_amount: item.sal.reduce((sum, salItem) => sum + parseFloat(salItem.agreed || 0),0)
       }))
