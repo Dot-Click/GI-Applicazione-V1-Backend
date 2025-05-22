@@ -8,9 +8,9 @@ async function main() {
   // Create Admin
   const admin = await prisma.admin.create({
     data: {
-      email: 'admin@example.com',
-      name: 'Super Admin',
-      password: await bcrypt.hash('admin123', 10),
+      email: 'admin39@gmail.com',
+      name: 'admin39',
+      password: await bcrypt.hash('admin39', 10),
       role: 'ADMIN',
       orderSeq: {
         create: {

@@ -250,23 +250,20 @@ export const getAccountWithOrder = async (req, res) => {
 
     const { order, supplier,customer, sal, cdp, status, ...rest } = acc;
     const calulated_stuff = {
-      // supplier side 
-      progressiveSALAmount: sal.reduce((sum, salItem) => sum + parseFloat(salItem.agreed || 0),0),
-      // client side 
-      contractAmount: order.workAmount,
-      advancePayment: order.advancePayment,
-      progressiveNetAmount: (order.workAmount - order.withholdingAmount).toFixed(2),
-      depositBalance: ((order.dipositRecovery * order.workAmount) / 100).toFixed(2),
-      withholdings: order.withholdingAmount,
-      depositRecovery: order.dipositRecovery,
-      discount: order.dipositRecovery - order.withholdingAmount,
-      reducedAmount: order.workAmount - order.advancePayment,
-      currentWorksAmount: order.workAmount,
-      advancePayment: order.advancePayment,
-      withholdingTax: order.withholdingAmount,
-      amtPresentCDP: cdp.reduce((sum, cdpItem) => sum + parseFloat(cdpItem.currentWorkAmountNotSubjectToDiscount || 0),0),
-      vatAmt: (order.workAmount * parseFloat(order.iva || 0)) / 100,
-      totalToBePaid: (order.workAmount + ((order.workAmount * parseFloat(order.iva || 0)) / 100)) - order.advancePayment - order.withholdingAmount
+      contractAmount: order.workAmount+"€",
+      advancePayment: order.advancePayment+"€",
+      progressiveNetAmount: (order.workAmount - order.withholdingAmount).toFixed(2)+"€",
+      depositBalance: /*((order.dipositRecovery * order.workAmount) / 100).toFixed(2)+"€"*/ ((order.dipositRecovery * 100) - order.workAmount).toFixed(2)+"€",
+      withholdings: order.withholdingAmount+"%",
+      depositRecovery: order.dipositRecovery+"%",
+      discount: ((((order.withholdingAmount * order.dipositRecovery) / 100) * 100) / order.withholdingAmount).toFixed(2)+"%",
+      reducedAmount: (order.workAmount - order.advancePayment).toFixed(3)+"€",
+      currentWorksAmount: order.workAmount+"€",
+      advancePayment: order.advancePayment+"€",
+      withholdingTax: order.withholdingAmount+"€",
+      amtPresentCDP: cdp.reduce((sum, cdpItem) => sum + parseFloat(cdpItem.currentWorkAmountNotSubjectToDiscount || 0),0)+"€",
+      vatAmt: ((order.workAmount * parseFloat(order.iva || 0)) / 100).toFixed(2)+"€",
+      totalToBePaid: cdp.reduce((sum, item)=> sum + parseFloat(item.currentWorkAmountSubjectToReduction || 0),0)+"€"
     }
     
     const transformed = {
@@ -279,8 +276,8 @@ export const getAccountWithOrder = async (req, res) => {
       date: formatDate(acc.date),
       total_sal: sal.length,
       total_cdp: cdp.length,
+      cdp_calc_stuff: calulated_stuff,
       sal,
-      calulated_stuff,
       cdp
     };
 
@@ -759,3 +756,82 @@ export const generatePDF_C = async (req, res) => {
     return res.status(500).json({ message: error.message })
   }
 }
+
+export const createBulkAttives = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const {attives} = req.body;
+
+    if (!Array.isArray(attives) || attives.length === 0) {
+      return res.status(400).json({ message: "No attives provided." });
+    }
+
+    const requiredFields = [
+      "customerName",
+      "vat",
+      "name",
+      "taxAmt",
+      "docDate",
+      "vatRate",
+      "docNo",
+      "typology",
+      "yearOfCompetence",
+      "protocol",
+    ];
+
+    const createdInvoices = [];
+
+    for (const invoice of attives) {
+      const missingField = requiredFields.find((field) => !invoice[field]);
+      if (missingField) {
+        return res.status(400).json({
+          message: `Missing required field: ${missingField} in one of the attives.`,
+        });
+      }
+
+      const exists = await prisma.invoice.findUnique({
+        where: { docNo: invoice.docNo },
+      });
+
+      if (exists) {
+        continue; // Skip existing invoice
+      }
+
+      
+
+      const created = await prisma.invoice.create({
+        data: {
+          vat: invoice.vat,
+          name: invoice.name,
+          Processed: invoice.Processed,
+          taxAmt: invoice.taxAmt,
+          docDate: new Date(invoice.docDate),
+          vatRate: invoice.vatRate,
+          split: invoice.split,
+          typology: invoice.typology,
+          yearOfCompetence: invoice.yearOfCompetence,
+          protocol: invoice.protocol,
+          docNo: invoice.docNo,
+          attachment: invoice?.filePath || null,
+          admin: {
+            connect: { id },
+          },
+          Customer: {
+            connect: {
+              companyName: invoice.customerName,
+            },
+          },
+        },
+      });
+
+      createdInvoices.push(created);
+    }
+
+    return res.status(200).json({
+      message: `${createdInvoices.length} attives created successfully.`,
+      data: createdInvoices,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
