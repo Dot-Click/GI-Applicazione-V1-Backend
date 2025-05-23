@@ -218,7 +218,24 @@ export const getAccountWithOrder = async (req, res) => {
       include: {
         supplier: { select: { companyName: true } },
         customer: { select: { companyName: true } },
-        order: { select: { description: true, dipositRecovery: true, code:true, withholdingAmount: true, workAmount:true, iva: true, advancePayment: true } },
+        order: { select: { description: true, dipositRecovery: true, code:true, withholdingAmount: true, workAmount:true, iva: true, advancePayment: true,account:{select: {
+        supplier:{select:{companyName:true}},
+        customer: {select:{companyName: true}},
+        code: true,
+        wbs: true,
+        status: true,
+        order:{select:{description: true, workAmount: true}},
+        sal: {
+          include: {
+            sect: {
+              include: {
+                salData: true,
+              },
+            },
+          },
+        },
+        cdp: true
+      }} } },
         sal: {
           include: {
             sect: {
@@ -243,7 +260,11 @@ export const getAccountWithOrder = async (req, res) => {
           ordCode: order?.code,
           order_desc: order?.description,
           total_sal: 0,
+          total_cdp: 0,
           sal: [],
+          cdp: [],
+          cdp_calc_stuff:null,
+          related_acc: []
         },
       });
     }
@@ -269,7 +290,6 @@ export const getAccountWithOrder = async (req, res) => {
     const transformed = {
       ...rest,
       order_desc: order?.description || "",
-      order_code: order.code,
       supplier_name: supplier?.companyName || "",
       customer_name: customer?.companyName || "",
       status: AccRoles[status] || status,
@@ -277,6 +297,7 @@ export const getAccountWithOrder = async (req, res) => {
       total_sal: sal.length,
       total_cdp: cdp.length,
       cdp_calc_stuff: calulated_stuff,
+      related_acc: order.account,
       sal,
       cdp
     };
@@ -829,6 +850,85 @@ export const createBulkAttives = async (req, res) => {
 
     return res.status(200).json({
       message: `${createdInvoices.length} attives created successfully.`,
+      data: createdInvoices,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const createBulkPassives = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const {passives} = req.body;
+
+    if (!Array.isArray(passives) || passives.length === 0) {
+      return res.status(400).json({ message: "No passives provided." });
+    }
+
+    const requiredFields = [
+      "supplierName",
+      "vat",
+      "name",
+      "taxAmt",
+      "docDate",
+      "vatRate",
+      "docNo",
+      "typology",
+      "yearOfCompetence",
+      "protocol",
+    ];
+
+    const createdInvoices = [];
+
+    for (const invoice of passives) {
+      const missingField = requiredFields.find((field) => !invoice[field]);
+      if (missingField) {
+        return res.status(400).json({
+          message: `Missing required field: ${missingField} in one of the passives.`,
+        });
+      }
+
+      const exists = await prisma.invoice.findUnique({
+        where: { docNo: invoice.docNo },
+      });
+
+      if (exists) {
+        continue; // Skip existing invoice
+      }
+
+      
+
+      const created = await prisma.invoice.create({
+        data: {
+          vat: invoice.vat,
+          name: invoice.name,
+          Processed: invoice.Processed,
+          taxAmt: invoice.taxAmt,
+          docDate: new Date(invoice.docDate),
+          vatRate: invoice.vatRate,
+          split: invoice.split,
+          typology: invoice.typology,
+          yearOfCompetence: invoice.yearOfCompetence,
+          protocol: invoice.protocol,
+          docNo: invoice.docNo,
+          attachment: invoice?.filePath || null,
+          admin: {
+            connect: { id },
+          },
+          supplier: {
+            connect: {
+              companyName: invoice.supplierName,
+            },
+          },
+        },
+      });
+
+      createdInvoices.push(created);
+    }
+
+    return res.status(200).json({
+      message: `${createdInvoices.length} passives created successfully.`,
       data: createdInvoices,
     });
   } catch (error) {

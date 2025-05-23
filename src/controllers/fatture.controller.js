@@ -589,3 +589,162 @@ export const deleteCosti = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const createBulkAttives = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const {attives} = req.body;
+
+    if (!Array.isArray(attives) || attives.length === 0) {
+      return res.status(400).json({ message: "No attives provided." });
+    }
+
+    const requiredFields = [
+      "customerName",
+      "vat",
+      "name",
+      "taxAmt",
+      "docDate",
+      "vatRate",
+      "docNo",
+      "typology",
+      "yearOfCompetence",
+      "protocol",
+    ];
+
+    const createdInvoices = [];
+
+    for (const invoice of attives) {
+      const missingField = requiredFields.find((field) => !invoice[field]);
+      if (missingField) {
+        return res.status(400).json({
+          message: `Missing required field: ${missingField} in one of the attives.`,
+        });
+      }
+
+      const exists = await prisma.invoice.findUnique({
+        where: { docNo: invoice.docNo },
+      });
+
+      if (exists) {
+        continue; // Skip existing invoice
+      }
+
+      
+
+      const created = await prisma.invoice.create({
+        data: {
+          vat: invoice.vat,
+          name: invoice.name,
+          Processed: invoice.Processed,
+          taxAmt: invoice.taxAmt,
+          docDate: new Date(invoice.docDate),
+          vatRate: invoice.vatRate,
+          split: invoice.split,
+          typology: invoice.typology,
+          yearOfCompetence: invoice.yearOfCompetence,
+          protocol: invoice.protocol,
+          docNo: invoice.docNo,
+          attachment: invoice?.filePath || null,
+          admin: {
+            connect: { id },
+          },
+          Customer: {
+            connect: {
+              companyName: invoice.customerName,
+            },
+          },
+        },
+      });
+
+      createdInvoices.push(created);
+    }
+
+    return res.status(200).json({
+      message: `${createdInvoices.length} attives created successfully.`,
+      data: createdInvoices,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const createBulkPassives = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const {passives} = req.body;
+
+    if (!Array.isArray(passives) || passives.length === 0) {
+      return res.status(400).json({ message: "No passives provided." });
+    }
+
+    const requiredFields = [
+      "supplierName",
+      "vat",
+      "name",
+      "taxAmt",
+      "docDate",
+      "vatRate",
+      "docNo",
+      "typology",
+      "yearOfCompetence",
+      "protocol",
+    ];
+
+    const createdInvoices = [];
+
+    for (const invoice of passives) {
+      const missingField = requiredFields.find((field) => !invoice[field]);
+      if (missingField) {
+        return res.status(400).json({
+          message: `Missing required field: ${missingField} in one of the passives.`,
+        });
+      }
+
+      const exists = await prisma.invoice.findUnique({
+        where: { docNo: invoice.docNo },
+      });
+
+      if (exists) {
+        continue; // Skip existing invoice
+      }
+
+      
+
+      const created = await prisma.invoice.create({
+        data: {
+          vat: invoice.vat,
+          name: invoice.name,
+          Processed: invoice.Processed,
+          taxAmt: invoice.taxAmt,
+          docDate: new Date(invoice.docDate),
+          vatRate: invoice.vatRate,
+          type:"passive",
+          split: invoice.split,
+          typology: invoice.typology,
+          yearOfCompetence: invoice.yearOfCompetence,
+          protocol: invoice.protocol,
+          docNo: invoice.docNo,
+          attachment: invoice?.filePath || null,
+          admin: {
+            connect: { id },
+          },
+          supplier: {
+            connect: {
+              companyName: invoice.supplierName,
+            },
+          },
+        },
+      });
+
+      createdInvoices.push(created);
+    }
+
+    return res.status(200).json({
+      message: `${createdInvoices.length} passives created successfully.`,
+      data: createdInvoices,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
