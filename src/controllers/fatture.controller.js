@@ -90,7 +90,6 @@ export const createFatturePassive = async (req, res) => {
       docNo,
     } = req.body;
     
-    console.log(req.body)
     const requiredFields = [
       "supplierName",
       "vat",
