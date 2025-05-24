@@ -15,11 +15,8 @@ export const createFattureActive = async (req, res) => {
       typology,
       yearOfCompetence,
       protocol,
-      type,
-      Processed,
       docNo,
     } = req.body;
-
     const requiredFields = [
       "customerName",
       "vat",
@@ -49,14 +46,11 @@ export const createFattureActive = async (req, res) => {
       data: {
         vat,
         name,
-        type,
-        Processed,
         taxAmt,
         docDate: new Date(docDate),
         vatRate,
         split,
         typology,
-        type: "attive",
         yearOfCompetence,
         protocol,
         docNo,
@@ -73,7 +67,7 @@ export const createFattureActive = async (req, res) => {
       omit: { supplierId: true },
     });
 
-    return res.status(200).json({ message: "invoice created", fatture });
+    return res.status(200).json({ message: "invoice created", data:fatture });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -93,11 +87,10 @@ export const createFatturePassive = async (req, res) => {
       typology,
       yearOfCompetence,
       protocol,
-      type,
-      Processed,
       docNo,
     } = req.body;
-
+    
+    console.log(req.body)
     const requiredFields = [
       "supplierName",
       "vat",
@@ -127,8 +120,6 @@ export const createFatturePassive = async (req, res) => {
       data: {
         vat,
         name,
-        type,
-        Processed,
         taxAmt,
         docDate: new Date(docDate),
         vatRate,
@@ -151,7 +142,7 @@ export const createFatturePassive = async (req, res) => {
       omit: { customerId: true },
     });
 
-    return res.status(200).json({ message: "invoice created", fatture });
+    return res.status(200).json({ message: "invoice created", data:fatture });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
