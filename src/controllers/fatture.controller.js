@@ -1,6 +1,12 @@
 import prisma from "../../prisma/prisma.js";
 import { cloudinaryUploader, formatDate, formatNumberWithThousands } from "../lib/utils.js";
 
+const AccRoles = {
+  Approvato: "Approvato",
+  Da_approvare: "Da approvare",
+  Non_approvata: "Non approvata",
+};
+
 export const createFattureActive = async (req, res) => {
   try {
     const { id } = req.user;
@@ -201,16 +207,7 @@ export const getFattureActive = async (req, res) => {
         Customer: {
           select: {
             companyName: true,
-            account: {
-              select: {
-                cdp: true,
-                date: true,
-                status: true,
-                see_CDP: true,
-                wbs: true,
-                order: { select: { description: true, workAmount: true } },
-              },
-            },
+            ricavi:true,
           },
         },
       },
@@ -222,20 +219,11 @@ export const getFattureActive = async (req, res) => {
     }
 
     const { Customer, ...rest } = activeFatture;
-    const allSals = Customer.account.flatMap((acc) => acc.cdp);
-    const cdpLength = allSals.length;
-
-    const firstAccount = Customer.account[0];
-    const description = firstAccount?.order?.description || null;
-    const dateAcc = firstAccount?.date || null;
     const result = {
       ...rest,
-      cdpLength,
-      ordDesc: description,
-      accDate: formatDate(dateAcc),
+      docDate: formatDate(rest.docDate),
       customerName: Customer?.companyName || null,
-      status: firstAccount.status,
-      cdp: firstAccount.cdp,
+      ricavis: Customer.ricavi,
     };
 
     return res.status(200).json({ message: "found", data: result });
@@ -254,6 +242,7 @@ export const getFatturePassive = async (req, res) => {
         supplier: {
           select: {
             companyName: true,
+            costi: true,
             account: {
               select: {
                 sal: true,
@@ -262,6 +251,7 @@ export const getFatturePassive = async (req, res) => {
                 status: true,
                 see_SAL: true,
                 wbs: true,
+                supplier: { select: { companyName: true } },
                 order: { select: { description: true, workAmount: true } },
               },
             },
@@ -289,13 +279,23 @@ export const getFatturePassive = async (req, res) => {
     const dateAcc = firstAccount?.date || null;
     const result = {
       ...rest,
-      salLength,
-      totalAgreedCost,
-      supplierName: supplier.companyName || null,
-      ordDesc: description,
+      docDate: formatDate(rest.docDate),
+      costi: supplier?.costi,
+      accTotalAgreedCost: totalAgreedCost?.toFixed(2) + "€",
+      accSupplierName: supplier?.companyName || null,
+      accOrdDesc: description,
       accDate: formatDate(dateAcc),
-      status: firstAccount.status,
-      sals: firstAccount.sal,
+      accStatus: firstAccount?.status || null,
+      relatedAcc: supplier.account.map((acc) => ({
+        // ...acc,
+        status: AccRoles[acc.status] || acc.status,
+        date: formatDate(acc.date),
+        wbs: acc.wbs,
+        see_SAL: acc.see_SAL,
+        supplierName: acc.supplier?.companyName || 'N/A',
+        ordDesc: acc.order.description,
+        workAmount: formatNumberWithThousands(Number(acc.order.workAmount.toFixed(2)))+"€",
+        total_sal: acc.sal.length,})),
     };
     return res.status(200).json({
       message: "found",
@@ -362,8 +362,7 @@ export const createRicavi = async (req, res) => {
         Customer: {
           connect: { companyName: customerName },
         },
-      },
-      include: { Customer: { select: { account: true } } },
+      }
     });
     return res.status(200).json({ message: "created!", data: ricavi });
   } catch (error) {
@@ -427,8 +426,7 @@ export const createCosti = async (req, res) => {
         supplier: {
           connect: { companyName: supplierName },
         },
-      },
-      include: { supplier: { select: { invoices: true } } },
+      }
     });
     return res.status(200).json({ message: "created!", data: costi });
   } catch (error) {

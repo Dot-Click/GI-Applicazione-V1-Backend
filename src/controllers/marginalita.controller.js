@@ -99,6 +99,7 @@ export const getAllmarginalities = async (req, res) => {
 
         return {
           ...obj,
+          ordDescription: obj.description,
           customerName: obj.Customer.companyName,
           supplierName: obj.supplier?.companyName,
           totalRevAmt: totalRevAmt.toFixed(3) + "€",
@@ -114,7 +115,7 @@ export const getAllmarginalities = async (req, res) => {
               : percentAvanzamento.toFixed(2) + "%",
         };
       })
-      .map(({ Customer, supplier, ...rest }) => rest);
+      .map(({ Customer, supplier,description, ...rest }) => rest);
 
     return res.status(200).json({
       message: "fetched",
