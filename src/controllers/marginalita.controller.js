@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prisma.js";
+import { formatDate, formatNumberWithThousands } from "../lib/utils.js";
 
 // export const getAllmarginalities = async (req, res) => {
 //   try {
@@ -87,9 +88,11 @@ export const getAllmarginalities = async (req, res) => {
           0
         ) || 0;
 
-        const marginalitaVal = totalRevAmt - totalCostAmt;
-        const percentMarginalita =
-          totalRevAmt !== 0 ? (marginalitaVal / totalRevAmt) * 100 : 0;
+       const rawMarginalitaVal = totalRevAmt - totalCostAmt;
+       const marginalitaVal = Math.max(0, rawMarginalitaVal);
+       const percentMarginalita =
+          totalRevAmt > 0 ? (marginalitaVal / totalRevAmt) * 100 : 0;
+
 
         const dipositRecovery = Number(obj.dipositRecovery);
         const workAmount = Number(obj.workAmount);
@@ -102,9 +105,9 @@ export const getAllmarginalities = async (req, res) => {
           ordDescription: obj.description,
           customerName: obj.Customer.companyName,
           supplierName: obj.supplier?.companyName,
-          totalRevAmt: totalRevAmt.toFixed(3) + "€",
-          totalCostAmt: totalCostAmt.toFixed(3) + "€",
-          marginalitaVal: marginalitaVal.toFixed(3) + "€",
+          totalRevAmt: formatNumberWithThousands(totalRevAmt.toFixed(3)) + "€",
+          totalCostAmt: formatNumberWithThousands(totalCostAmt.toFixed(3)) + "€",
+          marginalitaVal: formatNumberWithThousands(marginalitaVal.toFixed(3)) + "€",
           percentMarginalita:
             percentMarginalita < 0
               ? "0.00%"
@@ -202,3 +205,26 @@ export const getMarginalitaOfCosti = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const getMarginalitaOfRicaviById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const onlyRicavi = await prisma.ricavi.findUnique({
+      where: { id },
+      include: {
+        Customer:{select:{companyName:true}}
+      },
+      omit:{invId:true}
+    });
+    return res.status(200).json({
+      message: "fetched!",
+      data: {
+        ...onlyRicavi,
+        revAmt: formatNumberWithThousands(onlyRicavi.revAmt.toFixed(3)) + "€",
+        docDate: formatDate(onlyRicavi.docDate),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
