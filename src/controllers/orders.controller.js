@@ -634,11 +634,13 @@ export const getAssociatedUsers = async (req, res) => {
         clients: {
           select: {
             companyName: true,
+            code: true,
           },
         },
         suppliers: {
           select: {
             companyName: true,
+            code: true,
           },
         },
         employees: {
