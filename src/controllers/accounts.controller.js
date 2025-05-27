@@ -33,9 +33,9 @@ const fileUploadOfCdpAttach = async (cdp_id, uploadedFiles) => {
 export const createAccountWithSupplier = async (req, res) => {
   try {
     const { id: adminId } = req.user;
-    const { suppCode, date, ordCode, code, SAL } = req.body;
+    const { suppCode, date, ordCode,wbs, code, SAL } = req.body;
 
-    const requiredFields = ["suppCode", "date", "ordCode", "SAL","code"];
+    const requiredFields = ["suppCode", "date", "ordCode", "SAL","code","wbs"];
     const missingField = requiredFields.find((field) => !req.body[field]);
     if (missingField) {
       return res
@@ -104,12 +104,14 @@ export const createAccountWithSupplier = async (req, res) => {
       create: {
         suppCode,
         code,
+        wbs,
         ordCode,
         adminId,
         date: new Date(date),
       },
       update: {
         date: new Date(date),
+        wbs,
       },
     });
 
