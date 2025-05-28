@@ -79,6 +79,20 @@ export const createFattureActive = async (req, res) => {
   }
 };
 
+export const updateActive = async (req, res) => {
+  try {
+    const {id} = req.params
+    const {
+      protocol,
+      yearOfCompetence
+    } = req.body
+    const fatture = await prisma.invoice.update({where:{id}, data:{protocol, yearOfCompetence}})
+    return res.status(200).json({message:'updated!', data:fatture})
+  } catch (error) {
+    return res.status(500).json({message:error.message})
+  }
+}
+
 export const createFatturePassive = async (req, res) => {
   try {
     const { id } = req.user;
@@ -434,6 +448,74 @@ export const createCosti = async (req, res) => {
   }
 };
 
+export const upsertRicaviOnRegistration = async (req, res) => {
+  try {
+    const { id } = req.user
+    const requiredFields = [
+      "customerName",
+      "docNo",
+      "workSite",
+      "wbs",
+      "revAmt",
+      "advancePayment",
+      "withHoldAmt",
+    ];
+    const missingField = requiredFields.find((field) => !req.body[field]);
+    if (missingField) {
+      return res
+        .status(400)
+        .json({ message: `Missing required field: ${missingField}` });
+    }
+    const {
+      customerName,
+      revAmt,
+      wbs,
+      workSite,
+      docNo,
+      advancePayment,
+      withHoldAmt,
+    } = req.body;
+    const ric = await prisma.ricavi.upsert({where:{docNo}, create:{Customer:{connect:{companyName:customerName}},revAmt, advancePayment, withHoldAmt, wbs, workSite,docNo, admin:{connect:{id}}}, update:{revAmt, advancePayment, withHoldAmt, wbs, workSite}})
+    return res.status(200).json({message:'created!', data: ric})
+  } catch (error) {
+    return res.status(500).json({message:error.message})
+  }
+}
+
+export const upsertCostiOnRegistration = async (req, res) => {
+  try {
+    const { id } = req.user
+    const requiredFields = [
+      "supplierName",
+      "docNo",
+      "workSite",
+      "wbs",
+      "revAmt",
+      "advancePayment",
+      "withHoldAmt",
+    ];
+    const missingField = requiredFields.find((field) => !req.body[field]);
+    if (missingField) {
+      return res
+        .status(400)
+        .json({ message: `Missing required field: ${missingField}` });
+    }
+    const {
+      supplierName,
+      revAmt,
+      wbs,
+      workSite,
+      docNo,
+      advancePayment,
+      withHoldAmt,
+    } = req.body;
+    const cost = await prisma.costi.upsert({where:{docNo}, create:{supplier:{connect:{companyName:supplierName}},revAmt, advancePayment, withHoldAmt, wbs, workSite,docNo, admin:{connect:{id}}}, update:{revAmt, advancePayment, withHoldAmt, wbs, workSite}})
+    return res.status(200).json({message:'created!', data: cost})
+  } catch (error) {
+    return res.status(500).json({message:error.message})
+  }
+}
+
 export const getAllRicavis = async (req, res) => {
   try {
     const { id } = req.user;
@@ -563,6 +645,16 @@ export const deleteRicavi = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const deleteByIdRicavi = async (req, res) => {
+  try {
+    const {docNo} = req.params
+    await prisma.ricavi.delete({where:{docNo}})
+    return res.status(200).json({message:'deleted!'})
+  } catch (error) {
+    return res.status(500).json({message:error.message})
+  }
+}
 
 export const deleteCosti = async (req, res) => {
   try {

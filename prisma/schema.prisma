@@ -398,7 +398,7 @@ model Ricavi {
   iva          String?
   docNo        String        @unique
   wbs          String?
-  note         String
+  note         String?
   invoice      Invoice?       @relation(fields: [invId], references: [id])
   invId        String?
   admin       Admin?      @relation(fields: [adminId], references: [id])
@@ -421,12 +421,12 @@ model Costi {
   wbs          String?
   docDate      DateTime?     @db.Date     
   yearOfCompetence  String?
-  note         String
+  note         String?
   invoice      Invoice?       @relation(fields: [invId], references: [id])
   admin       Admin?      @relation(fields: [adminId], references: [id])
   adminId     String?          
   invId        String?
-  revAmt       Decimal?       @db.Decimal(12, 4)
+  revAmt       Decimal       @db.Decimal(12, 4)
   advancePayment  Decimal?    @db.Decimal(12, 4)
   withHoldAmt   Decimal?      @db.Decimal(12, 4)           
   createdAt    DateTime      @default(now())
