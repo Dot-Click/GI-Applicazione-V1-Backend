@@ -294,9 +294,9 @@ export const getFatturePassive = async (req, res) => {
     const result = {
       ...rest,
       docDate: formatDate(rest.docDate),
-      costi: supplier?.costi,
+      costis: supplier?.costi,
       accTotalAgreedCost: totalAgreedCost?.toFixed(2) + "€",
-      accSupplierName: supplier?.companyName || null,
+      supplierName: supplier?.companyName || null,
       accOrdDesc: description,
       accDate: formatDate(dateAcc),
       accStatus: firstAccount?.status || null,
@@ -669,6 +669,16 @@ export const deleteCosti = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const deleteByIdCosti = async (req, res) => {
+  try {
+    const {docNo} = req.params
+    await prisma.costi.delete({where:{docNo}})
+    return res.status(200).json({message:'deleted!'})
+  } catch (error) {
+    return res.status(500).json({message:error.message})
+  }
+}
 
 export const createBulkAttives = async (req, res) => {
   try {

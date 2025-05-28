@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createBulkAttives, createBulkPassives, createCosti, createFattureActive, createFatturePassive, createRicavi, deleteByIdRicavi, deleteCosti, deleteFattures, deleteRicavi, getAllCostis, getAllFattureActive, getAllFatturePassiva, getAllRicavis, getCosti, getFattureActive, getFatturePassive, getRicavi, updateActive, upsertCostiOnRegistration, upsertRicaviOnRegistration } from "../controllers/fatture.controller.js";
+import { createBulkAttives, createBulkPassives, createCosti, createFattureActive, createFatturePassive, createRicavi, deleteByIdCosti, deleteByIdRicavi, deleteCosti, deleteFattures, deleteRicavi, getAllCostis, getAllFattureActive, getAllFatturePassiva, getAllRicavis, getCosti, getFattureActive, getFatturePassive, getRicavi, updateActive, upsertCostiOnRegistration, upsertRicaviOnRegistration } from "../controllers/fatture.controller.js";
 import { Auth } from "../middlewares/auth.middleware.js";
 import { checkRole } from "../middlewares/verif.middleware.js";
 import { singleUpload } from "../middlewares/multer.middleware.js";
@@ -26,6 +26,7 @@ router.post("/create/costi", Auth, checkRole(["ADMIN"]), createCosti)
 router.delete("/delete", Auth, checkRole(["ADMIN"]), deleteFattures)
 router.delete("/delete/ricavi", Auth, checkRole(["ADMIN"]), deleteRicavi)
 router.delete("/delete/ricavi/:docNo", Auth, checkRole(["ADMIN"]), deleteByIdRicavi)
+router.delete("/delete/costi/:docNo", Auth, checkRole(["ADMIN"]), deleteByIdCosti)
 router.delete("/delete/costi", Auth, checkRole(["ADMIN"]), deleteCosti)
 
 export default router
