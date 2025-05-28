@@ -299,7 +299,7 @@ export const getFatturePassive = async (req, res) => {
       supplierName: supplier?.companyName || null,
       accOrdDesc: description,
       accDate: formatDate(dateAcc),
-      accStatus: firstAccount?.status || null,
+      accStatus: AccRoles[firstAccount?.status] || null,
       relatedAcc: supplier.account.map((acc) => ({
         // ...acc,
         status: AccRoles[acc.status] || acc.status,
