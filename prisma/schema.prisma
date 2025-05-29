@@ -31,6 +31,7 @@ model Admin {
   supplierSeq supSequence?
   customerSeq custSequence?
   employeeSeq empSequence?
+  invoiceSeq  InvoiceSequence?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
@@ -252,6 +253,7 @@ model SAL {
   id             String    @id @default(uuid())
   account        Accounts? @relation(fields: [accId], references: [id],onDelete: Cascade)
   accId          String?
+  status         accState? @default(Da_approvare)
   sect           SALsect[]
   add_additional_1   String?
   desc_additional_1  String?  
@@ -388,6 +390,16 @@ model Invoice {
   attachment   String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+}
+
+model InvoiceSequence {
+  id           String        @id @default(uuid())
+  admin       Admin?      @relation(fields: [adminId], references: [id])
+  adminId     String?  @unique
+  active_added_col_array           String[]
+  active_visible_col_array         String[]
+  passive_added_col_array   String[]
+  passive_visible_col_array String[]
 }
 
 model Ricavi {

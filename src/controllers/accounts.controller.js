@@ -304,7 +304,7 @@ export const getAccountWithOrder = async (req, res) => {
         sal_count: sal?.length || 0,
         cdp_count: cdp?.length || 0
       })),
-      sal,
+      sal: sal.map((rest)=> ({...rest,status: AccRoles[rest.status] || rest.status})),
       cdp
     };
 
