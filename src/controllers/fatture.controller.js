@@ -304,7 +304,7 @@ export const getFatturePassive = async (req, res) => {
       ...rest,
       docDate: formatDate(rest.docDate),
       taxAmt: formatNumberWithThousands(Number(rest.taxAmt.toFixed(2))),
-      costis: supplier?.costi,
+      costis: supplier?.costi.map((items)=>({...items, revAmt:formatNumberWithThousands(Number(items.revAmt.toFixed(2))), advancePayment: formatNumberWithThousands(Number(items.advancePayment.toFixed(2))), withHoldAmt: formatNumberWithThousands(Number(items.withHoldAmt.toFixed(2)))})),
       accTotalAgreedCost: formatNumberWithThousands(totalAgreedCost?.toFixed(2)) + "€",
       supplierName: supplier?.companyName || null,
       accOrdDesc: description,
@@ -320,7 +320,7 @@ export const getFatturePassive = async (req, res) => {
         supplierName: acc.supplier?.companyName || 'N/A',
         ordDesc: acc.order.description,
         workAmount: formatNumberWithThousands(Number(acc.order.workAmount.toFixed(2)))+"€",
-        sal: acc.sal,
+        sal: acc.sal.map((items)=>({...items, status: AccRoles[items.status] || items.status})),
         total_sal: acc.sal.length,})),
     };
     return res.status(200).json({
