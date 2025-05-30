@@ -84,9 +84,10 @@ export const updateActive = async (req, res) => {
     const {id} = req.params
     const {
       protocol,
+      status,
       yearOfCompetence
     } = req.body
-    const fatture = await prisma.invoice.update({where:{id}, data:{protocol, yearOfCompetence}})
+    const fatture = await prisma.invoice.update({where:{id}, data:{protocol, yearOfCompetence,processed:status}})
     return res.status(200).json({message:'updated!', data:fatture})
   } catch (error) {
     return res.status(500).json({message:error.message})
