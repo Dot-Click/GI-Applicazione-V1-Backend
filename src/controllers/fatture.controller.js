@@ -320,6 +320,7 @@ export const getFatturePassive = async (req, res) => {
         supplierName: acc.supplier?.companyName || 'N/A',
         ordDesc: acc.order.description,
         workAmount: formatNumberWithThousands(Number(acc.order.workAmount.toFixed(2)))+"€",
+        sal: acc.sal,
         total_sal: acc.sal.length,})),
     };
     return res.status(200).json({
