@@ -1,6 +1,13 @@
 import prisma from "../../prisma/prisma.js";
 import { formatDate, formatNumberWithThousands } from "../lib/utils.js";
 
+const orderStateMap = {
+  ON_HOLD: "In attesa",
+  IN_PROGRESS: "In corso",
+  CANCELLED: "Cancellato",
+  COMPLETATO: "Completato",
+}
+
 // export const getAllmarginalities = async (req, res) => {
 //   try {
 //     const { id } = req.params;
@@ -78,44 +85,37 @@ export const getAllmarginalities = async (req, res) => {
 
     data = data
       .map((obj) => {
-        const totalRevAmt = obj.Customer.ricavi.reduce(
-          (sum, curr) => sum + Number(curr.revAmt),
+        const totalRevAmt = obj.Customer?.ricavi?.reduce(
+          (sum, curr) => sum + Number(curr.revAmt || 0),
           0
-        );
+        ) || 0;
 
         const totalCostAmt = obj.supplier?.costi?.reduce(
-          (sum, curr) => sum + Number(curr.revAmt),
+          (sum, curr) => sum + Number(curr.revAmt || 0),
           0
         ) || 0;
 
        const rawMarginalitaVal = totalRevAmt - totalCostAmt;
-       const marginalitaVal = Math.max(0, rawMarginalitaVal);
-       const percentMarginalita =
-          totalRevAmt > 0 ? (marginalitaVal / totalRevAmt) * 100 : 0;
+       const marginalitaVal = isNaN(rawMarginalitaVal) ? 0 : Math.max(0, rawMarginalitaVal);
+       const percentMarginalita = isNaN(totalRevAmt) || totalRevAmt === 0 ? 0 : 
+          (marginalitaVal / totalRevAmt) * 100;
 
-
-        const dipositRecovery = Number(obj.dipositRecovery);
-        const workAmount = Number(obj.workAmount);
+        const dipositRecovery = Number(obj.dipositRecovery || 0);
+        const workAmount = Number(obj.workAmount || 0);
         const percentAvanzamentoRaw =
-          workAmount !== 0 ? (dipositRecovery / workAmount) * 100 : 0;
-        const percentAvanzamento = Math.min(percentAvanzamentoRaw, 100);
+          workAmount === 0 ? 0 : (dipositRecovery / workAmount) * 100;
+        const percentAvanzamento = isNaN(percentAvanzamentoRaw) ? 0 : Math.min(percentAvanzamentoRaw, 100);
 
         return {
           ...obj,
-          ordDescription: obj.description,
-          customerName: obj.Customer.companyName,
-          supplierName: obj.supplier?.companyName,
+          ordDescription: obj.description || '',
+          customerName: obj.Customer?.companyName || '',
+          supplierName: obj.supplier?.companyName || '',
           totalRevAmt: formatNumberWithThousands(totalRevAmt.toFixed(3)) + "€",
           totalCostAmt: formatNumberWithThousands(totalCostAmt.toFixed(3)) + "€",
           marginalitaVal: formatNumberWithThousands(marginalitaVal.toFixed(3)) + "€",
-          percentMarginalita:
-            percentMarginalita < 0
-              ? "0.00%"
-              : percentMarginalita.toFixed(2) + "%",
-          percentAvanzamento:
-            percentAvanzamento < 0
-              ? "0.00%"
-              : percentAvanzamento.toFixed(2) + "%",
+          percentMarginalita: percentMarginalita.toFixed(2) + "%",
+          percentAvanzamento: percentAvanzamento.toFixed(2) + "%",
         };
       })
       .map(({ Customer, supplier,description, ...rest }) => rest);
@@ -143,6 +143,7 @@ export const getMarginalitaOfOrder = async (req, res) => {
         dipositRecovery: true,
         description: true,
         workAmount: true,
+        state: true,
         supplier: {
           select: {costi: true},
         },
@@ -153,32 +154,35 @@ export const getMarginalitaOfOrder = async (req, res) => {
         },
       },
     });
-    const ricavi = marginalita.Customer?.ricavi.reduce(
-      (sum, r) => sum + Number(r.revAmt),
+    const ricavi = marginalita.Customer?.ricavi?.reduce(
+      (sum, r) => sum + Number(r.revAmt || 0),
       0
-    );
-    const costi = marginalita.supplier?.costi.reduce(
-      (sum, c) => sum + Number(c.revAmt),
+    ) || 0;
+    const costi = marginalita.supplier?.costi?.reduce(
+      (sum, c) => sum + Number(c.revAmt || 0),
       0
-    );
+    ) || 0;
 
     const marginalitaVal = ricavi - costi;
-    const percentMarginalita =
-      ricavi !== 0 ? (marginalitaVal / ricavi) * 100 : 0;
+    const percentMarginalita = isNaN(ricavi) || ricavi === 0 ? 0 :
+      (marginalitaVal / ricavi) * 100;
 
-    const dipositRecovery = Number(marginalita.dipositRecovery);
-    const workAmount = Number(marginalita.workAmount);
-    const percentAvanzamento =
-      workAmount !== 0 ? (dipositRecovery / workAmount) * 100 : 0;
+    const dipositRecovery = Number(marginalita.dipositRecovery || 0);
+    const workAmount = Number(marginalita.workAmount || 0);
+    const percentAvanzamento = isNaN(workAmount) || workAmount === 0 ? 0 :
+      (dipositRecovery / workAmount) * 100;
+
     return res.status(200).json({
       message: "fetched!",
       data: {
         ...marginalita,
-        ricaviTotal: ricavi?.toFixed(3)+"€",
-        costiTotal: costi?.toFixed(3)+"€",
-        margVal: marginalitaVal.toFixed(3)+"€",
-        percentMarginalita: percentMarginalita < 0 ? '0.00%' : percentMarginalita?.toFixed(2)+'%',
-        percentAvanzamento: percentAvanzamento < 0 ? '0.00%' : percentAvanzamento?.toFixed(2)+'%',
+        ricaviTotal: formatNumberWithThousands(ricavi.toFixed(3)) + "€",
+        workAmount: formatNumberWithThousands(workAmount.toFixed(3)) + "€",
+        status: orderStateMap[marginalita.state] || "N/A",
+        costiTotal: formatNumberWithThousands(costi.toFixed(3)) + "€",
+        margVal: formatNumberWithThousands(marginalitaVal.toFixed(3)) + "€",
+        percentMarginalita: percentMarginalita.toFixed(2) + "%",
+        percentAvanzamento: percentAvanzamento.toFixed(2) + "%",
       },
     });
   } catch (error) {
@@ -201,29 +205,6 @@ export const getMarginalitaOfCosti = async (req, res) => {
     const { id } = req.user;
     const costi = await prisma.costi.findMany({ where: { adminId: id } });
     return res.status(200).json({ message: "fetched!", data: costi });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-export const getMarginalitaOfRicaviById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const onlyRicavi = await prisma.ricavi.findUnique({
-      where: { id },
-      include: {
-        Customer:{select:{companyName:true}}
-      },
-      omit:{invId:true}
-    });
-    return res.status(200).json({
-      message: "fetched!",
-      data: {
-        ...onlyRicavi,
-        revAmt: formatNumberWithThousands(onlyRicavi.revAmt.toFixed(3)) + "€",
-        docDate: formatDate(onlyRicavi.docDate),
-      },
-    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

@@ -7444,7 +7444,219 @@ paths:
                 properties:
                   message:
                     type: string
-      
+  
+  /api/fatture/create/attives:
+    post:
+      tags:
+        - Invoices
+      summary: Create multiple invoices (attives)
+      description: Allows an ADMIN user to create multiple invoice records in bulk.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attives:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - customerName
+                      - vat
+                      - name
+                      - taxAmt
+                      - docDate
+                      - vatRate
+                      - docNo
+                      - typology
+                      - yearOfCompetence
+                      - protocol
+                    properties:
+                      customerName:
+                        type: string
+                      vat:
+                        type: string
+                      name:
+                        type: string
+                      taxAmt:
+                        type: number
+                      docDate:
+                        type: string
+                        format: date
+                      vatRate:
+                        type: number
+                      docNo:
+                        type: string
+                      typology:
+                        type: string
+                      yearOfCompetence:
+                        type: integer
+                      protocol:
+                        type: string
+                      processed:
+                        type: string
+                      split:
+                        type: string
+                      filePath:
+                        type: string
+            example:
+              attives:
+                - customerName: "ABC Corp"
+                  vat: "123456789"
+                  name: "Invoice ABC"
+                  taxAmt: 100.5
+                  docDate: "2024-01-01"
+                  vatRate: 22
+                  docNo: "INV001"
+                  typology: "Standard"
+                  yearOfCompetence: 2024
+                  protocol: "PRT-001"
+                  processed: "Si"
+                  split: "AUD"
+                  filePath: "/uploads/invoice1.pdf"
+      responses:
+        '200':
+          description: Successfully created invoices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+        '400':
+          description: Bad Request – missing fields or no data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  
+  /api/fatture/create/passives:
+    post:
+      tags:
+        - Invoices
+      summary: Create multiple invoices (passives)
+      description: Allows an ADMIN user to create multiple passive invoice records in bulk.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passives:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - supplierName
+                      - vat
+                      - name
+                      - taxAmt
+                      - docDate
+                      - vatRate
+                      - docNo
+                      - typology
+                      - yearOfCompetence
+                      - protocol
+                    properties:
+                      supplierName:
+                        type: string
+                      vat:
+                        type: string
+                      name:
+                        type: string
+                      taxAmt:
+                        type: number
+                      docDate:
+                        type: string
+                        format: date
+                      vatRate:
+                        type: number
+                      docNo:
+                        type: string
+                      typology:
+                        type: string
+                      yearOfCompetence:
+                        type: integer
+                      protocol:
+                        type: string
+                      processed:
+                        type: string
+                      split:
+                        type: string
+                      filePath:
+                        type: string
+            example:
+              passives:
+                - supplierName: "XYZ Supplies Ltd"
+                  vat: "987654321"
+                  name: "Invoice XYZ"
+                  taxAmt: 250.75
+                  docDate: "2024-02-01"
+                  vatRate: 22
+                  docNo: "PINV001"
+                  typology: "Service"
+                  yearOfCompetence: 2024
+                  protocol: "PRT-XYZ001"
+                  processed: "Si"
+                  split: "USD"
+                  filePath: "/uploads/invoice2.pdf"
+      responses:
+        '200':
+          description: Successfully created invoices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+        '400':
+          description: Bad Request – missing fields or no data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  
   # Marginalita
   /api/marginalita/all:
     get:

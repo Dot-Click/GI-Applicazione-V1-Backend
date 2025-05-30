@@ -236,6 +236,7 @@ export const getFattureActive = async (req, res) => {
     const result = {
       ...rest,
       docDate: formatDate(rest.docDate),
+      taxAmt: formatNumberWithThousands(Number(rest.taxAmt.toFixed(2))),
       customerName: Customer?.companyName || null,
       ricavis: Customer.ricavi,
     };
@@ -266,6 +267,7 @@ export const getFatturePassive = async (req, res) => {
                 see_SAL: true,
                 wbs: true,
                 supplier: { select: { companyName: true } },
+                code: true,
                 order: { select: { description: true, workAmount: true } },
               },
             },
@@ -294,8 +296,9 @@ export const getFatturePassive = async (req, res) => {
     const result = {
       ...rest,
       docDate: formatDate(rest.docDate),
+      taxAmt: formatNumberWithThousands(Number(rest.taxAmt.toFixed(2))),
       costis: supplier?.costi,
-      accTotalAgreedCost: totalAgreedCost?.toFixed(2) + "€",
+      accTotalAgreedCost: formatNumberWithThousands(totalAgreedCost?.toFixed(2)) + "€",
       supplierName: supplier?.companyName || null,
       accOrdDesc: description,
       accDate: formatDate(dateAcc),
@@ -303,6 +306,7 @@ export const getFatturePassive = async (req, res) => {
       relatedAcc: supplier.account.map((acc) => ({
         // ...acc,
         status: AccRoles[acc.status] || acc.status,
+        code: acc.code,
         date: formatDate(acc.date),
         wbs: acc.wbs,
         see_SAL: acc.see_SAL,
@@ -834,6 +838,125 @@ export const createBulkPassives = async (req, res) => {
       message: `${createdInvoices.length} passives created successfully.`,
       data: createdInvoices,
     });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateFattSequence = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const {
+      activeAddedColArray,
+      activeVisibleColArray,
+      passiveAddedColArray,
+      passiveVisibleColArray,
+    } = req.body;
+
+    if (
+      (activeAddedColArray && !activeVisibleColArray) ||
+      (!activeAddedColArray && activeVisibleColArray)
+    ) {
+      return res.status(400).json({
+        error: "activeAddedColArray and activeVisibleColArray must be provided together.",
+      });
+    }
+
+    if (
+      (passiveAddedColArray && !passiveVisibleColArray) ||
+      (!passiveAddedColArray && passiveVisibleColArray)
+    ) {
+      return res.status(400).json({
+        error:
+          "passiveAddedColArray and passiveVisibleColArray must be provided together.",
+      });
+    }
+
+    const reqActval = [
+      "docDate",
+      "vat",
+      "customerName",
+      "docNo",
+      "taxAmt",
+      "protocol",
+      "processed",
+      "attachment",
+      "typology",
+      "yearOfCompetence",
+      "vatRate",
+      "split",
+      "actions"
+    ];
+    const reqPassval = [
+      "docDate",
+      "vat",
+      "supplierName",
+      "docNo",
+      "taxAmt",
+      "protocol",
+      "processed",
+      "attachment",
+      "typology",
+      "yearOfCompetence",
+      "vatRate",
+      "split",
+      "actions"
+    ]
+
+    const invalidFields = [
+      ...(activeAddedColArray || []).filter((field) => !reqActval.includes(field)),
+      ...(activeVisibleColArray || []).filter((field) => !reqActval.includes(field)),
+      ...(passiveAddedColArray || []).filter((field) => !reqPassval.includes(field)),
+      ...(passiveVisibleColArray || []).filter((field) => !reqPassval.includes(field)),
+    ];
+
+    if (invalidFields.length > 0) {
+      return res
+        .status(422)
+        .json({ error: `Invalid fields found: ${invalidFields.join(", ")}` });
+    }
+
+    const updateData = {};
+
+    if (activeAddedColArray) {
+      updateData.active_added_col_array = activeAddedColArray;
+    }
+    if (activeVisibleColArray) {
+      updateData.active_visible_col_array = activeVisibleColArray;
+    }
+    if (passiveAddedColArray) {
+      updateData.passive_added_col_array = passiveAddedColArray;
+    }
+    if (passiveVisibleColArray) {
+      updateData.passive_visible_col_array = passiveVisibleColArray;
+    }
+
+    await prisma.invoiceSequence.upsert({
+      where: { adminId: id },
+      update: updateData,
+      create: {
+        active_added_col_array: activeAddedColArray || [],
+        active_visible_col_array: activeVisibleColArray || [],
+        passive_added_col_array: passiveAddedColArray || [],
+        passive_visible_col_array: passiveVisibleColArray || [],
+        adminId: id,
+      },
+    });
+
+    return res.status(200).json({ message: "Sequence updated!" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const getFattSequence = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const seq = await prisma.invoiceSequence.findUnique({ where: { adminId: id } });
+    if (!seq) {
+      return res.status(404).json({ message: "sequence not found" });
+    }
+    return res.status(200).json(seq);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
