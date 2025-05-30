@@ -175,6 +175,9 @@ export const getAllFattureActive = async (req, res) => {
       where: { adminId: id, type: "attive" },
       include: { Customer: { select: { companyName: true } } },
       omit: { supplierId: true },
+      orderBy: {
+            createdAt: "desc",
+          },
     });
     activeFattures = activeFattures
       .map((fatture) => ({
@@ -197,6 +200,9 @@ export const getAllFatturePassiva = async (req, res) => {
       where: { adminId: id, type: "passive" },
       include: { supplier: { select: { companyName: true } } },
       omit: { customerId: true },
+      orderBy: {
+            createdAt: "desc",
+          },
     });
     passiveFatture = passiveFatture
       .map((fatture) => ({
