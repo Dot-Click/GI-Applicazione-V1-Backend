@@ -6530,8 +6530,6 @@ paths:
                 properties:
                   message:
                     type: string
-                  account:
-                    $ref: '#/components/schemas/Account'
         '400':
           description: Bad request (e.g. missing ID or invalid status)
           content:
@@ -7607,8 +7605,6 @@ paths:
                     type: string
                   data:
                     type: array
-                    items:
-                      $ref: '#/components/schemas/Invoice'
         '400':
           description: Bad Request – missing fields or no data
           content:
@@ -7713,8 +7709,6 @@ paths:
                     type: string
                   data:
                     type: array
-                    items:
-                      $ref: '#/components/schemas/Invoice'
         '400':
           description: Bad Request – missing fields or no data
           content:
