@@ -111,6 +111,7 @@ export const createAccountWithSupplier = async (req, res) => {
       },
       update: {
         date: new Date(date),
+        suppCode,
         wbs,
       },
     });
@@ -183,6 +184,42 @@ export const createAccountWithSupplier = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
+export const updateAccountFields = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      status,
+      see_SAL,
+      see_CDP,
+      current_SAL_amount,
+      progressive_SAL_amount,
+    } = req.body;
+
+    const updatedAccount = await prisma.accounts.update({
+      where: { id },
+      data: {
+        status,
+        see_SAL,
+        see_CDP,
+        current_SAL_amount,
+        progressive_SAL_amount,
+      },
+    });
+
+    res.status(200).json({
+      message: 'Account updated successfully',
+      account: updatedAccount,
+    });
+  } catch (error) {
+    console.error('Update Account Error:', error);
+    res.status(500).json({
+      message: 'Failed to update account',
+      error: error.message,
+    });
+  }
+};
+
 
 // export const getAccountWithOrder = async (req, res) => {
 //   try {

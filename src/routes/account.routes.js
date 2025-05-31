@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { Auth } from "../middlewares/auth.middleware.js";
 import { checkRole } from "../middlewares/verif.middleware.js";
-import { createAccountWithClient, createAccountWithSupplier, deleteAccounts, generatePDF, generatePDF_C, getAccountWithClientById, getAccountWithOrder, getAccountWithSupplierById, getAllAccountWithClient, getAllAccountWithSuppliers, updateAccountWithSupplier } from "../controllers/accounts.controller.js";
+import { createAccountWithClient, createAccountWithSupplier, deleteAccounts, generatePDF, generatePDF_C, getAccountWithClientById, getAccountWithOrder, getAccountWithSupplierById, getAllAccountWithClient, getAllAccountWithSuppliers, updateAccountFields, updateAccountWithSupplier } from "../controllers/accounts.controller.js";
 import { singleUpload, upload } from "../middlewares/multer.middleware.js";
 const router = Router()
 
 // client routes
 router.post("/create/customer", Auth,checkRole(["ADMIN"]),upload, createAccountWithClient)
+router.patch("/update/:id", Auth,checkRole(["ADMIN"]),updateAccountFields)
 router.get("/customer", Auth, checkRole(["ADMIN"]), getAllAccountWithClient)
 router.get("/customer/:id", Auth, checkRole(["ADMIN"]), getAccountWithClientById)
 router.patch("customer/pdf/:aid", Auth, checkRole(["ADMIN"]),singleUpload("cdp"), generatePDF_C)
