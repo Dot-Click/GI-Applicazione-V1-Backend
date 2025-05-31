@@ -6480,6 +6480,83 @@ paths:
                     type: string
                     example: Internal server error
 
+  /api/account/update/{id}:
+    patch:
+      summary: Update specific fields of an account
+      description: Updates status and financial fields of an existing account. Requires admin access.
+      tags:
+        - Accounts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the account to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [Approvato, Da_approvare, Non_approvata]
+                  description: New status for the account
+                see_SAL:
+                  type: boolean
+                  description: Permission flag to see SAL
+                see_CDP:
+                  type: boolean
+                  description: Permission flag to see CDP
+                current_SAL_amount:
+                  type: number
+                  format: float
+                  description: Current SAL amount
+                progressive_SAL_amount:
+                  type: number
+                  format: float
+                  description: Progressive SAL amount
+              required:
+                - status
+      responses:
+        '200':
+          description: Account updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  account:
+                    $ref: '#/components/schemas/Account'
+        '400':
+          description: Bad request (e.g. missing ID or invalid status)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (only ADMIN role allowed)
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error:
+                    type: string
+
   /api/account/order/{ordCode}:
     get:
       summary: Get account with order information by order code

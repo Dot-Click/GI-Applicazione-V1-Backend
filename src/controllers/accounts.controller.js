@@ -188,6 +188,7 @@ export const createAccountWithSupplier = async (req, res) => {
 export const updateAccountFields = async (req, res) => {
   try {
     const { id } = req.params;
+    if(!id) return res.status(400).json({message:"id not found"})
     const {
       status,
       see_SAL,
@@ -196,6 +197,7 @@ export const updateAccountFields = async (req, res) => {
       progressive_SAL_amount,
     } = req.body;
 
+    if(!Object.values(AccRoles).includes({...AccRoles})) return res.status(400).json({message:"Invalid status, valid ones are: 'Approvato' 'Da_approvare' 'Non_approvata'"})
     const updatedAccount = await prisma.accounts.update({
       where: { id },
       data: {
@@ -257,7 +259,7 @@ export const getAccountWithOrder = async (req, res) => {
       include: {
         supplier: { select: { companyName: true } },
         customer: { select: { companyName: true } },
-        order: { select: { description: true, dipositRecovery: true, code:true, withholdingAmount: true, workAmount:true, iva: true, advancePayment: true,account:{select: {
+        order: { select: { description: true, dipositRecovery: true, code:true, withholdingAmount: true, workAmount:true, iva: true, advancePayment: true, Customer:true,account:{select: {
         supplier:{select:{companyName:true}},
         customer: {select:{companyName: true}},
         code: true,
@@ -290,13 +292,17 @@ export const getAccountWithOrder = async (req, res) => {
     if (!acc) {
       const order = await prisma.order.findUnique({
         where: { code: ordCode },
-        select: { description: true, code: true },
+        select: { description: true, code: true,Customer: true,withholdingAmount: true, workAmount:true, iva: true, advancePayment: true,dipositRecovery: true },
       });
       if(!order) return res.status(400).json({message:"order not found"})
       return res.status(200).json({
         message: "Account not found, corresponding to this order",
         data: {
           ordCode: order?.code,
+          progressiveNetAmount: (order.workAmount - order.withholdingAmount).toFixed(2)+"€",
+          depositBalance: Math.abs(((order.dipositRecovery * 100) - order.workAmount).toFixed(2))+"€",
+          discount: ((((order.withholdingAmount * order.dipositRecovery) / 100) * 100) / order.withholdingAmount).toFixed(2)+"%",
+          order,
           order_desc: order?.description,
           total_sal: 0,
           total_cdp: 0,
@@ -313,7 +319,7 @@ export const getAccountWithOrder = async (req, res) => {
       contractAmount: order.workAmount+"€",
       advancePayment: order.advancePayment+"€",
       progressiveNetAmount: (order.workAmount - order.withholdingAmount).toFixed(2)+"€",
-      depositBalance: /*((order.dipositRecovery * order.workAmount) / 100).toFixed(2)+"€"*/ ((order.dipositRecovery * 100) - order.workAmount).toFixed(2)+"€",
+      depositBalance: /*((order.dipositRecovery * order.workAmount) / 100).toFixed(2)+"€"*/ Math.abs(((order.dipositRecovery * 100) - order.workAmount).toFixed(2))+"€",
       withholdings: order.withholdingAmount+"%",
       depositRecovery: order.dipositRecovery+"%",
       discount: ((((order.withholdingAmount * order.dipositRecovery) / 100) * 100) / order.withholdingAmount).toFixed(2)+"%",
@@ -330,7 +336,8 @@ export const getAccountWithOrder = async (req, res) => {
       ...rest,
       order_desc: order?.description || "",
       supplier_name: supplier?.companyName || "",
-      customer_name: customer?.companyName || "",
+      custCode: order?.Customer?.code,
+      customer_name: order.Customer?.companyName || "",
       status: AccRoles[status] || status,
       date: formatDate(acc.date),
       total_sal: sal.length,
