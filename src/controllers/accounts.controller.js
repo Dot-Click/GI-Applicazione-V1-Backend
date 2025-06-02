@@ -318,6 +318,7 @@ export const getAccountWithOrder = async (req, res) => {
     const calulated_stuff = {
       contractAmount: order.workAmount+"€",
       advancePayment: order.advancePayment+"€",
+      reduceAdvPayment: (order.advancePayment * ((((order.withholdingAmount * order.dipositRecovery) / 100) * 100) / order.withholdingAmount)/100).toFixed(2)+"€",
       progressiveNetAmount: (order.workAmount - order.withholdingAmount).toFixed(2)+"€",
       depositBalance: /*((order.dipositRecovery * order.workAmount) / 100).toFixed(2)+"€"*/ Math.abs(((order.dipositRecovery * 100) - order.workAmount).toFixed(2))+"€",
       withholdings: order.withholdingAmount+"%",
