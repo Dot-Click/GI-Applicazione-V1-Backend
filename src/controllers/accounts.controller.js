@@ -197,7 +197,7 @@ export const updateAccountFields = async (req, res) => {
       progressive_SAL_amount,
     } = req.body;
 
-    if(!Object.values(AccRoles).includes({...AccRoles})) return res.status(400).json({message:"Invalid status, valid ones are: 'Approvato' 'Da_approvare' 'Non_approvata'"})
+    if(!Object.keys(AccRoles).includes(status)) return res.status(400).json({message:"Invalid status, valid ones are: 'Approvato' 'Da_approvare' 'Non_approvata'"})
     const updatedAccount = await prisma.accounts.update({
       where: { id },
       data: {
