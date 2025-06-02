@@ -1,5 +1,5 @@
 import prisma from "../../prisma/prisma.js";
-import { cloudinaryUploader, formatDate, formatNumberWithThousands } from "../lib/utils.js";
+import { cloudinaryUploader, formatDate, formatDatePost, formatNumberWithThousands } from "../lib/utils.js";
 
 const AccRoles = {
   Approvato: "Approvato",
@@ -93,7 +93,6 @@ export const createAccountWithSupplier = async (req, res) => {
       })
     );
 
-
     const account = await prisma.accounts.upsert({
       where: {
         suppCode_ordCode: {
@@ -107,10 +106,10 @@ export const createAccountWithSupplier = async (req, res) => {
         wbs,
         ordCode,
         adminId,
-        date: new Date(date),
+        date: new Date(formatDatePost(date)),
       },
       update: {
-        date: new Date(date),
+        date: new Date(formatDatePost(date)),
         suppCode,
         wbs,
       },
@@ -646,10 +645,10 @@ export const createAccountWithClient = async (req, res) => {
         code,
         ordCode,
         adminId,
-        date: new Date(date),
+        date: new Date(formatDatePost(date)),
       },
       update: {
-        date: new Date(date),
+        date: new Date(formatDatePost(date)),
       },
     });
 

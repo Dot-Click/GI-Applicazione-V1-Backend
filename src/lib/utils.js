@@ -55,6 +55,21 @@ function formatDate(date) {
   const year = d.getFullYear();
   return `${day}/${month}/${year}`;
 }
+function formatDatePost(dateStr) {
+  if (!dateStr) return 'Invalid Date';
+
+  const [day, month, year] = dateStr.split('/');
+  const d = new Date(`${year}-${month}-${day}`);
+
+  if (isNaN(d.getTime())) return 'Invalid Date';
+
+  const formattedDay = String(d.getDate()).padStart(2, '0');
+  const formattedMonth = String(d.getMonth() + 1).padStart(2, '0');
+  const formattedYear = d.getFullYear();
+
+  return `${formattedYear}/${formattedMonth}/${formattedDay}`;
+}
+
 
 /**
  * used to format numbers with 2 decimal placed and thousand separator
@@ -95,4 +110,4 @@ const cloudinaryUploader = async (filePath) => {
   }
 };
 
-export { cloudinaryConfig, cloudinaryUploader,formatDate, formatNumberWithThousands };
+export { cloudinaryConfig, cloudinaryUploader,formatDate, formatNumberWithThousands,formatDatePost };
