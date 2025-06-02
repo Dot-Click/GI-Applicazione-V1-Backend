@@ -81,6 +81,7 @@ export const getAllmarginalities = async (req, res) => {
         workAmount: true,
         dipositRecovery: true,
       },
+      orderBy:{createdAt:'desc'}
     });
 
     data = data

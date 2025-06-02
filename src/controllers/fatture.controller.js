@@ -534,6 +534,7 @@ export const getAllRicavis = async (req, res) => {
     let ricavis = await prisma.ricavi.findMany({
       where: { adminId: id },
       include: { Customer: { select: { companyName: true } } },
+      orderBy:{createdAt:'desc'}
     });
     ricavis = ricavis
       .map((obj) => ({
@@ -587,6 +588,7 @@ export const getAllCostis = async (req, res) => {
           include: { invoices: { select: { docDate: true, docNo: true } } },
         },
       },
+      orderBy:{createdAt:'desc'}
     });
     costis = costis
       .map((obj) => ({
