@@ -238,6 +238,7 @@ model Accounts {
   admin       Admin?      @relation(fields: [adminId], references: [id])
   adminId     String?
   see_SAL     String?
+  note        String?
   see_CDP     String?
   current_SAL_amount         Decimal?    @db.Decimal(10, 4)
   progressive_SAL_amount     Decimal?    @db.Decimal(10, 4)
@@ -308,6 +309,7 @@ model CDP {
   reducedAmount      Decimal?    @db.Decimal(12, 4)
   account        Accounts? @relation(fields: [accId], references: [id],onDelete: Cascade)
   accId          String?
+  status         accState?  @default(Da_approvare)
   currentWorksAmount Decimal?    @db.Decimal(12, 4)
   advPayment         Decimal?    @db.Decimal(12, 4)
   withholdingTax     Decimal?    @db.Decimal(12, 4)

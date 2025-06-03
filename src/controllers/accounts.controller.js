@@ -123,7 +123,7 @@ export const createAccountWithSupplier = async (req, res) => {
     for (const salItem of invoice) {
       const { id, sect, ...restSal } = salItem;
       const isCreated = !id;
-      const isUpdated = !!id;
+      const isdeleted = !!id;
     
       const sal = await prisma.sAL.upsert({
         where: { id: id || "non_existing_id" },
@@ -190,14 +190,25 @@ export const updateAccountFields = async (req, res) => {
     if(!id) return res.status(400).json({message:"id not found"})
     const {
       status,
+      type,
       see_SAL,
       see_CDP,
       current_SAL_amount,
       progressive_SAL_amount,
     } = req.body;
-
+    if(!type) return res.status(400).json({message:"type is missing, e.g supplier or customer"})
     if(!Object.keys(AccRoles).includes(status)) return res.status(400).json({message:"Invalid status, valid ones are: 'Approvato' 'Da_approvare' 'Non_approvata'"})
-    const updatedAccount = await prisma.accounts.update({
+    if(type === "supplier"){
+      const {sal} = await prisma.accounts.findUnique({where:{id},include:{sal:true}})
+      const salStatus = sal.every((item)=>item.status === "Approvato") // return true on all items otherwise false
+      if(!salStatus && status === "Approvato") return res.status(400).json({message:"All sals should be approved first"})
+    }
+    if(type === "customer"){
+      const {cdp} = await prisma.accounts.findUnique({where:{id},include:{cdp:true}})
+      const cdpStatus = cdp.every((item)=>item.status === "Approvato") // return true on all items otherwise false
+      if(!cdpStatus && status === "Approvato") return res.status(400).json({message:"All cdps should be approved first"})
+    }
+      const updatedAccount = await prisma.accounts.update({
       where: { id },
       data: {
         status,
@@ -844,5 +855,105 @@ export const generatePDF_C = async (req, res) => {
     return res.status(200).json({message:"PDF generated and saved !", data: file.secure_url})
   } catch (error) {
     return res.status(500).json({ message: error.message })
+  }
+}
+
+export const updateSAL = async (req, res) => {
+   try {
+    const { id } = req.params;
+    if(!id) return res.status(400).json({message:"id not found"})
+    const {
+      status
+    } = req.body;
+
+    if(!Object.keys(AccRoles).includes(status)) return res.status(400).json({message:"Invalid status, valid ones are: 'Approvato' 'Da_approvare' 'Non_approvata'"})
+    await prisma.sAL.update({
+      where: { id },
+      data: {
+        status,
+        ...req.body
+      },
+    });
+
+    res.status(200).json({
+      message: 'SAL updated successfully'
+    });
+  } catch (error) {
+    console.error('Update SAL Error:', error);
+    res.status(500).json({
+      message: 'Failed to update account',
+      error: error.message,
+    });
+  }
+}
+
+export const updateCDP = async (req, res) => {
+   try {
+    const { id } = req.params;
+    if(!id) return res.status(400).json({message:"id not found"})
+    const {
+      status
+    } = req.body;
+
+    if(!Object.keys(AccRoles).includes(status)) return res.status(400).json({message:"Invalid status, valid ones are: 'Approvato' 'Da_approvare' 'Non_approvata'"})
+    await prisma.cDP.update({
+      where: { id },
+      data: {
+        status,
+        ...req.body
+      },
+    });
+
+    res.status(200).json({
+      message: 'CDP updated successfully'
+    });
+  } catch (error) {
+    console.error('Update CDP Error:', error);
+    res.status(500).json({
+      message: 'Failed to update account',
+      error: error.message,
+    });
+  }
+}
+
+export const deleteSAL = async (req, res) => {
+   try {
+    const { id } = req.params;
+    if(!id) return res.status(400).json({message:"id not found"})
+
+    await prisma.sAL.delete({
+      where: { id }
+    });
+
+    res.status(200).json({
+      message: 'SAL deleted successfully'
+    });
+  } catch (error) {
+    console.error('delete SAL Error:', error);
+    res.status(500).json({
+      message: 'Failed to delete account',
+      error: error.message,
+    });
+  }
+}
+
+export const deleteCDP = async (req, res) => {
+   try {
+    const { id } = req.params;
+    if(!id) return res.status(400).json({message:"id not found"})
+
+    await prisma.cDP.delete({
+      where: { id }
+    });
+
+    res.status(200).json({
+      message: 'CDP deleted successfully'
+    });
+  } catch (error) {
+    console.error('delete CDP Error:', error);
+    res.status(500).json({
+      message: 'Failed to delete account',
+      error: error.message,
+    });
   }
 }

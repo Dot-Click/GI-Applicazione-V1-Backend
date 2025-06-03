@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { Auth } from "../middlewares/auth.middleware.js";
 import { checkRole } from "../middlewares/verif.middleware.js";
-import { createAccountWithClient, createAccountWithSupplier, deleteAccounts, generatePDF, generatePDF_C, getAccountWithClientById, getAccountWithOrder, getAccountWithSupplierById, getAllAccountWithClient, getAllAccountWithSuppliers, updateAccountFields, updateAccountWithSupplier } from "../controllers/accounts.controller.js";
+import { createAccountWithClient, createAccountWithSupplier, deleteAccounts, deleteCDP, deleteSAL, generatePDF, generatePDF_C, getAccountWithClientById, getAccountWithOrder, getAccountWithSupplierById, getAllAccountWithClient, getAllAccountWithSuppliers, updateAccountFields, updateAccountWithSupplier, updateCDP, updateSAL } from "../controllers/accounts.controller.js";
 import { singleUpload, upload } from "../middlewares/multer.middleware.js";
 const router = Router()
 
@@ -16,9 +16,15 @@ router.post("/create/supplier",Auth, checkRole(["ADMIN"]),upload, createAccountW
 router.get("/supplier", Auth, checkRole(["ADMIN"]), getAllAccountWithSuppliers)
 router.get("/order/:ordCode", Auth, checkRole(["ADMIN"]), getAccountWithOrder)
 router.get("/supplier/:id",Auth, checkRole(["ADMIN"]), getAccountWithSupplierById)
-router.patch("/update/:id", Auth, checkRole(["ADMIN"]),upload, updateAccountWithSupplier)
+// router.patch("/update/:id", Auth, checkRole(["ADMIN"]),upload, updateAccountWithSupplier)
 // router.patch("/salFileUpload/:id", Auth, checkRole(["ADMIN"]),upload, fileUploadOfSalAttach)
 router.patch("/pdf/:aid", Auth, checkRole(["ADMIN"]),singleUpload("sal"), generatePDF)
 router.delete("/delete",Auth, checkRole(["ADMIN"]), deleteAccounts)
+
+// sals & cdp
+router.patch("/sal/update/:id",Auth, checkRole(["ADMIN"]),updateSAL)
+router.patch("/cdp/update/:id",Auth, checkRole(["ADMIN"]),updateCDP)
+router.delete("/sal/delete/:id",Auth, checkRole(["ADMIN"]),deleteSAL)
+router.delete("/cdp/delete/:id",Auth, checkRole(["ADMIN"]),deleteCDP)
 
 export default router
