@@ -795,10 +795,29 @@ export const getAccountWithClientById = async (req, res) => {
       },
     });
     if (!account) return res.status(404).json({ message: "Not found" });
-
+    const {order , cdp } = account
+    const calulated_stuff = {
+      contractAmount: order.workAmount+"€",
+      advancePayment: order.advancePayment+"€",
+      reduceAdvPayment: (order.advancePayment * ((((order.withholdingAmount * order.dipositRecovery) / 100) * 100) / order.withholdingAmount)/100).toFixed(2)+"€",
+      progressiveNetAmount: (order.workAmount - order.withholdingAmount).toFixed(2)+"€",
+      depositBalance: /*((order.dipositRecovery * order.workAmount) / 100).toFixed(2)+"€"*/ Math.abs(((order.dipositRecovery * 100) - order.workAmount).toFixed(2))+"€",
+      withholdings: order.withholdingAmount+"%",
+      depositRecovery: order.dipositRecovery+"%",
+      discount: ((((order.withholdingAmount * order.dipositRecovery) / 100) * 100) / order.withholdingAmount).toFixed(2)+"%",
+      reducedAmount: (order.workAmount - order.advancePayment).toFixed(3)+"€",
+      currentWorksAmount: order.workAmount+"€",
+      advancePayment: order.advancePayment+"€",
+      withholdingTax: order.withholdingAmount+"€",
+      amtPresentCDP: cdp.reduce((sum, cdpItem) => sum + parseFloat(cdpItem.currentWorkAmountNotSubjectToDiscount || 0),0)+"€",
+      vatAmt: ((order.workAmount * parseFloat(order.iva || 0)) / 100).toFixed(2)+"€",
+      totalToBePaid: cdp.reduce((sum, item)=> sum + parseFloat(item.currentWorkAmountSubjectToReduction || 0),0)+"€"
+    }
     const transformed = {
       ...account,
+      calulated_stuff,
       total_SAL: account.sal?.length || 0,
+      total_CDP: account.cdp?.length || 0,
     };
 
     delete transformed.sal;
