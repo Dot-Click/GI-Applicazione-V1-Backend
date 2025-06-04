@@ -216,6 +216,7 @@ export const updateAccountFields = async (req, res) => {
         see_CDP,
         current_SAL_amount,
         progressive_SAL_amount,
+        ...req.body
       },
     });
 
@@ -952,8 +953,7 @@ export const deleteCDP = async (req, res) => {
   } catch (error) {
     console.error('delete CDP Error:', error);
     res.status(500).json({
-      message: 'Failed to delete account',
-      error: error.message,
+      message: 'Failed to delete account'
     });
   }
 }
