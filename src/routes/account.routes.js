@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { Auth } from "../middlewares/auth.middleware.js";
 import { checkRole } from "../middlewares/verif.middleware.js";
-import { createAccountWithClient, createAccountWithSupplier, deleteAccounts, deleteCDP, deleteSAL, generatePDF, generatePDF_C, getAccountWithClientById, getAccountWithOrder, getAccountWithSupplierById, getAllAccountWithClient, getAllAccountWithSuppliers, updateAccountFields, updateAccountWithSupplier, updateCDP, updateSAL } from "../controllers/accounts.controller.js";
+import { createAccountWithClient, createAccountWithSupplier, deleteAccounts, deleteCDP, deleteSAL, generatePDF, generatePDF_C, getAccountWithClientById, getAccountWithOrder, getAccountWithSupplierById, getAllAccountWithClient, getAllAccountWithSuppliers, updateAccountFields, updateCDP, updateSAL } from "../controllers/accounts.controller.js";
 import { singleUpload, upload } from "../middlewares/multer.middleware.js";
 const router = Router()
 

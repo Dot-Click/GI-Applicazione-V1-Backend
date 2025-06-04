@@ -6,6 +6,11 @@ const AccRoles = {
   Da_approvare: "Da approvare",
   Non_approvata: "Non approvata",
 };
+const AccRolesPOST = {
+  "Approvato": "Approvato",
+  "Da approvare": "Da_approvare",
+  "Non approvata": "Non_approvata",
+};
 
 const fileUploadOfSalAttach = async (sal_id, uploadedFiles) => {
   try {
@@ -111,6 +116,7 @@ export const createAccountWithSupplier = async (req, res) => {
       update: {
         date: new Date(formatDatePost(date)),
         suppCode,
+
         wbs,
       },
     });
@@ -195,6 +201,8 @@ export const updateAccountFields = async (req, res) => {
       wbs,
       type,
     } = req.body;
+    const exist = await prisma.accounts.findUnique({where:{id}})
+    if(!exist) return
     if(!type) return res.status(400).json({message:"type is missing, e.g supplier or customer"})
     if(!Object.keys(AccRoles).includes(status)) return res.status(400).json({message:"Invalid status, valid ones are: 'Approvato' 'Da_approvare' 'Non_approvata'"})
     if(type === "supplier"){
@@ -210,10 +218,10 @@ export const updateAccountFields = async (req, res) => {
       const updatedAccount = await prisma.accounts.update({
       where: { id },
       data: {
-        status: AccRoles[status] || status,
+        status: AccRolesPOST[status] || exist.status,
         suppCode,
         wbs,
-        date: new Date(formatDatePost(date)),
+        date: new Date(formatDatePost(date))||exist.date,
       },
     });
 
