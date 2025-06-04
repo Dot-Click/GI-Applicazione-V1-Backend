@@ -6518,6 +6518,9 @@ paths:
                   type: number
                   format: float
                   description: Progressive SAL amount
+                type: 
+                 type: string
+                 example: 'supplier or customer'
               required:
                 - status
       responses:
@@ -6641,6 +6644,106 @@ paths:
                   message:
                     type: string
                     example: "Internal Server Error"
+
+  /api/account/sal/update/{id}:
+    patch:
+      tags:
+        - Accounts
+      summary: Update SAL status
+      description: Update the status of a SAL record (Admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the SAL record to update
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [Approvato, Da_approvare, Non_approvata]
+                  description: New status for the SAL record
+              required:
+                - status
+      responses:
+        '200':
+          description: SAL updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "SAL updated successfully"
+        '400':
+          description: Invalid request (missing ID or invalid status)
+        '401':
+          description: Unauthorized (missing or invalid token)
+        '403':
+          description: Forbidden (user doesn't have ADMIN role)
+        '500':
+          description: Internal server error
+  
+  /api/account/cdp/update/{id}:
+    patch:
+      tags:
+        - Accounts
+      summary: Update CDP status
+      description: Update the status of a CDP record (Admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the CDP record to update
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [Approvato, Da_approvare, Non_approvata]
+                  description: New status for the CDP record
+                # Other updatable fields can be documented here if needed
+              required:
+                - status
+      responses:
+        '200':
+          description: CDP updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "CDP updated successfully"
+        '400':
+          description: |
+            Bad Request:
+            - Missing ID parameter
+            - Invalid status value
+        '401':
+          description: Unauthorized (missing or invalid token)
+        '403':
+          description: Forbidden (user doesn't have ADMIN role)
+        '500':
+          description: Internal server error
   
   # Fatture 
   /api/fatture/create/active:
