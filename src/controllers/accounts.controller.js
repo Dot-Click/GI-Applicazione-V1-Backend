@@ -213,7 +213,7 @@ export const updateAccountFields = async (req, res) => {
         status: AccRoles[status] || status,
         suppCode,
         wbs,
-        date: new Date(date),
+        date: new Date(formatDatePost(date)),
       },
     });
 
