@@ -190,11 +190,10 @@ export const updateAccountFields = async (req, res) => {
     if(!id) return res.status(400).json({message:"id not found"})
     const {
       status,
+      suppCode,
+      date,
+      wbs,
       type,
-      see_SAL,
-      see_CDP,
-      current_SAL_amount,
-      progressive_SAL_amount,
     } = req.body;
     if(!type) return res.status(400).json({message:"type is missing, e.g supplier or customer"})
     if(!Object.keys(AccRoles).includes(status)) return res.status(400).json({message:"Invalid status, valid ones are: 'Approvato' 'Da_approvare' 'Non_approvata'"})
@@ -211,12 +210,10 @@ export const updateAccountFields = async (req, res) => {
       const updatedAccount = await prisma.accounts.update({
       where: { id },
       data: {
-        status,
-        see_SAL,
-        see_CDP,
-        current_SAL_amount,
-        progressive_SAL_amount,
-        ...req.body
+        status: AccRoles[status] || status,
+        suppCode,
+        wbs,
+        date: new Date(date),
       },
     });
 
