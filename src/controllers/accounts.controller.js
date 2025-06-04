@@ -221,7 +221,7 @@ export const updateAccountFields = async (req, res) => {
         status: AccRolesPOST[status] || exist.status,
         suppCode,
         wbs,
-        date: new Date(formatDatePost(date))||exist.date,
+        date: date ? new Date(date) : exist.date,
       },
     });
 
