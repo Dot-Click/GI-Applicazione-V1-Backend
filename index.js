@@ -18,11 +18,11 @@ import { loggerMiddleware } from "./src/middlewares/logger.middleware.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: {message:"Too many requests, please try again later."},
-});
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 200,
+//   message: {message:"Too many requests, please try again later."},
+// });
 
 // Middlewares
 app.set("trust proxy", 1)
@@ -30,7 +30,7 @@ app.use(helmet({
   crossOriginResourcePolicy: false,
 }));
 app.use(cors({ origin: ["http://localhost:5173","https://gi-costruzioni-fe.vercel.app"], credentials: true }));
-app.use(limiter);
+// app.use(limiter);
 app.disable("x-powered-by");
 app.use(loggerMiddleware)
 app.use(express.json());
