@@ -221,13 +221,13 @@ export const updateAccountFields = async (req, res) => {
         status: status || exist.status,
         suppCode,
         wbs,
-        date: date ? new Date(date) : exist.date,
+        date: date ? date : exist.date,
       },
     });
 
     res.status(200).json({
       message: 'Account updated successfully',
-      account: updatedAccount,
+      account: {...updatedAccount, date: formatDate(updatedAccount.date)},
     });
   } catch (error) {
     console.error('Update Account Error:', error);
