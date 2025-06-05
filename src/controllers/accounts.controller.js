@@ -218,7 +218,7 @@ export const updateAccountFields = async (req, res) => {
       const updatedAccount = await prisma.accounts.update({
       where: { id },
       data: {
-        status: AccRolesPOST[status] || exist.status,
+        status: status || exist.status,
         suppCode,
         wbs,
         date: date ? new Date(date) : exist.date,
