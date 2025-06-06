@@ -168,6 +168,77 @@ export const createFatturePassive = async (req, res) => {
   }
 };
 
+export const updateFatture = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Missing id parameter" });
+
+    const {
+      type,
+      customerName,
+      supplierName,
+      vat,
+      name,
+      taxAmt,
+      docDate,
+      vatRate,
+      split,
+      typology,
+      yearOfCompetence,
+      protocol,
+      docNo,
+    } = req.body;
+
+    if (!type || (type !== "attive" && type !== "passive")) {
+      return res.status(400).json({ message: "Invalid or missing type" });
+    }
+    const file = await cloudinaryUploader(req.file.path);
+    const data = {
+      vat,
+      name,
+      taxAmt,
+      attachment: file?.secure_url || undefined,
+      docDate: docDate ? new Date(docDate) : undefined,
+      vatRate,
+      split,
+      typology,
+      yearOfCompetence,
+      protocol,
+      docNo,
+    };
+
+    if (type === "attive" && customerName) {
+      data.Customer = {
+        connect: {
+          companyName: customerName,
+        },
+      };
+    }
+
+    if (type === "passive" && supplierName) {
+      data.supplier = {
+        connect: {
+          companyName: supplierName,
+        },
+      };
+    }
+
+    const updatedFattura = await prisma.invoice.update({
+      where: { id },
+      data,
+      include: {
+        Customer: true,
+        supplier: true,
+      },
+    });
+
+    res.status(200).json({data:updatedFattura});
+  } catch (error) {
+    console.error("Error updating fattura:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
 export const getAllFattureActive = async (req, res) => {
   try {
     const { id } = req.user;
@@ -243,7 +314,7 @@ export const getFattureActive = async (req, res) => {
     const result = {
       ...rest,
       docDate: formatDate(rest.docDate),
-      taxAmt: formatNumberWithThousands(Number(rest.taxAmt.toFixed(2))),
+      taxAmt: Number(rest.taxAmt.toFixed(2)),
       customerName: Customer?.companyName || null,
       ricavis: Customer.ricavi,
     };
@@ -303,7 +374,7 @@ export const getFatturePassive = async (req, res) => {
     const result = {
       ...rest,
       docDate: formatDate(rest.docDate),
-      taxAmt: formatNumberWithThousands(Number(rest.taxAmt.toFixed(2))),
+      taxAmt: Number(rest.taxAmt.toFixed(2)),
       costis: supplier?.costi.map((items)=>({...items, revAmt:formatNumberWithThousands(Number(items.revAmt.toFixed(2))), advancePayment: formatNumberWithThousands(Number(items.advancePayment.toFixed(2))), withHoldAmt: formatNumberWithThousands(Number(items.withHoldAmt.toFixed(2)))})),
       accTotalAgreedCost: formatNumberWithThousands(totalAgreedCost?.toFixed(2)) + "€",
       supplierName: supplier?.companyName || null,
