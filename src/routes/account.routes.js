@@ -10,7 +10,7 @@ router.post("/create/customer", Auth,checkRole(["ADMIN"]),upload, createAccountW
 router.patch("/update/:id", Auth,checkRole(["ADMIN"]),updateAccountFields)
 router.get("/customer", Auth, checkRole(["ADMIN"]), getAllAccountWithClient)
 router.get("/customer/:id", Auth, checkRole(["ADMIN"]), getAccountWithClientById)
-router.patch("customer/pdf/:aid", Auth, checkRole(["ADMIN"]),singleUpload("cdp"), generatePDF_C)
+router.patch("/customer/pdf/:aid", Auth, checkRole(["ADMIN"]),singleUpload("cdp"), generatePDF_C)
 
 router.post("/create/supplier",Auth, checkRole(["ADMIN"]),upload, createAccountWithSupplier)
 router.get("/supplier", Auth, checkRole(["ADMIN"]), getAllAccountWithSuppliers)
