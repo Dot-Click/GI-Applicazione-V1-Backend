@@ -192,7 +192,7 @@ export const updateFatture = async (req, res) => {
     if (!type || (type !== "attive" && type !== "passive")) {
       return res.status(400).json({ message: "Invalid or missing type" });
     }
-    const file = await cloudinaryUploader(req.file.path);
+    const file = await cloudinaryUploader(req.file?.path);
     const data = {
       vat,
       name,
